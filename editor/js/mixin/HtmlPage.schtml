@@ -1,0 +1,19 @@
+<%@ 
+@sc.js.JSSettings(jsModuleFile="js/sceditor.js") %>
+<html>
+
+<head>
+  <!-- for javascript pretty printing -->
+  <link rel="stylesheet" type="text/css" href="prettify.css"/>
+  <script src="js/prettify.js"></script> 
+
+  <link rel="stylesheet" type="text/css" href="treeStyle.css"/>
+  <link rel="stylesheet" type="text/css" href="menuStyle.css"/>
+</head>
+
+<body>
+   <!-- Using orderValue="1.0" puts this tag after other tags in body (orderValue = 0 by default -->
+   <div id="editorMixin" extends="sc.editor.EditorFrame" orderValue="1.0"/>
+</body>
+
+</html>

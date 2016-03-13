@@ -1,0 +1,3 @@
+EditorModel {
+   windowState = 3;
+}

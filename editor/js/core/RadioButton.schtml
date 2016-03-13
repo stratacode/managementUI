@@ -1,0 +1,19 @@
+<span extends="ToolbarToggleButton" clickEvent="=: selected ? clearOtherButtons() : null">
+   <%! 
+      // How do you implement the radio button feature where a click on one button disables the others?  Just add this method which clears selected on the other radioButtons
+      void clearOtherButtons() {
+         Element parent = (Element) parentNode;
+         if (parent != null) {
+            Object[] children = DynUtil.getObjChildren(parent, null, true);
+            if (children != null) {
+               for (Object child: children) {
+                  if (child instanceof RadioButton && child != this) {
+                     ((RadioButton) child).selected = false;
+                  }
+               }
+            }
+         }
+      } 
+   %>
+</span>
+

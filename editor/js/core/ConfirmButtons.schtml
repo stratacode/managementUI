@@ -1,0 +1,13 @@
+<span>
+  <%! boolean enabled = true; %>
+  <a id="cbutton" abstract="true" disabled=":= !enabled">
+    <img id="cbImage" class=':= "confirmButtonImage" + (!enabled ? " disabledImage" : "")'/>
+  </a>
+
+  <a id="okButton" extends="cbutton">
+     <img id="cbImage" src="/images/ok.png"/>
+  </a>
+  <a id="cancelButton" extends="cbutton">
+     <img id="cbImage" src="/images/cancel.png"/>
+  </a>
+</span>

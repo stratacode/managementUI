@@ -1,0 +1,13 @@
+<%@ @sc.js.JSSettings(jsModuleFile="js/editorApp.js") %>
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="treeStyle.css"/>
+  <link rel="stylesheet" type="text/css" href="menuStyle.css"/>
+</head>
+
+<body>
+   <div id="editorFrame" extends="EditorFrame"/>
+</body>
+
+</html>

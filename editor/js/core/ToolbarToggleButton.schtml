@@ -1,0 +1,5 @@
+<span extends="ToolbarButton" class=':= (selected ? "toggleButtonSelected" : "") + " toolbarButton toggleButton"'
+      clickEvent="=: selected = !selected">
+   <%! boolean selected = false; %>
+</span>
+

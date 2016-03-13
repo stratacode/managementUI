@@ -1,0 +1,156 @@
+<%@ 
+   import java.util.Arrays;
+   import sc.dyn.DynUtil;
+%>
+<div>
+  <%!
+      visible :=: viewVisible;
+      void scheduleRebuild() {
+         codeEditors_Repeat.invalidate();
+      }
+
+      void updateCaretPositions() {
+      }
+
+      void schedulePrettify() {
+         if (!DynUtil.isEvalSupported())
+            return;
+
+         // Need this to run after the javascript has loaded
+         DynUtil.invokeLater(new Runnable() {
+                void run() {
+                   DynUtil.evalScript("prettyPrint();");
+                }
+            }, 0);
+      }
+
+      enum CodeViewMode {
+         Source, 
+         StrataCode {
+            boolean isAvailable(JavaModel model) {
+               return model instanceof Template;
+            }
+         
+         }, 
+         Java {
+            String toString() {
+               return "Server Java";
+            }
+         }, 
+         ClientJava {
+            boolean isAvailable(JavaModel model) {
+               return model.existsInJSRuntime;
+            }
+            String toString() {
+               return "Client Java";
+            }
+         }, 
+         Javascript, 
+         Doc;
+
+         boolean isAvailable(JavaModel model) {
+            return true;
+         }
+
+         boolean isAvailableList(List<EditorModel.SelectedFile> list) {
+            for (EditorModel.SelectedFile sf:list)
+               if (isAvailable(sf.model))
+                   return true;
+            return false;
+         }
+      }
+  %>
+
+   <div id="CodeEditor" abstract="true">  
+      <%! 
+          int codeViewIndex = 0;
+          List<CodeViewMode> codeViewModes = Arrays.asList(CodeViewMode.values());
+          CodeViewMode codeViewMode := codeViewModes.get(codeViewIndex); 
+
+          // When either of these change we might need to fetch the model text
+          codeViewMode =: updateNeedsModelText();
+          file =: updateNeedsModelText();
+
+          void updateNeedsModelText() {
+             if (codeViewMode == CodeViewMode.Source) 
+                file.model.needsModelText = true; 
+             else if (codeViewMode == CodeViewMode.Java || codeViewMode == CodeViewMode.Javascript || codeViewMode == CodeViewMode.StrataCode || codeViewMode == CodeViewMode.ClientJava)
+                file.model.needsGeneratedText = true; 
+          }
+
+      %>
+      <div id="fileLabel" class="fileLabel" style="height: 15px">
+         <span style="margin-right: 4px; height: 4%;">
+            <select optionDataSource="= codeViewModes" selectedIndex=":=: codeViewIndex">
+               <option disabled=":= !((CodeViewMode) optionData).isAvailableList(editorModel.selectedFileList)"><%= optionData %></option>
+            </select>
+         </span>
+         <%= fileText %>
+      </div>
+      <div style="clear: right; height: 0.1%"/>
+   </div>
+
+   <%! int numEditors := editorModel.selectedFileList.size();
+       double outerHeight := 100.0/numEditors; %>
+   <div id="codeEditors" extends="CodeEditor" repeat=":= editorModel.selectedFileList" style=':= "height: " + outerHeight + "%"'
+        repeatVarName="selectedFile" file=":= selectedFile">
+      <div id="editPanel" class=':= numEditors == 1 ? "fullEditPanel" : "splitEditPanel"'>
+         <div id="sourceView" class="codeView" visible=":= codeViewMode == CodeViewMode.Source">
+            <pre class="code" ><%= selectedFile.model.cachedModelText %></pre>
+         </div>
+
+         <div id="javaView" class="codeView" visible=":= codeViewMode == CodeViewMode.Java" >
+            <%= selectedFile.model.cachedGeneratedText %>
+         </div>
+
+         <div id="jsView" class="codeView" visible=":= codeViewMode == CodeViewMode.Javascript" 
+              visible='=: visible ? schedulePrettify() : null'>
+            <pre class="prettyprint code" ><%= selectedFile.model.cachedGeneratedJSText %></pre>
+         </div>
+
+         <div id="scView" class="codeView" visible=":= codeViewMode == CodeViewMode.StrataCode" >
+            <%= selectedFile.model.cachedGeneratedSCText %>
+         </div>
+
+         <div id="cjView" class="codeView" visible=":= codeViewMode == CodeViewMode.ClientJava" >
+            <%= selectedFile.model.cachedGeneratedClientJavaText %>
+         </div>
+
+         <div id="docView" class="codeView" visible=":= codeViewMode == CodeViewMode.Doc" >
+            <%! ClientTypeDeclaration type := selectedFile.model.clientLayerTypeDeclaration; %>
+            <div class=".."><%= type.typeName %></div>
+            package <%= type.packageName %>;<br>
+            <%= type.comment %>
+            <pre class="code"><span class="keyword"><%= type.declarationType.name %></span> <%= type.typeName %></pre>
+
+            <ul>
+              <li repeat=":= type.declaredProperties" repeatVarName="propObj">
+                 <% if (propObj instanceof VariableDefinition) { %>
+                    <% VariableDefinition propC = (VariableDefinition) propObj; %>
+                    <%= propC.variableTypeName %>
+                    <%= propC.variableName %>
+                    <%= propC.operatorStr %>
+                    <%= propC.initializerExprStr %>
+                    <%= propC.comment != null && propC.comment.length() > 0 ? "// " + propC.comment : "" %>
+                 <% } else if (propObj instanceof TypeDeclaration) { %>
+                    <% ClientTypeDeclaration typeC = ((TypeDeclaration) propObj).getClientTypeDeclaration(); %>
+                    <%= typeC.declarationType.name %>
+                    <%= typeC.typeName %>
+                    <%= typeC.comment != null && typeC.comment.length() > 0 ? "// " + typeC.comment : "" %>
+                 <% } else if (propObj instanceof PropertyAssignment) { %>
+                    <% PropertyAssignment assignC = (PropertyAssignment) propObj; %>
+                    <%= assignC.propertyName %>
+                    <%= assignC.operatorStr %>
+                    <%= assignC.initializerExprStr %>
+                    <%= assignC.comment != null && assignC.comment.length() > 0 ? " // " + assignC.comment : "" %>
+                 <% } %>
+              </li>
+            </ul>
+         </div>
+      </div>
+
+      <div id="errorsTextArea">
+      </div>
+   </div>
+
+</div>

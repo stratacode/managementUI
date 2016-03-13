@@ -1,0 +1,102 @@
+<div>
+
+<%!
+   @Component
+   BaseTypeTree extends TreeView {}
+   @Component
+   typeTreeModel {
+       typeListener = trees.typeList.typeTree; 
+       layerListener = trees.layerList.layerTree; 
+   }
+   double topTreeHeight = -1;
+   double topTreePercent = -1;
+   int maxHeight = 600;
+   String editorViewWidth := menuStyle.editorViewWidth;
+   int windowState :=: editorModel.windowState;
+   boolean windowOpen := windowState != 0;
+
+
+   // When viewType changes, update the visible status of each view
+   viewType =: validateViewType();
+
+   void validateViewType() {
+      viewPanel.formView.viewVisible = viewType == ViewType.FormViewType;
+      viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
+   }
+
+   String editorViewStyle := %> 
+       width: 100%; 
+       height: <%= menuStyle.editorViewHeight %>; 
+       border: 1px solid <%= menuStyle.borderColor %>;
+       <%; 
+%>
+   <div id="toolbar">
+      <%! boolean isMerged :=: editorModel.mergeLayers;
+          boolean isInherited :=: editorModel.inherit; %>
+      <span id="openWindowButton" extends="ToolbarButton" icon="/images/add.png" clickEvent="=: windowState = 1" visible=":= !windowOpen"/>
+      <span id="saveButton" extends="ToolbarButton" icon="/images/save.gif" alt="Save" clickEvent='=: editorModel.ctx.save()' tipMinWidth="4em" disabled=":= !editorModel.ctx.needsSave"/>
+      <span id="undoButton" extends="ToolbarButton" icon="/images/undo.gif" alt="Undo" clickEvent='=: editorModel.ctx.undo()' tipMinWidth="4em" disabled=":= !editorModel.ctx.canUndo"/>
+      <span id="redoButton" extends="ToolbarButton" icon="/images/redo.gif" alt="Redo" clickEvent='=: editorModel.ctx.redo()'  tipMinWidth="4em" disabled=":= !editorModel.ctx.canRedo"/>
+      <span id="refreshButton" extends="ToolbarButton" icon=':= editorModel.system != null && editorModel.system.staleCompiledModel ? "/images/needsrestart.gif" : "/images/refresh.gif"' clickEvent='=: editorModel.system.rebuild()' alt="Refresh"/>
+
+      <span id="mergedViewButton" visible=":= windowOpen" extends="ToolbarToggleButton" icon=':= isMerged ? "/images/sepview.png" : "/images/mergeview.png"' style="margin-left: 50px;"
+            alt=':= isMerged ? "Show only the current layer of the selected types" : "Show the merged view of the selected types"' selected=":=: isMerged" tipMinWidth="20em"/>
+
+      <span id="inheritButton" visible=":= windowOpen" extends="ToolbarToggleButton" icon=':= isInherited ? "/images/noinherit.png" : "/images/inherit.png"' alt=':= isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type."' selected=":=: isInherited" tipMinWidth="20em"/>
+
+      <span style="float:right; margin-right: 2px" visible=":= windowOpen" >
+         <span id="formViewButton" extends="RadioButton" icon='/images/formview.png' alt='Form view' 
+                selected=":= viewType == ViewType.FormViewType" selected="=: selected ? viewType = ViewType.FormViewType : null" 
+                alignRight="true" tipMinWidth="5em"/>
+         <span id="codeViewButton" extends="RadioButton" icon='/images/codeview.png' alt='Code view' 
+               selected=":= viewType == ViewType.CodeViewType"
+               selected="=: selected ? viewType = ViewType.CodeViewType : null" 
+               alignRight="true" tipMinWidth="4em"/>
+      </span>
+   </div>
+   <div style="clear:both;"/>
+          
+   <div id="trees" visible=":= windowOpen">
+      <ul id="typeList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
+         <li id="typeTree" extends="BaseTypeTree" tree=":= typeTreeModel.rootTypeTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+             style=':= "min-height:" + (topTreePercent == -1 ? "99.5%" : "99.5%") + ";"'/>
+      </ul>
+
+      <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: topTreePercent = splitPercent" 
+           maxPercent=":= menuStyle.treePanePer * 2"/>
+
+      <ul id="layerList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
+         <li id="layerTree" extends="BaseTypeTree" byLayer="true" tree=":= typeTreeModel.rootLayerTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+             style=':= "min-height:" + (topTreeHeight == -1 ? "99.5%" : (100 - topTreePercent - 1) + "%") + ";"'/>
+      </ul>
+   </div>
+
+   <div id="viewPanel" visible=":= windowState != 0">
+      <div id="layerScroll">
+         <span id="layers" repeat=":= editorModel.typeLayers" repeatVarName="typeLayer" extends="RadioButton" 
+               icon=':= typeLayer.dynamic ? "/images/layerDyn.gif" : "/images/layer.gif"' alt=":= typeLayer.toDetailString()" 
+               selected=":= editorModel.currentLayer == typeLayer"
+               clickEvent="=: selected ? editorModel.currentLayer = typeLayer : null">
+            <%= typeLayer.layerName %>
+         </span>
+      </div>
+
+      <div id="formView" extends="FormView" style=':= editorViewStyle' viewVisible="= true"
+           editorModel=":= EditorPanel.this.editorModel">
+      </div>
+
+      <div id="codeView" extends="CodeView" style=":= editorViewStyle" viewVisible="= false"
+           editorModel=":= EditorPanel.this.editorModel"> 
+      </div>
+   </div>
+
+   <div style="clear:both;"/>
+
+   <div id="statusPanel" visible=":= windowOpen"> 
+      <a clickEvent="=: editorModel.createMode = !editorModel.createMode"><img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/></a>
+
+      <span id="editFieldPanel" extends="EditFieldPanel" visible=":= !editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>
+      <span id="createPanel" extends="CreatePanel" visible=":= editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>
+   </div>
+
+</div>

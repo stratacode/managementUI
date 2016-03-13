@@ -1,0 +1,3 @@
+<div visible=":=: viewVisible">
+  <div id="TypeView" abstract="true"/>
+</div>

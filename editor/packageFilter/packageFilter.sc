@@ -1,0 +1,2 @@
+editor.packageFilter extends modelImpl {
+}

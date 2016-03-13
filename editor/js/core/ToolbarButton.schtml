@@ -1,0 +1,14 @@
+<span style="cursor:pointer;" class="toolbarButton">
+   <%! String icon, alt; 
+       boolean disabled = false;
+       String buttonText = "";
+       Boolean alignRight = false;
+       int size = 24;
+       String tipMinWidth = "8em"; %>
+   <a href="#" class="tooltip">
+      <!-- For this style attribute, we use the normal equals, not binding. Less, code and faster if it is not dynamic -->
+      <% if (alt != null) { %><span style='= (alignRight ? "left: -70px" : "left: 0px") + "; min-width: " +  tipMinWidth'><%= alt %></span><% } %>
+      <img src=":= icon" class=':= disabled ? "disabledImage" : ""' width="= size" height="= size" alt="= alt"><%= buttonText %>
+   </a>
+</span>
+

@@ -1,0 +1,13 @@
+<li class=':= tree != null && tree.hasChildren ? (tree.ent.open ? "sctTreeNode sctParentOpen" : "sctTreeNode sctParentClosed") : "sctTreeNode sctLeaf"'>
+   <%! TypeTreeModel.TreeNode tree; %>
+
+   <a href="#" clickEvent="=: tree.ent.toggleOpen()" class=':= tree != null && tree.ent.selected ? "selectedItem" : ""'>
+      <img height="18" width="18" src=':= tree != null && tree.ent.open ? "/images/listClose.png" : "/images/listOpen.png"' visible=':= tree != null && tree.needsOpenClose' style="vertical-align:-4px">
+      <img src='= tree == null || tree.ent.icon == null ? "" : tree.ent.icon.path' visible=":= tree.ent.icon != null" style="vertical-align:-3px">
+      <%= tree.ent.value %>
+   </a>
+   <ol visible=":= tree != null && tree.hasChildren" class=':= tree != null && tree.ent.open ? "sctOpen" : "sctClosed"'>
+      <%! TypeTreeModel.DirTreeNode dirTree := tree instanceof TypeTreeModel.DirTreeNode ? (TypeTreeModel.DirTreeNode) tree : null; %>
+      <li repeat=":= dirTree.children"  repeatVarName="childTree" extends="TreeView" tree=":= childTree"/>
+   </ol>
+</li>

@@ -1,0 +1,3 @@
+menuStyle {
+   windowState = 3;
+}

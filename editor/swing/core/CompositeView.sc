@@ -1,0 +1,2 @@
+CompositeView extends JPanel {
+}

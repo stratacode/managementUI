@@ -1,0 +1,3 @@
+ValueFieldInput extends CompletionTextField {
+
+}

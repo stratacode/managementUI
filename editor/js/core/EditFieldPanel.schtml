@@ -1,0 +1,30 @@
+<%@ import sc.lang.java.ModelUtil; %>
+<span>
+   <%! 
+       EditorModel editorModel; 
+       Object currentProperty := editorModel.currentProperty;
+       UIIcon currentIcon := editorModel.currentPropertyIcon;
+   %>
+
+   <span id="currentTypeTextField" extends="CompletionTextField"
+         inputValue=':= editorModel.currentPropertyType == null ? "" : ModelUtil.getInnerTypeName(editorModel.currentPropertyType)'
+         enteredText="=: editorModel.currentTypeSearch">
+       <input id="inputField" class="currentTypeInputField"/>
+   </span>
+
+   <img visible=":= currentIcon != null" src=":= currentIcon.path">
+   <span visible=":= editorModel.currentProperty != null">
+       <%= currentProperty == null ? "<no property selected>" : editorModel.importedPropertyType + " " + ModelUtil.getPropertyName(currentProperty) %>
+   </span>
+
+   <form  id="fieldValueEditor" extends="FieldValueEditor" visible=":= currentProperty != null"
+          style="display: inline-block"
+          opStr=":=: editorModel.currentPropertyOperator"
+          valueStr=":=: editorModel.currentPropertyValue"
+          submitEvent="=: doEvent"
+          editorModel=":= EditFieldPanel.this.editorModel">
+      <span id="confirmButtons" 
+          enabled=":= editorModel.enableUpdateProperty && TextUtil.length(valueField.errorText) == 0"/>
+   </form>
+
+</span>

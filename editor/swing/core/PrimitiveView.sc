@@ -1,0 +1,2 @@
+PrimitiveView extends ComponentGroup {
+}

@@ -1,0 +1,44 @@
+.sctTree {
+   background-color: #fff;
+}
+
+.sctTreeNode {
+   padding-left: 2px;
+   padding-right: 2px;
+   padding-bottom: 0px;
+   padding-top: 1px;
+}
+
+.sctTreeNode li {
+   display: block;
+   white-space: nowrap;
+}
+
+.sctTreeNode a {
+  text-decoration: none;
+}
+
+.sctTreeNode ul li {
+   list-style-type: none;
+}
+
+.sctOpen {
+   padding-left: 15px;
+}
+
+.sctLeaf {
+   text-indent: 23px;
+}
+
+.sctClosed {
+   display:none;
+   padding-left: 15px;
+}
+
+.sctParentOpen {
+}
+
+
+.sctParentClosed {
+}
+

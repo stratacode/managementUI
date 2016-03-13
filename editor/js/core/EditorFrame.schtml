@@ -1,0 +1,79 @@
+<div class="editorFrame">
+
+   <%! 
+       int windowState :=: editorModel.windowState; 
+       windowState =: menuStyle.windowState;
+       // Once we know our actual width in pixels, tell the stylesheet so it can use it to tune up the styling
+       innerWidth =: menuStyle.editorFrameWidth;
+       int clearedErrorCount = 0;
+   %>
+
+   <a clickEvent="=: clearedErrorCount = Window.window.errorCount">
+      <img class="logoImage" 
+           style=':= sc.sync.SyncManager.defaultSyncManager.numSendsInProgress == 0 && sc.sync.SyncDestination.defaultDestination.sendingSync ? "opacity: 1;" : "opacity: 0.5;"'
+           src=':= clearedErrorCount == Window.window.errorCount ? "/images/scLogo.png" : "/images/scLogoError.png"'/><img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/>
+   </a>
+   <ul id="navMenu" visible=":= windowState != 0">
+      <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0' 
+                alt='Iconify editor' tipMinWidth="8em" size="= 12"/></li>
+      <li><a class="level1Menu" href="#">File</a>
+         <ul id="fileMenu">
+            <li><a class="level2Menu">Add...</a>
+               <ul>
+                  <li><a clickEvent="=: doAddLayer()">Layer</a></li>
+                  <li><a clickEvent='=: enableTypeCreateMode("Class")'>Class</a></li>
+                  <li><a clickEvent='=: enableTypeCreateMode("Object")'>Object</a></li>
+                  <li><a clickEvent='=: enablePropCreateMode()'>Property</a></li>
+               </ul>
+            </li>
+         </ul>
+      </li>
+
+      <li><a href="#" class="level1Menu">Edit</a>
+         <ul id="editMenu">
+            <li><a disabled=":= !editorModel.editSelectionEnabled" clickEvent="=: doDeleteCurrentSelection()">Delete <%= editorModel.currentSelectionName %></a></li>
+            <li><a disabled="true">Merge...</a></li>
+         </ul>
+      </li>
+
+      <li><a href="#" class="level1Menu">View</a>
+         <ul id="viewMenu">
+            <%! 
+                ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
+                ArrayList<CodeFunction> codeFunctions :=: editorModel.codeFunctions;
+            %>
+            <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""' 
+                   clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
+            <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""' 
+                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Application, CodeType.Declarative))">Hide Framework Code</a></li>
+            <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""' 
+                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Declarative))">Show Declarative Only</a></li>
+            <li><hr></li>
+            <li><a class=':= codeFunctions.size() != 1 ? "checkedMenuItem" : ""' 
+                   clickEvent="=: editorModel.changeCodeFunctions(CodeFunction.allSet)">Show All Functions</a></li>
+            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Program) ? "checkedMenuItem" : ""' 
+                   clickEvent="=: changeCodeFunction(CodeFunction.Program)">Application Code</a></li>
+            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.UI) ? "checkedMenuItem" : ""'
+                   clickEvent="=: changeCodeFunction(CodeFunction.UI)">UI Code</a></li>
+            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Style) ? "checkedMenuItem" : ""'
+                   clickEvent="=: changeCodeFunction(CodeFunction.Style)">Style Settings</a></li>
+            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Model) ? "checkedMenuItem" : ""'
+                   clickEvent="=: changeCodeFunction(CodeFunction.Model)">Domain Model</a></li>
+            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Admin) ? "checkedMenuItem" : ""'
+                   clickEvent="=: changeCodeFunction(CodeFunction.Admin)">Admin Settings</a></li>
+            <li><hr></li>
+            <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
+            <li><a class=':= editorModel.debugHTMLEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugHTMLEnabled()">Trace HTML</a></li>
+            <li><a class=':= editorModel.debugSyncEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugSyncEnabled()">Trace Sync</a></li>
+            <li><a clickEvent="=: sc.bind.Bind.printAllBindings()">Print Bindings</a></li>
+            <li><a clickEvent="=: sc.sync.SyncManager.printAllSyncInsts()">Print Sync</a></li>
+         </ul>
+      </li>
+      <li><span id="maximizeButton" extends="MenubarButton" icon=':= windowState == 2 ? "/images/minus.png" : "/images/add.png"' 
+                clickEvent='=: windowState = windowState == 2 ? 1 : 2'
+                alt='Maximize or restore editor' tipMinWidth="10em"/></li>
+   </ul>
+   <div visible=":= windowState != 0"><br></div>
+   <div id="editorPanel" extends="EditorPanel">
+   </div>
+</div>

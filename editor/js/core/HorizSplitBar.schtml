@@ -1,0 +1,118 @@
+<div mouseDownEvent="=: mouseDown(mouseDownEvent)"  > 
+   <%!
+      // Initialize this component either with splitHeight in pixels or splitPercent in % of the parent element.  Both of these are set and can be bound to as well.
+      double splitHeight = 0.0;
+      double splitPercent;
+      // Borders of the parent element determine how much percentage wise belongs to each half.  
+      double maxPercent = 94;
+      boolean pressed = false;
+      double pressX, pressY;
+      double dragLeft, dragTop, dragWidth;
+      double minHeight = 10;
+      double minPercent = 10;
+      double splitWindowPadding = 12; // To choose the initial splitter position (when not initialized), we look at the height of the top window minus this padding amount.
+
+      // Sadly the only way to get accurate mouseup events is to register them at the same time as the mouseDown.
+      // Maybe we should implement a better more flexibile event mechanism that doesn not require global event handlers
+      // to handle localized ops.  At least there would only be one global event handler, not one-per app module.
+      Document document = Window.window.documentTag; 
+      MouseEvent mouseMoveEvent := document.mouseMoveEvent;
+      MouseEvent mouseUpEvent := document.mouseUpEvent;
+
+      boolean smoothSplitter = true;
+
+      mouseMoveEvent =: mouseMoved(mouseMoveEvent);
+      mouseUpEvent =: mouseUp(mouseUpEvent);
+      
+      void mouseDown(MouseEvent event) {
+         if (event.button != 0)
+            return;
+         if (!pressed) {
+            pressed = true;
+            pressX = event.clientX;
+            pressY = event.clientY;
+
+            // Starting position for the splitter icon is the same as the splitter tag itself
+            dragLeft = offsetLeft;           
+            dragTop = offsetTop;
+            dragWidth = offsetWidth;
+
+            double parentHeight = getParentHeight();
+            if (splitHeight == 0.0 && splitPercent != 0)
+               splitHeight = parentHeight * (splitPercent / maxPercent); 
+            // the percentage maps to the height of the containing block 
+            //maxPercent = 100 - 100 * splitWindowPadding / parentHeight;
+         }
+         else if (!smoothSplitter) {
+            dragLeft = offsetLeft;
+            dragTop = offsetTop + event.clientY - pressY;
+         }
+         event.preventDefault();
+      }
+
+      void mouseMoved(MouseEvent event) {
+         if (pressed) {
+            if (smoothSplitter) {
+               moveSplitter(event);
+               pressX = event.clientX;
+               pressY = event.clientY;
+            }
+            else {
+               dragLeft = offsetLeft;
+               dragTop = offsetTop + event.clientY - pressY;
+            }
+            event.preventDefault();
+         }
+      }
+
+      boolean isUnset() {
+         return splitHeight == 0.0 && splitPercent == 0;
+      }
+
+      double getParentHeight() {
+         Element parent = (Element) parentNode;
+         return parent.offsetHeight;
+      }
+
+      void moveSplitter(MouseEvent event) {
+            Element prevSib = this.previousElementSibling;
+            // Something messed up in the DOM for this tree.
+            if (prevSib == null) {
+               return;
+            }
+             double oldH = isUnset() ? this.previousElementSibling.offsetHeight - splitWindowPadding : splitHeight;
+             //double oldH = splitHeight == 0.0 ? 0 : splitHeight;
+            double newHeight = oldH + (event.clientY - pressY); 
+            double parentHeight = getParentHeight();
+            double midHeight = parentHeight / 2;
+            double min = Math.min(minHeight, midHeight); 
+            if (newHeight < min) {
+               splitHeight = min;
+            }
+            else if (newHeight > parentHeight - min)
+               splitHeight = parentHeight - min;
+            else  
+               splitHeight = newHeight;
+            splitPercent = splitHeight / (parentHeight - 2*splitWindowPadding) * maxPercent; 
+            if (splitPercent > maxPercent)
+               splitPercent = maxPercent - minPercent;
+            else if (splitPercent < 0)
+               splitPercent = minPercent;
+            System.out.println("Setting splitHeight=" + newHeight + " splitPercent=" + splitPercent + " parentHeight=" + parentHeight);
+      }
+
+      void mouseUp(MouseEvent event) {
+         if (pressed) {
+            moveSplitter(event);
+
+            pressed = false;
+            event.preventDefault();
+         }
+      }
+    %>
+
+    <div class="horizSplitThumb"></div>
+    <div id="dragSplitter" style=':= "z-index: 99; position: absolute; left: " + dragLeft + "px; top: " + dragTop + "px; width: " + dragWidth + "px;"' visible=":= pressed && !smoothSplitter">
+       <div class="horizSplitThumb"></div>
+    </div>
+</div>

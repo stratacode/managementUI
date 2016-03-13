@@ -1,0 +1,464 @@
+<%@ @URL(resource=true)
+    @sc.obj.Scope(name="session") %>
+<%! 
+   int windowState = 0; // 0 - iconified, 1 - open, 2 - maximized, 3 - full page
+   boolean absolute := windowState == 0;
+
+   double windowHeight := Window.window.innerHeight;
+   double frameHeightPer := windowState == 2 ? 100 / 2: 100;
+   double pageHeightPix := (Window.window.innerHeight - 2 * bodyMarginPix) * frameHeightPer / 100.0;
+   // Use the global Window object to get the window's innerWidth.  
+   int pageWidthPix := windowState == 2 || windowState == 3 ? Window.window.innerWidth : 
+                               windowState == 1 ? editorFrameWidth == 46 || editorFrameWidth == -1 ? 501 : editorFrameWidth : 46; 
+
+   boolean twoColumns := pageWidthPix > 500;
+   double treeWidthPer := twoColumns ? 35.0 : 95.0;
+   double currentTypeFieldWidthPer = treeWidthPer - 5;
+
+   int editorFrameWidth = -1;
+   int splitThumbWidth = 8; // percentage of the splitBarWidth
+   int splitThumbHeight = 6;
+   int splitBarWidth = 20; // percentage of the treeWidth
+   int leftPad = 3;
+   int leftPad2 = 2;
+   int buttonLeftPad := windowState == 0 ? 4 : leftPad2;
+
+   int formLabelPer = 30;
+   int toolbarHeightPix = 50; // This is 32 plus padding plus ??
+   int menubarHeightPix = 18;
+   int statusBarHeightPix := twoColumns ? 50 : 150;
+   int bodyMarginPix = 8;
+   double bodyMarginHPer := bodyMarginPix / Window.window.innerHeight * 100.0;
+   double bodyMarginWPer := bodyMarginPix / Window.window.innerWidth * 100.0;
+   double panePadding = 12; // pane margin and padding
+   
+   String editorViewWidth := twoColumns ? "63.7%" : "99%";
+   String editorViewLeft := (twoColumns ? treeWidthPer + 0.5 : 0.3) + "%";
+   double bodyHeightPer := 100 - 2*bodyMarginHPer;
+   double editorPanelWidthPer = 99;
+   double editorPanelHeightPix := pageHeightPix - menubarHeightPix;
+   double editorPanelHeightPer := editorPanelHeightPix / (double) pageHeightPix * 100.0;
+   double viewPanelHeightPix := (editorPanelHeightPix - toolbarHeightPix - statusBarHeightPix) / (twoColumns ? 1.0 : 2.0);;
+   double viewPanelHeightPer := viewPanelHeightPix / editorPanelHeightPix * 100.0;
+   double viewPanelWidthPer := 100.0 - (twoColumns ? treeWidthPer : 0) - 1;
+   double treeHeightPix := viewPanelHeightPix - 12;
+   double treeHeightPer := treeHeightPix / editorPanelHeightPix * 100.0;
+   double layerScrollPix = 50; 
+   double editorViewHeightPix := viewPanelHeightPix - layerScrollPix - 20;
+   double editorViewHeightPer := editorViewHeightPix * 100.0 / viewPanelHeightPix;
+   double codeViewHeightPix := editorViewHeightPix - 47;
+   double codeViewHeightPer := codeViewHeightPix * 100.0 / editorViewHeightPix;
+   double treePanePix := (treeHeightPix - splitThumbHeight - panePadding) * 0.5;
+   double treePanePer := treePanePix / treeHeightPix * 100.0;
+   String editorViewHeight := editorViewHeightPer + "%";;
+   String treeHeight := treeHeightPer + "%"; 
+ 
+   String borderColor = "#777";
+   String borderColorSelected = "#22F";
+   String textHighlightColor = "#F1FFAE";
+   String dropShadow = %>
+      border-style: solid;
+      border-width: 1px;
+      border-color: <%= borderColor %>;
+      box-shadow: 5px 5px 2px #aaaaaa;
+   <%;
+
+%>
+
+* {
+  color: #000;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: <%= bodyHeightPer %>%;
+}
+
+#navMenu {
+   padding-left: <%= leftPad %>px;
+   padding-left: 44px;
+   padding-bottom: 0px;
+   padding-top: 3px;
+   list-style: none;
+   float: left;
+   width: 100%;
+   margin-top: 0px;
+   margin-bottom: 0px;
+}
+
+#navMenu ul {
+   padding-left: 5px;
+   padding-right: 5px;
+   padding-bottom: 5px;
+   padding-top: 5px;
+   list-style: none;
+}
+
+#navMenu a {
+   display: block;
+   text-decoration: none;
+   color: #000;
+   background-color: #fff;
+   padding-left: 2px;
+   padding-right: 2px;
+}
+
+.level1Menu {
+   margin-top: 0px;
+   margin-bottom: 0px;
+   margin-right: 10px;
+   margin-left: 3px;
+}
+
+#navMenu li {
+   float: left;
+   width: auto;
+   background-color: #fff;
+}
+
+#navMenu li ul {
+   position: absolute;
+   width: 14em;
+   left: -999em;
+   margin: 0 0 0 0;
+   height: auto;
+   background-color: #fff;
+
+   <%= dropShadow %>
+}
+
+#navMenu li:hover ul ul {
+   left: -999em;
+}
+
+#navMenu li:hover ul, #navMenu li li:hover ul {
+   left: auto;
+   z-index: 28;
+}
+
+#navMenu li:hover .level1Menu, #navMenu li li:hover .level2Menu {
+   background-color: #2D69F0; 
+   color: #fff;
+}
+
+#navMenu a:hover {
+   background-color: #2D69F0; 
+   color: #fff;
+}
+
+#navMenu li li {
+   padding-right: 1em;
+   width: 13em;
+   text-indent: 18px;
+}
+
+#navMenu li ul ul {
+   margin: -1em 0px 0px 80px;
+   background-color: #fff;
+
+   <%= dropShadow %>
+}
+
+#toolbar {
+   line-height: 32px;
+   <%= windowState == 0 ? " padding: 18px 2px 2px 0px; width: 46px; margin-left: 0px" : "padding: 5px 9px 6px 0px; width: 98.5%; margin-left: 4px;" %>
+}
+
+.toolbarButton {
+   padding: 0px 5px 0px 5px;
+   border: 1px solid <%= borderColor %>;
+   margin: <%= leftPad2 %>px <%= leftPad2 %>px <%= leftPad2 %>px <%= buttonLeftPad %>px;
+   display: inline-block;
+}
+
+.toolbarButton img {
+   vertical-align: -7px;
+}
+
+.menubarButton {
+}
+
+.menubarButton a {
+   width: 16px;
+   height: 16px;
+}
+
+.confirmButtonImage {
+   vertical-align: middle;
+}
+
+.disabledImage {
+   opacity: 0.5;
+}
+
+.menuSeparator {
+   width: 100%;
+   height: 10px;
+   display: block;
+}
+
+.checkedMenuItem {
+   background-image: url("/images/check.png");
+   background-size: 16px 16px;
+   background-repeat: no-repeat;
+   background-color: transparent;
+   background-position: 0px 1px;
+}
+
+.splitList {
+   list-style:none;
+   padding: 2px;
+   overflow:auto;
+   margin-top: 0px;
+   margin-bottom: 0px;
+   margin-left: <%= leftPad %>px;
+   border: 1px solid #000;
+}
+
+.horizSplitBar, #dragSplitter {
+   margin-top: 1px;
+   margin-bottom: 1px;
+   height: <%= splitThumbHeight %>px;
+   cursor: row-resize;
+   background-color: #ccc;
+}
+
+.horizSplitThumb {
+   margin-left: <%= (100 - splitThumbWidth) / 2 %>%;
+   width: <%= splitThumbWidth %>px;
+   background-color: #aaa;
+   margin-top: 1px;
+   height: 5px;
+   margin-bottom: 1px;
+}
+
+.dragSplitter {
+   width: <%= treeWidthPer %>%;
+}
+
+.horizSplitBar {
+   margin-left: <%= (100 - splitBarWidth) / 2 %>%;
+   width: <%= splitBarWidth %>%;
+}
+
+.splitList div {
+}
+
+#editorPanel {
+   margin-top: 4px;
+   background-color: #ededed;
+   width: <%= editorPanelWidthPer %>%;
+   border: 1px solid <%= borderColor %>;
+   <%= windowState != 0 ? "height: " + editorPanelHeightPer + "%; padding-top: 0px;" : "height: auto; padding-top: 5px" %>
+}
+
+.selectedItem {
+   background-color: <%= textHighlightColor %>;
+}
+
+#currentTypeTextField, .currentTypeInputField {
+   width: <%= treeWidthPer - 10 %>%;
+}
+
+a.tooltip {
+   text-decoration: none;
+   border-bottom: 0px;
+   position: relative;
+}
+
+a.tooltip:hover {
+}
+
+a.tooltip span {
+  display:none;
+}
+
+a.tooltip:hover span {
+   position: absolute;
+   display: block;
+   padding-left: 5px;
+   padding-right: 5px;
+   left: -10px;
+   top: 30px; 
+   max-width: 20em;
+
+   <%= dropShadow %>
+
+   background-color: <%= textHighlightColor %>;
+   color:#000;
+
+   z-index: 30;
+}
+
+.toggleButton {
+
+}
+
+.toggleButtonSelected {
+   border-color: <%= borderColorSelected %>;
+   border-width: 2px;
+}
+
+.appFrame {
+   <%= windowState == 1 ? "float:left; padding-right: 10px; height: auto; " : windowState == 2 ? "height: 50%; padding-right: 0px" : "height: auto; padding-right: 0px" %>
+}
+
+#trees {
+   <%= twoColumns ? "float:left;" : "" %>
+   height: <%= treeHeight %>;
+   width: <%= treeWidthPer %>%;
+   margin-bottom: 8px;
+}
+
+#viewPanel {
+   margin-left: <%= editorViewLeft %>;
+   height: <%= viewPanelHeightPer %>%;
+   width: <%= viewPanelWidthPer %>%;
+}
+
+#layerScroll {
+   width: 100%;
+   height: <%= layerScrollPix %>px;
+   padding-top: 6px;
+   white-space: nowrap;
+   overflow: auto;
+   border: 1px solid <%= borderColor %>;
+}
+
+#editPanel {
+}
+
+.code, code { 
+   color: #000; 
+   border: 1px solid <%= borderColor %>;
+   padding: 3px;
+   display: block;
+   margin-top: 0px;
+   margin-bottom: 0px;
+   background-color: #FFFFFF;
+   max-height: 100%;
+   overflow:auto;
+}
+
+.filename {
+   position: relative;
+   top: 10px;
+   font-size: 0.9em; 
+   font-family: monospace; font-size: 0.9em;
+}
+
+.member {
+   color: #570057;
+   font-weight: bold;
+}
+
+.keyword, .kwd {
+   color: #000557;
+   font-weight: bold;
+}
+
+.string, .lit {
+   color: #003000;
+}
+
+.templateString {
+   color: #003535;
+}
+
+.comment, .com {
+   color: #222;
+}
+
+
+.fileLabel {
+   height: 10%;
+   min-height: 20px;
+   white-space: nowrap;
+   overflow: hidden;
+   padding: 5px 5px 5px 5px;
+}
+
+.classView {
+   border: 1px solid <%= borderColor %>;
+   padding: 6px;
+}
+
+.errorText {
+   color: #C00; 
+}
+
+#editorMixin {
+   <%= absolute ? %>
+      position: absolute;
+      top: 0px;
+      <%= windowState == 1 ? "" : windowState == 2 ? "left: 0%;" : "right: 0%;" %>;
+   <% : "position: static; top: auto; left: auto; right: auto;" %>
+   <%= windowState == 2 || windowState == 3 ? "width: 100%;" : (windowState == 0 ? "width: 46px;" : "width: auto; overflow: hidden;") %>
+   <%= frameHeightPer == -1 ? "" : "height: " + frameHeightPer + "%;" %>
+   <%= windowState == 1 ? "border: 0px; border-left: 2px solid #aaa; margin-top: 0px;" : windowState == 2 ? "border: 0px; border-top: 2px solid #aaa; margin-top: 12px;" : "border: 0px; margin-top: 0px;" %>
+}
+
+#editorFrame {
+   width: 100%;
+   height: 100%;
+}
+
+.classLabel {
+}
+
+.formFieldLabel {
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   width: <%= formLabelPer %>%;
+   text-align: right;
+   float: left;
+}
+
+.textField {
+   width: <%= 100 - formLabelPer - 2 %>%;
+}
+
+#fieldValueEditor input {
+  width: 30%;
+}
+
+#editFieldPanel {
+  display: inline;
+}
+
+.classView {
+}
+
+.propView {
+  white-space: nowrap;
+  clear: left;
+}
+
+.selectInstance {
+  margin-bottom: 6px;
+}
+
+.editPanel, .splitEditPanel, .fullEditPanel {
+   overflow: auto; border: 0px solid #777;
+}
+
+.splitEditPanel {
+   height: 70%;
+}
+
+.fullEditPanel {
+   height: 100%;
+}
+
+.codeView {
+   height: <%= codeViewHeightPer %>%;
+}
+
+.logoImage {
+   position: absolute;
+   <%= windowState == 0 ? "padding-left: 5px; top: 6px;" : "padding-left: 1px; top: auto;" %>
+}

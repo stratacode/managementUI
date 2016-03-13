@@ -1,0 +1,18 @@
+<form extends="EditFieldOp">
+   <%! 
+       List<String> operatorList = {"=", ":=", "=:", ":=:"}; 
+   %>
+       
+   <select id="opChoice" 
+           optionDataSource="= operatorList" 
+           selectedValue=":=: opStr">
+      <option><%= optionData %></option>
+   </select>
+
+   <span id="valueField" extends="ValueFieldInput" inputValue=":=: valueStr"/>
+   <span class="errorText"><%= errorText %></span>
+
+   <span id="confirmButtons" extends="ConfirmButtons">
+      <a id="okButton" clickCount="=: doEvent"/>
+   </span>
+</form>

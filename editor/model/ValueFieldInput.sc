@@ -1,0 +1,2 @@
+class ValueFieldInput extends InputField {
+}

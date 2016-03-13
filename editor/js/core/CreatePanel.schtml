@@ -1,0 +1,5 @@
+<span>
+   <%! 
+       EditorModel editorModel; 
+   %>
+</span>
