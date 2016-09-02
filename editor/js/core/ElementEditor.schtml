@@ -1,0 +1,14 @@
+<div id="ElementEditor">
+   <%!
+       // When the currentValue changes update the textField's value... preserve transient changes in the form though.
+       currentValue =: textFieldForm.textField.value;
+       propC := repeatVar;
+    %>
+    <form id="textFieldForm" submitEvent="=: errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, textField.value, updateInstances, instance == null)" style="display:inline">
+       <label for="= textField.id" class="formFieldLabel">
+          <img visible=":= icon != null" src=':= icon == null ? "" : icon.path' alt=':= icon == null ? "" : icon.desc'>
+          <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(instance, varInit) %>&nbsp;</label>
+       <input id="textField" class="textField" type="text" focusEvent="=: parentView.editorModel.currentProperty = propC">
+       <div visible=":= TextUtil.length(errorText) > 0" class="errorText"><%= errorText %></div>
+    </form>
+</div>

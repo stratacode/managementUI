@@ -3,6 +3,8 @@ package sc.editor;
 import sc.lang.java.ModelUtil;
 import sc.lang.java.JavaModel;
 import sc.lang.java.IVariableInitializer;
+import sc.lang.java.BodyTypeDeclaration;
+import sc.lang.InstanceWrapper;
 
 @sc.js.JSSettings(jsModuleFile="js/sceditor.js")
 public editor.coreui extends model, gui.util.core {

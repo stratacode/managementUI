@@ -1,0 +1,123 @@
+<div id="FormEditor">
+   <%!
+      ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
+      UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
+      type =: updateInstance(null);
+      List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
+      int instSelectedIndex = 0;
+
+      int getInstSelectedIndex(Object inst) {
+         int i = 0;
+         for (InstanceWrapper wrap:instancesOfType) {
+            if (wrap.instance == inst)
+               return i;
+            i++;
+         }
+         // The first instance will always be for null even if instancesOfType is not set yet
+         if (inst == null)
+            return 0;
+         return -1;
+      }
+
+      void updateWrapper(InstanceWrapper newWrapper) {
+         Object inst;
+         if (newWrapper == null)
+            inst = null;
+         else
+            inst = newWrapper.instance;
+         updateInstance(inst);
+      }
+
+      void updateInstance(Object inst) {
+         if (inst == instance)
+            return;
+
+         instance = inst;
+
+         if (instance != oldInstance) {
+            updateChildren();
+            updateListeners();
+            oldInstance = instance;
+         }
+      }
+
+      void updateListeners() {
+         Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
+         if (children == null) {
+            childViews = null;
+            return;
+         }
+         else {
+            childViews = new ArrayList<IElementEditor>(children.length);
+         }
+
+         for (Object child:children) {
+            if (child instanceof propList_Repeat.propList) {
+               propList_Repeat.propList pchild = (propList_Repeat.propList) child;
+               childViews.add(pchild.repeatVar);
+            }
+         }
+         super.updateListeners();
+      }
+
+      void removeListeners() {
+      }
+
+      void updateChildren() {
+         Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
+         if (children == null)
+            return;
+
+         for (Object child:children) {
+            if (child instanceof propList_Repeat.propList) {
+               propList_Repeat.propList pchild = (propList_Repeat.propList) child;
+
+               IElementEditor childView = (IElementEditor) pchild.repeatVar;
+
+               if (childView instanceof FormEditor) {
+                   FormEditor childCView = (FormEditor) childView;
+                   BodyTypeDeclaration childType = childCView.type;
+                   if (childType != null && ModelUtil.isObjectType(childType) && !ModelUtil.hasModifier(childType, "static")) {
+                      Object childInst = instance == null ? null : DynUtil.getPropertyValue(instance, childType.typeName);
+                      childCView.updateInstance(childInst);
+                   }
+               }
+            }
+         }
+      }
+   %>
+
+   <div id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
+      <%! Element createElement(Object value, int ix, Element oldTag) {
+          Element res;
+          if (ModelUtil.isProperty(value)) {
+             if (oldTag instanceof ElementEditor)
+                return oldTag;
+             ElementEditor eview = new ElementEditor(this);
+             //eview.propC = value;
+             res = eview;
+          }
+          else {
+             if (oldTag instanceof FormEditor)
+                return oldTag;
+             FormEditor cview = new FormEditor(parentView, this, (BodyTypeDeclaration) value);
+             //cview.type = (BodyTypeDeclaration) value;
+             res = cview;
+          }
+          res.setRepeatVar(value);
+          res.setRepeatIndex(ix);
+
+          return res;
+        } %>
+    </div>
+
+   <img visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
+      <%= (clientType == null ? "null-type" : clientType.declarationType.name) %>
+    <span class="classLabel"><%= clientType == null ? "" : clientType.typeName %> </span>
+
+   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance)">
+      <option><%= optionData %></option>
+   </select>
+
+    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
+</div>

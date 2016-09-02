@@ -1,6 +1,8 @@
 import java.util.Arrays;
 
+// Comment before
 @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
+// Comment after
 class EditorPanel {
 
    @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic, includeSuper=true)
@@ -13,13 +15,13 @@ class EditorPanel {
    }
 
    enum ViewType {
-       FormViewType, CodeViewType;
+       DataViewType, FormViewType, CodeViewType;
    }
 
    Object createTypeModeName;
 
    @sc.obj.Sync
-   ViewType viewType = ViewType.FormViewType;
+   ViewType viewType = ViewType.DataViewType;
 
    String newTypeNameField :=: editorModel.createModeTypeName;  // Set on selection to a value to pre-populate the 'extends' form field
    String newLayerNameField;           // Set to populate the new layer field properties

@@ -8,12 +8,8 @@ import sc.bind.IListener;
 
 import java.util.Iterator;
 
-class FormView extends BaseFormView {
+class FormView extends BaseView {
    /** When making change to a type, do we go ahead and update all instances? */
    boolean updateInstances = true;
    
-   class ClassView extends TypeView {
-      //ElementView {
-      //}
-   }
 }

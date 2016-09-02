@@ -1,6 +1,6 @@
 package sc.editor;
 
-public editor.swing.core extends editor.modelImpl, editor.coreui, swing.style, swing.rtextarea, swing.autocomplete, gui.util.swing {
+public editor.swing.core extends editor.modelImpl, editor.coreui, swing.style, swing.rtextarea, swing.autocomplete, gui.util.swing, swing.grid {
    codeType = sc.layer.CodeType.Application;
    codeFunction = sc.layer.CodeFunction.UI;
 

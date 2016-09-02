@@ -1,10 +1,7 @@
 import sc.lang.java.ModelUtil;
 import sc.util.StringUtil;
 
-CodeView extends JScrollPane implements EditorPanelStyle {
-   viewportView = contentPanel;
-   visible :=: viewVisible;
-
+CodeView {
    int codeViewHeight := (int) (contentPanel.size.height - 2*ypad);
    int maxChildWidth := (int) size.width-4*xpad, maxChildHeight;
 
@@ -105,7 +102,7 @@ CodeView extends JScrollPane implements EditorPanelStyle {
       }
    }
 
-   object contentPanel extends JPanel {
+   contentPanel {
       preferredSize := SwingUtil.dimension(maxChildWidth, maxChildHeight);
 
       // Children added dynamically in rebuildEditors
