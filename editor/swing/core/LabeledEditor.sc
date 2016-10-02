@@ -1,4 +1,7 @@
 abstract class LabeledEditor extends ElementEditor {
+  LabeledEditor(FormEditor parent) {
+     super(parent);
+  }
   object label extends JLabel {
      int prefW := ((int) preferredSize.width);
      int labelExtra := prefW >= tabSize ? 0 : (tabSize - prefW % tabSize);

@@ -1,6 +1,8 @@
 import java.util.Arrays;
 
+// Comment before
 @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
+// Comment after
 class EditorPanel {
 
    @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic, includeSuper=true)

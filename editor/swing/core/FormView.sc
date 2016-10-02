@@ -16,11 +16,7 @@ import java.util.Iterator;
 
 import java.awt.Rectangle;
 
-
 FormView {
-   /** Current selected widget (if any) */
-   JTextField currentTextField;
-
    static int FORM_NUM_STATIC_COMPONENTS = 0;
 
    // Some editor operations we make from the UI will change the model and cause a form rebuild.  A quick way to avoid those - just set this to true before making those types of changes
@@ -45,8 +41,11 @@ FormView {
          FormEditor[][] viewsGrid;
 
          public Object createRepeatElement(Object listElem, int ix, Object oldComp) {
-            FormEditor editor = new FormEditor(FormView.this, null, (BodyTypeDeclaration) listElem);
+            BodyTypeDeclaration currentType = (BodyTypeDeclaration) listElem;
+            Object currentObj = ModelUtil.isObjectType(currentType) ? editorModel.system.resolveName(currentType.getFullTypeName(), false) :
+                                                                      getDefaultCurrentObj(currentType);
 
+            FormEditor editor = new FormEditor(FormView.this, null, currentType, currentObj);
             updateCell(editor, ix);
 
             return editor;
@@ -95,8 +94,8 @@ FormView {
             }
             for (Object elem:repeatComponents) {
                 Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
-                int newW = bounds.x + bounds.width + xpad;
-                int newH = bounds.y + bounds.height + ypad;
+                int newW = (int) (bounds.x + bounds.width + xpad);
+                int newH = (int) (bounds.y + bounds.height + ypad);
                 if (newW > newMaxChildWidth)
                    newMaxChildWidth = newW;
                 if (newH > newMaxChildHeight)
@@ -118,72 +117,5 @@ FormView {
             currentTextField = null;
          }
       }
-   }
-
-  ClassView newFormView(Object type, ExecutionContext ctx, Object parentType, ClassView parentView) {
-     Object[] props = editorModel.getPropertiesForType(type);
-     Object parentObj = parentView == null ? ctx.getCurrentObject() : parentView.instance;
-     boolean checkCurrentObject = parentType == null || parentObj != null;
-
-     String typeName = ModelUtil.getTypeName(type);
-     ClassView view;
-     Object currentObj = null, currentType;
-     if (ModelUtil.isObjectProperty(type)) {  // Do not include non-static scopes here...
-        currentObj = parentObj == null ? (checkCurrentObject ? editorModel.system.resolveName(typeName, true) : getDefaultCurrentObj(type)) : DynUtil.getPropertyPath(parentObj, CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)));
-
-        // resolveName can return a type, not an instance
-        if (checkCurrentObject && DynUtil.isType(currentObj)) {
-           currentType = currentObj;
-           currentObj = null;
-        }
-        if (ModelUtil.isLayerType(type))
-           view = new LayerView(parentView, type, props, currentObj);
-        else
-           view = new InstanceView(parentView, type, props, currentObj);
-     }
-     else {
-        view = new ClassView(parentView, type, props, getDefaultCurrentObj(type));
-     }
-
-/*
-     currentType = type;
-     try {
-        if (currentObj != null)
-           ctx.pushCurrentObject(currentObj);
-        else
-           ctx.pushStaticFrame(currentType);
-        view.validateGroup(ctx);
-     }
-     finally {
-        if (currentObj != null)
-           ctx.popCurrentObject();
-        else
-           ctx.popStaticFrame();
-     }
-*/
-     return view;
-  }
-
-   void focusChanged(JComponent component, Object prop, Object inst, boolean focus) {
-      if (focus) {
-         if (editorModel.currentProperty != prop || editorModel.currentInstance != inst) {
-            if (component instanceof JTextField)
-               currentTextField = (JTextField) component;
-            else
-               currentTextField = null;
-
-            editorModel.currentProperty = prop;
-            editorModel.currentInstance = inst;
-         }
-      }
-      else if (!focus && editorModel.currentProperty == prop) {
-         // Switching focus to the status panel should not alter the current property.
-         //currentProperty = null;
-         //currentTextField = null;
-      }
-   }
-
-   void stop() {
-      contentPanel.removeForm();
    }
 }

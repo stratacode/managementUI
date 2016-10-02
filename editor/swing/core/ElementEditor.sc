@@ -1,4 +1,4 @@
-ElementEditor implements IElementEditor {
+ElementEditor {
    IElementEditor prev;
    int row, col;
 
@@ -14,6 +14,10 @@ ElementEditor implements IElementEditor {
    int tabSize = parentView.tabSize;
    int xpad = parentView.xpad;
    int ypad = parentView.ypad;
+   int baseline = parentView.baseline;
+
+   EditorModel editorModel = parentView.editorModel;
+   Object instance := formEditor.instance;
 
    String propertyOperator(Object instance, Object val) {
       return val == null ? "" : (instance != null ? "" : ModelUtil.getOperator(val) != null ? " " + ModelUtil.getOperator(val) : " =");
