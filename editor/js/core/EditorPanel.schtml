@@ -1,5 +1,6 @@
 <div>
 
+
 <%!
    @Component
    BaseTypeTree extends TreeView {}
@@ -8,6 +9,7 @@
        typeListener = trees.typeList.typeTree; 
        layerListener = trees.layerList.layerTree; 
    }
+
    double topTreeHeight = -1;
    double topTreePercent = -1;
    int maxHeight = 600;
@@ -15,16 +17,16 @@
    int windowState :=: editorModel.windowState;
    boolean windowOpen := windowState != 0;
 
-
    // When viewType changes, update the visible status of each view
    viewType =: validateViewType();
 
    void validateViewType() {
+      viewPanel.dataView.viewVisible = viewType == ViewType.DataViewType;
       viewPanel.formView.viewVisible = viewType == ViewType.FormViewType;
       viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
    }
 
-   String editorViewStyle := %> 
+   String editorViewStyle := %>
        width: 100%; 
        height: <%= menuStyle.editorViewHeight %>; 
        border: 1px solid <%= menuStyle.borderColor %>;
@@ -44,14 +46,16 @@
 
       <span id="inheritButton" visible=":= windowOpen" extends="ToolbarToggleButton" icon=':= isInherited ? "/images/noinherit.png" : "/images/inherit.png"' alt=':= isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type."' selected=":=: isInherited" tipMinWidth="20em"/>
 
+      <span id="ViewTypeRadioButton" abstract="true" extends="RadioButton" tipMinWidth="4em" alignRight="true">
+
       <span style="float:right; margin-right: 2px" visible=":= windowOpen" >
-         <span id="formViewButton" extends="RadioButton" icon='/images/formview.png' alt='Form view' 
-                selected=":= viewType == ViewType.FormViewType" selected="=: selected ? viewType = ViewType.FormViewType : null" 
-                alignRight="true" tipMinWidth="5em"/>
-         <span id="codeViewButton" extends="RadioButton" icon='/images/codeview.png' alt='Code view' 
+         <span id="dataViewButton" extends="ViewTypeRadioButton" icon='/images/dataview.png' alt='Data view'
+                selected=":= viewType == ViewType.DataViewType" selected="=: selected ? viewType = ViewType.DataViewType : null"/>
+         <span id="formViewButton" extends="ViewTypeRadioButton" icon='/images/formview.png' alt='Form view'
+                selected=":= viewType == ViewType.FormViewType" selected="=: selected ? viewType = ViewType.FormViewType : null"/>
+         <span id="codeViewButton" extends="ViewTypeRadioButton" icon='/images/codeview.png' alt='Code view'
                selected=":= viewType == ViewType.CodeViewType"
-               selected="=: selected ? viewType = ViewType.CodeViewType : null" 
-               alignRight="true" tipMinWidth="4em"/>
+               selected="=: selected ? viewType = ViewType.CodeViewType : null"/>
       </span>
    </div>
    <div style="clear:both;"/>
@@ -79,6 +83,10 @@
                clickEvent="=: selected ? editorModel.currentLayer = typeLayer : null">
             <%= typeLayer.layerName %>
          </span>
+      </div>
+
+      <div id="dataView" extends="DataView" style=':= editorViewStyle' viewVisible="= true"
+           editorModel=":= EditorPanel.this.editorModel">
       </div>
 
       <div id="formView" extends="FormView" style=':= editorViewStyle' viewVisible="= true"

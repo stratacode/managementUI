@@ -1,0 +1,2 @@
+CompositeEditor extends JPanel {
+}

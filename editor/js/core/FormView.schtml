@@ -2,146 +2,24 @@
     import sc.lang.java.BodyTypeDeclaration;
     import sc.lang.InstanceWrapper; %>
 <div>
-   <%!
-      visible :=: viewVisible;
-    %>
-   <div id="ClassView" class="classView" abstract="true" class="classView">
-      <%! 
-         BodyTypeDeclaration type; 
-         ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
-         UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
-         type =: updateInstance(null);
-         List<InstanceWrapper> instancesOfType := editorModel.ctx.getInstancesOfType(type, 10, true);
-         int instSelectedIndex = 0;
-
-         int getInstSelectedIndex(Object inst) {
-            int i = 0;
-            for (InstanceWrapper wrap:instancesOfType) {
-               if (wrap.instance == inst)
-                  return i;
-               i++;
-            }
-            // The first instance will always be for null even if instancesOfType is not set yet
-            if (inst == null)
-               return 0;
-            return -1;
-         }
-
-         void updateWrapper(InstanceWrapper newWrapper) {
-            Object inst;
-            if (newWrapper == null)
-               inst = null;
-            else
-               inst = newWrapper.instance;
-            updateInstance(inst);
-         }
-
-         void updateInstance(Object inst) {
-            if (inst == instance)
-               return;
-
-            instance = inst;
-
-            if (instance != oldInstance) {
-               updateChildren();
-               updateListeners();
-               oldInstance = instance;
-            }
-         }
-
-         void updateListeners() {
-            Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
-            if (children == null)
-               return;
-            for (Object child:children) {
-               if (child instanceof propList_Repeat.propList) {
-                  propList_Repeat.propList pchild = (propList_Repeat.propList) child;
-                  ((IElementView) pchild.repeatVar).updateListeners();
-               }
-            }
-         }
-
-         void removeListeners() {
-         }
-
-         void updateChildren() {
-            Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
-            if (children == null)
-               return;
-
-            for (Object child:children) {
-               if (child instanceof propList_Repeat.propList) {
-                  propList_Repeat.propList pchild = (propList_Repeat.propList) child;
-
-                  IElementView childView = (IElementView) pchild.repeatVar;
-
-                  if (childView instanceof ClassView) {
-                      ClassView childCView = (ClassView) childView;
-                      BodyTypeDeclaration childType = childCView.type;
-                      if (childType != null && ModelUtil.isObjectType(childType) && !ModelUtil.hasModifier(childType, "static")) {
-                         Object childInst = instance == null ? null : DynUtil.getPropertyValue(instance, childType.typeName);
-                         childCView.updateInstance(childInst);
-                      }
-                  }
-               }
-            }
-         }
-      %>
-
-      <div id="ClassViewChild" extends="ClassView" abstract="true" type=":= (BodyTypeDeclaration) repeatVar">
-      </div>
-
-      <div id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
-         <%! Element createElement(Object value, int ix, Element oldTag) {
-             Element res;
-             if (ModelUtil.isProperty(value)) {
-                if (oldTag instanceof ElementView)
-                   return oldTag;
-                ElementView eview = new ElementView();
-                //eview.propC = value;
-                res = eview;
-             }
-             else {
-                if (oldTag instanceof ClassViewChild)
-                   return oldTag;
-                ClassViewChild cview = new ClassViewChild();
-                //cview.type = (BodyTypeDeclaration) value;
-                res = cview;
-             }
-             res.setRepeatVar(value);
-             res.setRepeatIndex(ix);
-
-             return res;
-           } %>
-       </div>
-
-      <img visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>  <%= (clientType == null ? "null-type" : clientType.declarationType.name) %> <span class="classLabel"><%= clientType == null ? "" : clientType.typeName %> </span>
-
-      <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance)">
-         <option><%= optionData %></option>
-      </select>
-
-      <div id="ElementView" abstract="true" component="true" class="propView">
-         <%! 
-             // When the currentValue changes update the textField's value... preserve transient changes in the form though.
-             currentValue =: textFieldForm.textField.value;
-             propC := repeatVar;
-          %>
-          <form id="textFieldForm" submitEvent="=: errorText = editorModel.setElementValue(type, instance, propC, textField.value, updateInstances, instance == null)" style="display:inline">
-             <label for="= textField.id" class="formFieldLabel">
-                <img visible=":= icon != null" src=':= icon == null ? "" : icon.path' alt=':= icon == null ? "" : icon.desc'>
-                <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(instance, varInit) %>&nbsp;</label>
-             <input id="textField" class="textField" type="text" focusEvent="=: editorModel.currentProperty = propC">
-             <div visible=":= TextUtil.length(errorText) > 0" class="errorText"><%= errorText %></div>
-          </form>
-       </div>
-
-       <div id="propList" repeat=":= editorModel.getPropertiesForType(type)" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
+   <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
+      <%! Element createElement(Object value, int ix, Element oldTag) {
+          FormEditor res;
+          if (oldTag instanceof FormEditor) {
+             res = (FormEditor) oldTag;
+             res.type = (BodyTypeDeclaration) value;
+          }
+          else {
+             res = new FormEditor(this, null, value);
+          }
+          res.setRepeatVar(value);
+          res.setRepeatIndex(ix);
+          return res;
+        } %>
    </div>
-  
    <div id="formScroll" style="height: 100%; width: 100%; overflow: auto;">
-      <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj">
-         <div id="formListChild"  extends="ClassView" type=":= (BodyTypeDeclaration) typeObj"/>
+      <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj" repeatWrapper="elementRepeatBuilder">
+         <div id="formListChild" extends="FormEditor" type=":= (BodyTypeDeclaration) typeObj"/>
       </div>
    </div>
 

@@ -2,22 +2,15 @@ import sc.dyn.DynUtil;
 import java.util.Collection;
 
 @sc.obj.Sync(syncMode = sc.obj.SyncMode.Automatic)
-class CodeView {
-   EditorModel editorModel;
+class CodeView extends BaseView {
    int maxEditorHeight = 251, minEditorHeight = 150;
    int numEditors;
 
-   @sc.obj.Sync
-   boolean viewVisible;
-
    List<CodeEditor> editors = new ArrayList<CodeEditor>();
-
-   editorModel =: invalidateEditors();
-   viewVisible =: invalidateEditors();
 
    boolean editorsValid = true; // start out true so the first invalidate triggers the refresh
 
-   void invalidateEditors() {
+   void invalidateModel() {
       if (editorsValid) {
          if (editorModel == null || editorModel.selectedFileIndex == null)
             return;

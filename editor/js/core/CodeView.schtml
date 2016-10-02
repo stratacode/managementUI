@@ -4,7 +4,6 @@
 %>
 <div>
   <%!
-      visible :=: viewVisible;
       void scheduleRebuild() {
          codeEditors_Repeat.invalidate();
       }

@@ -1,0 +1,12 @@
+<%@
+   // Declarations
+%>
+<div id="Test">
+   <%!
+       // instance code
+   %>
+
+   <div id="foobar"  style="stuff"/>
+
+   <div id="fumble" class="stuff"/>
+</div>
