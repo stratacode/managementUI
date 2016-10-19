@@ -34,4 +34,7 @@ TypeEditor {
    boolean transparentType := !ModelUtil.isTypeInLayer(type, classViewLayer);
 
    int titleBorderX = 30;
+
+   void validateTree() {
+   }
 }

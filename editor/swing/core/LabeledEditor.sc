@@ -1,7 +1,8 @@
 abstract class LabeledEditor extends ElementEditor {
-  LabeledEditor(FormEditor parent) {
-     super(parent);
+  LabeledEditor(FormEditor parent, Object prop) {
+     super(parent, prop);
   }
+
   object label extends JLabel {
      int prefW := ((int) preferredSize.width);
      int labelExtra := prefW >= tabSize ? 0 : (tabSize - prefW % tabSize);
@@ -17,6 +18,7 @@ abstract class LabeledEditor extends ElementEditor {
 
      toolTipText := "Property of type: " + ModelUtil.getPropertyType(propC) + (propC instanceof PropertyAssignment ? " set " : " defined ") + "in: " + ModelUtil.getEnclosingType(propC);
   }
+
   height := (int) label.size.height;
 }
 

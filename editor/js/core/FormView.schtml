@@ -21,7 +21,6 @@
    </div>
    <div id="formScroll" style="height: 100%; width: 100%; overflow: auto;">
       <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj" repeatWrapper="elementRepeatBuilder">
-         <div id="formListChild" extends="FormEditor" type=":= (BodyTypeDeclaration) typeObj"/>
       </div>
    </div>
 

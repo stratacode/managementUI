@@ -24,12 +24,18 @@ FormView {
 
    int x = numCols;
 
+   // For FormView, this is a copy of the repeatComponents list.  As we add children as a swing child, we add it to childViews.
+   childViews = new ArrayList<IElementEditor>();
+
    contentPanel {
       int maxChildWidth, maxChildHeight;
       preferredSize := SwingUtil.dimension(maxChildWidth, maxChildHeight);
+      size := SwingUtil.dimension(maxChildWidth, maxChildHeight);
 
-      object childList extends RepeatComponent {
+      object childList extends RepeatComponent<FormEditor> {
          repeat := editorModel.visibleTypes;
+
+         parentComponent = contentPanel;
 
          int numRows := (DynUtil.getArrayLength(repeat) + numCols-1) / numCols;
 
@@ -40,7 +46,7 @@ FormView {
 
          FormEditor[][] viewsGrid;
 
-         public Object createRepeatElement(Object listElem, int ix, Object oldComp) {
+         public FormEditor createRepeatElement(Object listElem, int ix, Object oldComp) {
             BodyTypeDeclaration currentType = (BodyTypeDeclaration) listElem;
             Object currentObj = ModelUtil.isObjectType(currentType) ? editorModel.system.resolveName(currentType.getFullTypeName(), false) :
                                                                       getDefaultCurrentObj(currentType);
@@ -64,6 +70,8 @@ FormView {
 
          public void refreshList() {
              int size = DynUtil.getArrayLength(repeat);
+
+             // Controls the number of columns used to display for the number of types we have selected
              numCols = size <= 1 ? 1 : size <= 4 ? 2 : size <= 9 ? 3 : 4;
 
              boolean gridChanged = false;
@@ -88,11 +96,31 @@ FormView {
          public void validateTree() {
             int newMaxChildWidth = 0;
             int newMaxChildHeight = 0;
+
+            int curIx = 0;
             for (Object elem:repeatComponents) {
                FormEditor fed = (FormEditor) elem;
+
+               if (childViews.size() <= curIx) {
+                  childViews.add(fed);
+                  SwingUtil.addChild(parentComponent, fed);
+               }
+               else if (childViews.get(curIx) != fed) {
+                  remove(curIx);
+                  childViews.set(curIx, fed);
+                  SwingUtil.addChild(parentComponent, fed);
+               }
                fed.updateListeners();
+               curIx++;
+            }
+            while (curIx < childViews.size()) {
+                remove(curIx);
+                childViews.remove(curIx);
             }
             for (Object elem:repeatComponents) {
+                if (elem instanceof TypeEditor) {
+                   ((TypeEditor) elem).validateTree();
+                }
                 Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
                 int newW = (int) (bounds.x + bounds.width + xpad);
                 int newH = (int) (bounds.y + bounds.height + ypad);

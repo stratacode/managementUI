@@ -1,0 +1,12 @@
+<div id="TestExpr">
+   <%!
+
+      int foo(int bar) {
+         return bar;
+      }
+      int bar(int fum) {
+         throw new UnsupportedOperationException();
+      }
+   %>
+   <%= foo(3) %>
+</div>

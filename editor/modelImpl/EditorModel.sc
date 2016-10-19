@@ -428,15 +428,6 @@ EditorModel {
       return p == null || (pname = ModelUtil.getPropertyName(p)).startsWith("_") || filteredProps.contains(pname);
    }
 
-   /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
-   public boolean currentLayerMatches(Layer layer) {
-      if (currentLayer == null)
-         return true;
-      if (currentLayer.transparentToLayer(layer))
-         return true;
-      return ((!mergeLayers && currentLayer == layer) || (mergeLayers && (layer == currentLayer || currentLayer.extendsLayer(layer))));
-   }
-
    public Object[] getPropertiesForType(Object type) {
       if (type instanceof ClientTypeDeclaration)
          type = ((ClientTypeDeclaration) type).getOriginal();

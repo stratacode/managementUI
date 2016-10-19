@@ -4,6 +4,8 @@ class TypeEditor extends CompositeEditor {
    BaseView parentView;
    TypeEditor parentEditor;
 
+   int numCols = 1;
+
    boolean removed = false;
 
    BodyTypeDeclaration type;
@@ -32,6 +34,11 @@ class TypeEditor extends CompositeEditor {
          this.nestLevel = parentEditor.nestLevel + 1;
    }
 
+   // TODO: workaround for the fact that the type property is set in the constructor, before the binding is registered.  We could possibly detect this case - a property set in the constructor - and fire the binding when the binding is defined.
+   void init() {
+      typeChanged();
+   }
+
    void typeChanged() {
       if (type == null)
          operatorName = null;
@@ -55,6 +62,7 @@ class TypeEditor extends CompositeEditor {
          ArrayList<Object> visProps = new ArrayList<Object>();
          if (newProps != null) {
             for (Object prop:newProps) {
+                // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
                 if (editorModel.filteredProperty(type, prop, false))
                     continue;
 
@@ -118,5 +126,4 @@ class TypeEditor extends CompositeEditor {
    // we can update our instance to the correct child.
    void parentInstanceChanged(Object parentInst) {
    }
-
 }

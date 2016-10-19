@@ -3,6 +3,7 @@ import sc.sync.SyncManager;
 import sc.obj.Sync;
 import sc.obj.SyncMode;
 import sc.lang.html.Element;
+import sc.lang.java.BodyTypeDeclaration;
 
 /** 
    The main view model object for viewing and editing of the program model.  It exposes
@@ -92,7 +93,7 @@ class EditorModel implements sc.bind.IChangeable {
    ArrayList<List<Object>> typesPerLayer;   // For each layer in the current set, the set of types in this layer - used for 3d view
    @Sync(syncMode=SyncMode.Disabled)
    Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
-   ArrayList<Object> visibleTypes;          // Used in form view - filters the set of types by the merge and inherited 
+   ArrayList<Object> visibleTypes = new ArrayList<Object>();     // Used in form view - filters the set of types by the merge and inherited
 
    class SelectedFile {
       SrcEntry file;
@@ -258,4 +259,24 @@ class EditorModel implements sc.bind.IChangeable {
 
    //abstract String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateInstances, boolean valueIsExpr);
 
+
+   public boolean filteredProperty(Object type, Object p, boolean perLayer) {
+      return false;
+   }
+
+   /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
+   public boolean currentLayerMatches(Layer layer) {
+      if (currentLayer == null)
+         return true;
+      if (currentLayer.transparentToLayer(layer))
+         return true;
+      return ((!mergeLayers && currentLayer == layer) || (mergeLayers && (layer == currentLayer || currentLayer.extendsLayer(layer))));
+   }
+
+   BodyTypeDeclaration processVisibleType(Object typeObj) {
+      if (typeObj instanceof BodyTypeDeclaration) {
+         return (BodyTypeDeclaration) typeObj;
+      }
+      return null;
+   }
 }

@@ -8,6 +8,7 @@ import sc.bind.IListener;
 
 import java.util.Iterator;
 
+/** This is the base class for other views which involve a code model */
 abstract class BaseView {
    EditorModel editorModel;
 

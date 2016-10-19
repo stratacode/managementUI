@@ -41,6 +41,9 @@ class TypeTreeModel {
    boolean createLayerMode = false; // When layerMode is true, are we including or creating?
    boolean layerMode := createLayerMode || addLayerMode;
 
+   /** Should we also include instances in the type tree.  When included, they are children under their type */
+   boolean includeInstances = true;
+
    transient boolean valid = true;
    transient boolean rebuildFirstTime = true;
    transient boolean refreshInProgress = false;

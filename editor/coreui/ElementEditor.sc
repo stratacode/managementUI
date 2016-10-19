@@ -1,21 +1,24 @@
 class ElementEditor extends PrimitiveEditor {
    FormEditor formEditor;
+   Object propC;
    String propertyName := getPropertyNameString(propC);
    String propertySuffix = "";
+   EditorModel editorModel;
 
-   ElementEditor(FormEditor formEditor) {
+   ElementEditor(FormEditor formEditor, Object prop) {
       this.formEditor = formEditor;
+      this.propC = prop;
+      editorModel = parentView.editorModel;
    }
 
    public BaseView getParentView() {
-      return formEditor.parentView;
+      return formEditor == null ? null : formEditor.parentView;
    }
 
    String getPropertyNameString(Object val) {
       return val == null ? "<null>" : ModelUtil.getPropertyName(val) + propertySuffix;
    }
 
-   Object propC;
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
    UIIcon icon := propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
    String errorText;

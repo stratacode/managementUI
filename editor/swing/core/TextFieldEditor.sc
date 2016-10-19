@@ -5,8 +5,7 @@ import sc.lang.java.JavaSemanticNode;
 class TextFieldEditor extends LabeledEditor {
    // Want value set in the constructor both so it is not null and does not send an extra set of change events during initialization
    TextFieldEditor(FormEditor editor, Object prop) {
-      super(editor);
-      propC = prop;
+      super(editor, prop);
    }
    void displayFormError(String msg) {
       int ix = msg.indexOf(" - ");
@@ -49,6 +48,12 @@ class TextFieldEditor extends LabeledEditor {
    }
 
    String propertyValueString(Object instance, Object val, int changeCt) {
+      if (formEditor == null)
+          System.out.println("***");
+       if (editorModel == null)
+          System.out.println("***");
+       else if (editorModel.ctx == null)
+          System.out.println("***");
       return editorModel.ctx.propertyValueString(formEditor.type, instance, val);
    }
 
@@ -99,7 +104,6 @@ class TextFieldEditor extends LabeledEditor {
       }
       oldPropName = propName;
    }
-
 
    object textField extends CompletionTextField {
       location := SwingUtil.point(label.location.x + label.size.width + xpad, TextFieldEditor.this.y);

@@ -54,7 +54,7 @@
          for (Object child:children) {
             if (child instanceof propList_Repeat.propList) {
                propList_Repeat.propList pchild = (propList_Repeat.propList) child;
-               childViews.add(pchild.repeatVar);
+               childViews.add((IElementEditor) pchild.repeatVar);
             }
          }
          super.updateListeners();
@@ -93,15 +93,13 @@
           if (ModelUtil.isProperty(value)) {
              if (oldTag instanceof ElementEditor)
                 return oldTag;
-             ElementEditor eview = new ElementEditor(this);
-             //eview.propC = value;
+             ElementEditor eview = new ElementEditor(FormEditor.this, value);
              res = eview;
           }
           else {
              if (oldTag instanceof FormEditor)
                 return oldTag;
-             FormEditor cview = new FormEditor(parentView, this, (BodyTypeDeclaration) value);
-             //cview.type = (BodyTypeDeclaration) value;
+             FormEditor cview = new FormEditor(parentFormView, FormEditor.this, (BodyTypeDeclaration) value, null);
              res = cview;
           }
           res.setRepeatVar(value);

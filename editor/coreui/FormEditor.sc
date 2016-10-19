@@ -14,6 +14,7 @@ class FormEditor extends TypeEditor {
 
    void init() {
       // Bindings not set before we set the instance property so need to do this once up front
+      super.init();
       instanceChanged();
    }
 
