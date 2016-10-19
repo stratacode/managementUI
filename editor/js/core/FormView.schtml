@@ -5,6 +5,14 @@
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
       <%! Element createElement(Object value, int ix, Element oldTag) {
           FormEditor res;
+<<<<<<< HEAD
+          if (oldTag instanceof FormEditor) {
+             res = (FormEditor) oldTag;
+             res.type = (BodyTypeDeclaration) value;
+          }
+          else {
+             res = new FormEditor(this, null, value);
+=======
           BodyTypeDeclaration type = (BodyTypeDeclaration) value;
           if (oldTag instanceof FormEditor) {
              res = (FormEditor) oldTag;
@@ -13,6 +21,7 @@
           else {
              // TODO: supply the current instance here
              res = new FormEditor(FormView.this, null, type, null);
+>>>>>>> 8067a27fd6a7f1770e6b139f3049394d5f1149f0
           }
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);

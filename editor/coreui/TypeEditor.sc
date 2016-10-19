@@ -58,6 +58,9 @@ class TypeEditor extends CompositeEditor {
       if (type != null) {
          extTypeName = type.extendsTypeName;
          title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
+<<<<<<< HEAD
+         properties = editorModel.getPropertiesForType(type);
+=======
          Object[] newProps = editorModel.getPropertiesForType(type);
          ArrayList<Object> visProps = new ArrayList<Object>();
          if (newProps != null) {
@@ -100,6 +103,7 @@ class TypeEditor extends CompositeEditor {
             }
          }
          properties = visProps.toArray();
+>>>>>>> 8067a27fd6a7f1770e6b139f3049394d5f1149f0
       }
       else {
          extTypeName = null;
