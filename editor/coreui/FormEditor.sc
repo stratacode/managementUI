@@ -1,13 +1,6 @@
 class FormEditor extends TypeEditor {
    Object instance;
    Object oldInstance;
-<<<<<<< HEAD
-
-   instance =: instanceChanged();
-
-   FormEditor(BaseView view, TypeEditor parentEditor, BodyTypeDeclaration type, Object instance) {
-      super(view, parentEditor, type, instance);
-=======
    FormView parentFormView;
 
    instance =: instanceChanged();
@@ -16,7 +9,6 @@ class FormEditor extends TypeEditor {
       super(view, parentEditor, type, instance);
       parentFormView = view;
 
->>>>>>> 8067a27fd6a7f1770e6b139f3049394d5f1149f0
       this.instance = instance;
    }
 
