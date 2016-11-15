@@ -4,7 +4,7 @@
        currentValue =: textFieldForm.textField.value;
        propC := repeatVar;
     %>
-    <form id="textFieldForm" submitEvent="=: errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, textField.value, formEditor.parentFormView.updateInstances, formEditor.instance == null)" style="display:inline">
+    <form id="textFieldForm" submitEvent="=: errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, textField.value, formEditor.parentFormView.updateInstances , formEditor.instance == null)" style="display:inline">
        <label for="= textField.id" class="formFieldLabel">
           <img visible=":= icon != null" src=':= icon == null ? "" : icon.path' alt=':= icon == null ? "" : icon.desc'>
           <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>

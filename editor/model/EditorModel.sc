@@ -4,6 +4,7 @@ import sc.obj.Sync;
 import sc.obj.SyncMode;
 import sc.lang.html.Element;
 import sc.lang.java.BodyTypeDeclaration;
+import sc.lang.InstanceWrapper;
 
 /** 
    The main view model object for viewing and editing of the program model.  It exposes
@@ -12,6 +13,8 @@ import sc.lang.java.BodyTypeDeclaration;
 class EditorModel implements sc.bind.IChangeable {
    /** Specifies the list of types for the model */
    String[] typeNames = new String[0];
+
+   List<InstanceWrapper> selectedInstances = null;
 
    String[] oldTypeNames; // Last time model was rebuilt
 

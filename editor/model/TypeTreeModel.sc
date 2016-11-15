@@ -15,6 +15,7 @@ import sc.type.CTypeUtil;
 import sc.obj.Constant;
 
 import sc.lang.java.ModelUtil;
+import sc.lang.InstanceWrapper;
 
 import sc.layer.CodeType;
 import sc.layer.CodeFunction;
@@ -63,6 +64,8 @@ class TypeTreeModel {
    codeTypes =: refresh();
    codeFunctions =: refresh();
 
+   includeInstances =: refresh();
+
    // When the current type in the model changes, if we're in create mode we need to refresh to reflect the newly visible/highlighted elements.
    editorModel =: createMode || layerMode ? refresh() : null;
 
@@ -84,7 +87,8 @@ class TypeTreeModel {
       ParentInterface,
       Interface,
       Package,
-      Primitive;
+      Primitive,
+      Instance;
    }
 
    @sc.obj.Sync(onDemand=true)
@@ -154,6 +158,10 @@ class TypeTreeModel {
          }
       }
 
+      boolean getOpen() {
+         return open;
+      }
+
       public void initChildren() {
          // subDirs is marked @Sync(onDemand=true) so it's left out of the sync when the
          // parent object is synchronized.  When a user opens the node, the startSync call begins
@@ -161,10 +169,6 @@ class TypeTreeModel {
          // On the server, it pushes this property to the client on the next sync.
          SyncManager.startSync(this, "subDirs");
          SyncManager.startSync(this, "entries");
-      }
-
-      boolean getOpen() {
-         return open;
       }
 
       void selectType(boolean append) {

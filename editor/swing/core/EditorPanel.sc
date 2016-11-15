@@ -169,38 +169,44 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       boolean isInherited :=: editorModel.inherit;
 
       object mergedViewButton extends ToolBarToggleButton {
-        toolTipText := isMerged ? "Show only the current layer of the selected types" : "Show the merged view of the selected types";
-        selected :=: isMerged;
-        icon := !isMerged ? new ImageIcon(EditorPanel.class.getResource("images/sepview.png"), "Separate View") :
-                           new ImageIcon(EditorPanel.class.getResource("images/mergeview.png"), "Merged View");
+         toolTipText := isMerged ? "Show only the current layer of the selected types" : "Show the merged view of the selected types";
+         selected :=: isMerged;
+         icon := !isMerged ? new ImageIcon(EditorPanel.class.getResource("images/sepview.png"), "Separate View") :
+                            new ImageIcon(EditorPanel.class.getResource("images/mergeview.png"), "Merged View");
       }
 
       object inheritButton extends ToolBarToggleButton {
-        toolTipText := isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type.";
-        selected :=: isInherited;
-        icon := !isInherited ? new ImageIcon(EditorPanel.class.getResource("images/noinherit.png"), "No Inherit") :
-                              new ImageIcon(EditorPanel.class.getResource("images/inherit.png"), "Inherit");
+         toolTipText := isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type.";
+         selected :=: isInherited;
+         icon := !isInherited ? new ImageIcon(EditorPanel.class.getResource("images/noinherit.png"), "No Inherit") :
+                                new ImageIcon(EditorPanel.class.getResource("images/inherit.png"), "Inherit");
       }
 
       object sep extends JSeparator {
          orientation = SwingConstants.VERTICAL;
       }
 
+      object dataViewButton extends ToolBarToggleButton {
+         toolTipText = "Show data view of selected instances";
+         selected = true;
+         selected =: selected ? viewType = ViewType.DataViewType : null;
+         icon = new ImageIcon(EditorPanel.class.getResource("images/dataview.png"), "Data View");
+      }
+
       object formViewButton extends ToolBarToggleButton {
-        toolTipText = "Show form view of selected types";
-        selected = true;
-        selected =: selected ? viewType = ViewType.FormViewType : null;
-        icon = new ImageIcon(EditorPanel.class.getResource("images/formview.png"), "Form View");
+         toolTipText = "Show form view of selected types";
+         selected =: selected ? viewType = ViewType.FormViewType : null;
+         icon = new ImageIcon(EditorPanel.class.getResource("images/formview.png"), "Form View");
       }
 
       object codeViewButton extends ToolBarToggleButton {
-        toolTipText = "Show the source code for the selected types";
-        selected =: selected ? viewType = ViewType.CodeViewType : null;
-        icon = new ImageIcon(EditorPanel.class.getResource("images/codeview.png"), "Code View");
+         toolTipText = "Show the source code for the selected types";
+         selected =: selected ? viewType = ViewType.CodeViewType : null;
+         icon = new ImageIcon(EditorPanel.class.getResource("images/codeview.png"), "Code View");
       }
 
       object buttonGroup extends ButtonGroup {
-         buttons = {formViewButton, codeViewButton};
+         buttons = {dataViewButton, formViewButton, codeViewButton};
       }
    }
 
@@ -210,6 +216,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       createMode := editorModel.createMode;
       addLayerMode := statusPanel.createPanel.addLayerMode;
       createLayerMode := statusPanel.createPanel.createLayerMode;
+      includeInstances := !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == ViewType.DataViewType;
    }
 
    BaseTypeTree extends JTree {
@@ -448,11 +455,18 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       }
    }
 
+   object dataView extends DataView {
+      location := SwingUtil.point(editorX, editorY);
+      size := SwingUtil.dimension(editorWidth, editorHeight);
+      editorModel := EditorPanel.this.editorModel;
+      viewVisible = false;
+   }
+
    object formView extends FormView {
       location := SwingUtil.point(editorX, editorY);
       size := SwingUtil.dimension(editorWidth, editorHeight);
       editorModel := EditorPanel.this.editorModel;
-      viewVisible = true;
+      viewVisible = false;
    }
 
    object codeView extends CodeView {
@@ -496,6 +510,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
    viewType =: validateViewType();
 
    void validateViewType() {
+      dataView.viewVisible = viewType == ViewType.DataViewType;
       formView.viewVisible = viewType == ViewType.FormViewType;
       codeView.viewVisible = viewType == ViewType.CodeViewType;
    }

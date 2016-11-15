@@ -19,6 +19,33 @@ import java.awt.Rectangle;
 FormView {
    static int FORM_NUM_STATIC_COMPONENTS = 0;
 
+   Object getDefaultCurrentObj(Object type) {
+      return editorModel.ctx.getDefaultCurrentObj(type);
+   }
+
+   void setDefaultCurrentObj(Object type, Object obj) {
+      editorModel.ctx.setDefaultCurrentObj(type, obj);
+   }
+
+   void focusChanged(JComponent component, Object prop, Object inst, boolean focus) {
+      if (focus) {
+         if (editorModel.currentProperty != prop || editorModel.currentInstance != inst) {
+            if (component instanceof JTextField)
+               currentTextField = (JTextField) component;
+            else
+               currentTextField = null;
+
+            editorModel.currentProperty = prop;
+            editorModel.currentInstance = inst;
+         }
+      }
+      else if (!focus && editorModel.currentProperty == prop) {
+         // Switching focus to the status panel should not alter the current property.
+         //currentProperty = null;
+         //currentTextField = null;
+      }
+   }
+
    // Some editor operations we make from the UI will change the model and cause a form rebuild.  A quick way to avoid those - just set this to true before making those types of changes
    boolean disableFormRebuild = false;
 
@@ -48,9 +75,17 @@ FormView {
 
          public FormEditor createRepeatElement(Object listElem, int ix, Object oldComp) {
             BodyTypeDeclaration currentType = (BodyTypeDeclaration) listElem;
+            Object currentObj = null;
+            if (instanceMode) {
+               // TODO: if this is a nested type, we should find the sub-object of the parent type
+               if (editorModel.selectedInstances != null && editorModel.selectedInstances.size() > ix)
+                  currentObj = editorModel.selectedInstances.get(ix);
+            }
+            /*
             Object currentObj = ModelUtil.isObjectType(currentType) ? editorModel.system.resolveName(currentType.getFullTypeName(), false) :
                                                                       getDefaultCurrentObj(currentType);
 
+             */
             FormEditor editor = new FormEditor(FormView.this, null, currentType, currentObj);
             updateCell(editor, ix);
 

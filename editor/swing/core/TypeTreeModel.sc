@@ -150,7 +150,7 @@ TypeTreeModel {
 
           // If there's already a directory element for this node, don't add a second one for the leaves
           if (subDirs.get(element.value) == null) {
-                DefaultMutableTreeNode childNode;
+             DefaultMutableTreeNode childNode;
              if (ix == -1) {
                 childNode = new DefaultMutableTreeNode(element);
                 treeModel.insertNodeInto(childNode, treeNode, pos);
@@ -164,12 +164,14 @@ TypeTreeModel {
                    treeModel.insertNodeInto(childNode, treeNode, pos);
                 }
              }
+             updateInstanceTreeNodes(element, childNode, treeModel, pos);
              pos++;
              addToIndex(element, childNode, index, parent);
           }
           else if (ix != -1)
              removeChildNode(treeNode, element, treeModel);
        }
+       updateInstanceTreeNodes(ents, treeNode, treeModel, pos);
        if (ents.removed != null) {
           // TODO: no longer need this loop?
           for (TreeEnt rem:ents.removed) {
@@ -177,6 +179,50 @@ TypeTreeModel {
           }
           ents.removed = null;
        }
+   }
+
+   void updateInstanceTreeNodes(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel, int pos) {
+       List<InstanceWrapper> insts = null;
+       if (includeInstances) {
+          if (ents.cachedTypeDeclaration == null && ents.open) {
+              ents.needsType = true;
+          }
+          if (ents.cachedTypeDeclaration != null) {
+             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
+          }
+       }
+       if (insts != null) {
+          for (InstanceWrapper inst:insts) {
+             DefaultMutableTreeNode childNode;
+             int ix = findChildNodeIndex(treeNode, inst);
+             if (ix == -1) {
+                childNode = new DefaultMutableTreeNode(inst);
+                treeModel.insertNodeInto(childNode, treeNode, pos);
+             }
+             else {
+                 if (ix == pos) {
+                    childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix);
+                 }
+                 else {
+                   // Reorder
+                   treeModel.removeNodeFromParent(childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix));
+                   treeModel.insertNodeInto(childNode, treeNode, pos);
+                 }
+             }
+             pos++;
+             // TODO addToIndex here - need to support InstanceWrapper instead of TreeEnt
+          }
+       }
+       removeExtraInstanceTreeNodes(treeNode, treeModel, insts);
+   }
+
+   void removeExtraInstanceTreeNodes(DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel, List<InstanceWrapper> insts) {
+      for (int i = 0; i < treeNode.getChildCount(); i++) {
+         Object userObj = ((DefaultMutableTreeNode) treeNode.getChildAt(i)).getUserObject();
+         if (userObj instanceof InstanceWrapper && (insts == null || !insts.contains(userObj))) {
+             treeModel.removeNodeFromParent((DefaultMutableTreeNode) treeNode.getChildAt(i));
+         }
+      }
    }
 
    DefaultMutableTreeNode findChildNode(DefaultMutableTreeNode parent, Object userObj) {

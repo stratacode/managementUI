@@ -28,7 +28,7 @@ class TextFieldEditor extends LabeledEditor {
 
          errorLabel.text = "";
          //disableFormRebuild = true;
-         String error = editorModel.setElementValue(type, inst, val, text, formEditor.parentFormView.updateInstances, inst == null);
+         String error = editorModel.setElementValue(type, inst, val, text, formEditor.parentFormView.instanceMode, inst == null);
          // Refetch the member since we may have just defined one for this type
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(val), JavaSemanticNode.MemberType.PropertyAnySet, null, null);
          // Update this manually since we change it when moving the operator into the label
@@ -123,7 +123,7 @@ class TextFieldEditor extends LabeledEditor {
       // Only trigger the change to the model when the user enters the text.  Not when we set enteredText because the value changed
       userEnteredCount =: settable ? setElementValue(formEditor.type, instance, propC, enteredText) : errorLabel.text = "This view shows the toString output of property: " + propertyName + " No string conversion for type: " ;
 
-      focus =: parentView.focusChanged(this, propC, instance, focus);
+      focus =: formEditor.parentFormView.focusChanged(this, propC, instance, focus);
    }
    object errorLabel extends JLabel {
       location := SwingUtil.point(textField.location.x, textField.location.y + textField.size.height + ypad);

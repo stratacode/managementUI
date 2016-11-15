@@ -152,9 +152,9 @@ FormEditor {
       instance = inst;
       // When the user explicitly chooses <type> we need to mark that they've chosen nothing for this type to keep the current object from coming back
       if (instance == null)
-         parentView.setDefaultCurrentObj(type, EditorContext.NO_CURRENT_OBJ_SENTINEL);
+         parentFormView.setDefaultCurrentObj(type, EditorContext.NO_CURRENT_OBJ_SENTINEL);
       else {
-         parentView.setDefaultCurrentObj(type, instance);
+         parentFormView.setDefaultCurrentObj(type, instance);
       }
 
       for (int i = 0; i < childViews.size(); i++) {

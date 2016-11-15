@@ -11,12 +11,12 @@ import sc.lang.java.ModelUtil;
 import sc.lang.java.JavaModel;
 
 import sc.lang.ILanguageModel;
+import sc.lang.InstanceWrapper;
 
 import java.util.Collections;
 
 TypeTreeModel {
    ArrayList<String> packageFilter;
-
 
    // TODO: not implemented yet Populated from specifiedLayerNames.  Defines the layers from which we are doing source files.
    ArrayList<Layer> specifiedLayers;
