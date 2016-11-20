@@ -364,7 +364,8 @@ class TypeTreeModel {
          }
       }
 
-      public void updateSelected() {
+      public boolean updateSelected() {
+         boolean needsRefresh = false;
          if (typeName == null) {
             // Once there's a current type, all directories are deselected
             if (editorModel.typeNames.length > 0)
@@ -372,7 +373,7 @@ class TypeTreeModel {
             // Leave the folder selected as long as it marks the current package
             else if (!DynUtil.equalObjects(srcTypeName, editorModel.currentPackage))
                selected = false;
-            return;
+            return false;
          }
          boolean newSel = editorModel.isTypeNameSelected(typeName);
          if (newSel != selected)
@@ -380,8 +381,11 @@ class TypeTreeModel {
          boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
          if (newCreate != createModeSelected)
             createModeSelected = newCreate;
-         if (needsOpen() && !open && !closed)
+         if (needsOpen() && !open && !closed) {
             open = true;
+            needsRefresh = true;
+         }
+         return needsRefresh;
       }
 
       boolean needsOpen() {
@@ -480,23 +484,30 @@ class TypeTreeModel {
          }
       }
 
-      void updateSelected() {
-         super.updateSelected();
+      boolean updateSelected() {
+         boolean needsRefresh = super.updateSelected();
          if (subDirs != null) {
             for (DirEnt childEnt:subDirs.values()) {
-               childEnt.updateSelected();
+               if (childEnt.updateSelected())
+                  needsRefresh = true;
                // auto-open trees when child nodes are selected
-               if (!open && childEnt.needsOpen())
+               if (!open && childEnt.needsOpen()) {
                    open = true;
+                   needsRefresh = true;
+                }
             }
          }
          if (entries != null) {
             for (TreeEnt childEnt:entries) {
-               childEnt.updateSelected();
-               if (!open && childEnt.needsOpen())
-                   open = true;
+               if (childEnt.updateSelected())
+                  needsRefresh = true;
+               if (!open && childEnt.needsOpen()) {
+                  open = true;
+                  needsRefresh = true;
+               }
             }
          }
+         return needsRefresh;
       }
 
       boolean needsOpen() {
@@ -574,7 +585,6 @@ class TypeTreeModel {
 
          scheduleBuild();
       }
-
    }
 
    // On the client, this will run after a 0 millisecond timeout.  

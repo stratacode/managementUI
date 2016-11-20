@@ -35,10 +35,14 @@ class GlobalResources {
    final static UIIcon floatDynIcon = createIcon("images/floatDyn.gif", "Dyn Floating point");
    final static UIIcon booleanDynIcon = createIcon("images/booleanDyn.gif", "Dyn Boolean");
 
+   // TODO: create an icon for instances - maybe a dot
+   final static UIIcon instanceIcon = createIcon("images/int.gif", "Instance");
+
    final static UIColor needsSaveTextColor = new UIColor(0x1c, 0x88, 0x23);
    final static UIColor errorTextColor = new UIColor(0x88, 0x22, 0x33);
    final static UIColor normalTextColor = new UIColor(16, 16, 16);
    final static UIColor transparentTextColor = new UIColor(128, 128, 128);
+
 
    static UIIcon lookupUIIcon(Object type) {
       if (ModelUtil.isLayerType(type)) {

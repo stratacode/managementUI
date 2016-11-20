@@ -8,4 +8,5 @@ GlobalResources {
    override layerIcon;
    override layerDynIcon;
    override inactiveLayerIcon;
+   override instanceIcon;
 }

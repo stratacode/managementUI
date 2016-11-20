@@ -6,6 +6,8 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.ToolTipManager;
 
 import java.util.Arrays;
@@ -257,16 +259,31 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                  return;
                }
 
-               ArrayList<TypeTreeModel.TreeEnt> treeEnts = new ArrayList<TypeTreeModel.TreeEnt>();
+               ArrayList<Object> treeEnts = new ArrayList<Object>();
                for (TreePath path:paths) {
                   Object userObj = ((DefaultMutableTreeNode) path.lastPathComponent).userObject;
-                  if (userObj instanceof TypeTreeModel.TreeEnt) {
-                     TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) userObj;
-                     treeEnts.add(treeEnt);
-                  }
+                  treeEnts.add(userObj);
                }
 
-               selectTreeEnts(treeEnts);
+               selectTreeNodes(treeEnts);
+           }
+         });
+         addTreeWillExpandListener(new TreeWillExpandListener() {
+            public void treeWillExpand(TreeExpansionEvent e) {
+               TreePath expandPath = e.getPath();
+
+               if (typeTreeModel.includeInstances) {
+                  Object userObj = ((DefaultMutableTreeNode) expandPath.lastPathComponent).userObject;
+                  if (userObj instanceof TypeTreeModel.TreeEnt) {
+                     TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) userObj;
+                     if (!treeEnt.open) {
+                        treeEnt.open = true;
+                        treeEnt.refreshNode();
+                     }
+                  }
+               }
+           }
+           public void treeWillCollapse(TreeExpansionEvent e) {
            }
          });
       }
@@ -297,6 +314,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          TreePath[] newPaths = paths.toArray(new TreePath[paths.size()]);
          if (!Arrays.equals(newPaths, selectionModel.selectionPaths))
             selectionModel.selectionPaths = newPaths;
+
+         super.updateListSelection();
       }
    }
 

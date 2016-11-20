@@ -27,6 +27,22 @@ TypeTreeModel {
 
    boolean ignoreSelectionEvents = false;
 
+   TreeEnt {
+       // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
+       DefaultMutableTreeNode treeNode;
+       // Position in the parent
+       int instPos;
+
+       DefaultTreeModel getTreeModel() {
+          return isTypeTree ? rootTypeTreeModel : rootLayerTreeModel;
+       }
+
+       void refreshNode() {
+          if (treeNode != null)
+             updateInstanceTreeNodes(this, treeNode, treeModel, instPos);
+       }
+   }
+
    public void scheduleBuild() {
       SwingUtilities.invokeLater(new Runnable() {
          public void run() {
@@ -112,6 +128,8 @@ TypeTreeModel {
 
    void updatePackageContents(DirEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel,
                               Map<String, List<TreePath>> index, TreePath parent, boolean byLayer) {
+
+       ents.treeNode = treeNode;
        Map<String,DirEnt> subDirs = ents.subDirs;
        int pos = 0;
        int rix;
@@ -120,6 +138,7 @@ TypeTreeModel {
           int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
           if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
              removeChildNode(treeNode, childEnt, treeModel);
+             childEnt.treeNode = null;
              if (rix != -1)
                 ents.removed.remove(rix);
              continue;
@@ -141,6 +160,7 @@ TypeTreeModel {
           // Make sure that we don't call isVisible or anything on a removed element - the src might not be there, the class might be there and it could get loaded unnecessarily
           if ((ents.removed != null && (rix = ents.removed.indexOf(element)) != -1) || !element.isVisible(byLayer)) {
              removeChildNode(treeNode, element, treeModel);
+             element.treeNode = null;
              if (rix != -1)
                 ents.removed.remove(rix);
              continue;
@@ -164,18 +184,24 @@ TypeTreeModel {
                    treeModel.insertNodeInto(childNode, treeNode, pos);
                 }
              }
+             element.treeNode = childNode;
              updateInstanceTreeNodes(element, childNode, treeModel, pos);
              pos++;
              addToIndex(element, childNode, index, parent);
           }
-          else if (ix != -1)
+          else if (ix != -1) {
              removeChildNode(treeNode, element, treeModel);
+             element.treeNode = null;
+          }
        }
+       // For when we refresh the instance nodes, keep track of the node where they are placed.
+       ents.instPos = pos;
        updateInstanceTreeNodes(ents, treeNode, treeModel, pos);
        if (ents.removed != null) {
           // TODO: no longer need this loop?
           for (TreeEnt rem:ents.removed) {
              removeChildNode(treeNode, rem, treeModel);
+             rem.treeNode = null;
           }
           ents.removed = null;
        }
@@ -252,7 +278,8 @@ TypeTreeModel {
 
    int findChildNodeIndex(DefaultMutableTreeNode parent, Object userObj) {
       for (int i = 0; i < parent.getChildCount(); i++) {
-         if (((DefaultMutableTreeNode) parent.getChildAt(i)).getUserObject() == userObj)
+         Object childUserObj = ((DefaultMutableTreeNode) parent.getChildAt(i)).getUserObject();
+         if (DynUtil.equalObjects(childUserObj, userObj))
             return i;
       }
       return -1;
@@ -328,86 +355,100 @@ TypeTreeModel {
               return this;
            }
 
-           TreeEnt nodeInfo = (TreeEnt) obj;
+           if (obj instanceof TreeEnt) {
+              TreeEnt nodeInfo = (TreeEnt) obj;
 
-           if (nodeInfo.transparent)
-              setTextNonSelectionColor(GlobalResources.transparentTextColor);
-           else if (nodeInfo.hasErrors())
-              setTextNonSelectionColor(GlobalResources.errorTextColor);
-           else if (nodeInfo.needsSave())
-              setTextNonSelectionColor(GlobalResources.needsSaveTextColor);
-           else
-              setTextNonSelectionColor(GlobalResources.normalTextColor);
+              if (nodeInfo.transparent)
+                 setTextNonSelectionColor(GlobalResources.transparentTextColor);
+              else if (nodeInfo.hasErrors())
+                 setTextNonSelectionColor(GlobalResources.errorTextColor);
+              else if (nodeInfo.needsSave())
+                 setTextNonSelectionColor(GlobalResources.needsSaveTextColor);
+              else
+                 setTextNonSelectionColor(GlobalResources.normalTextColor);
 
-           super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+              super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-           // In createMode or layerMode, if the guy is selected, need to change the color so we identify the selected items
-           if ((createMode || layerMode) && (editorModel.isTypeNameSelected(nodeInfo.getTypeName()) || (nodeInfo.type == EntType.Package && StringUtil.equalStrings(nodeInfo.value, editorModel.currentPackage))))
-              setBackgroundNonSelectionColor(selectedNodeColor);
-           else
-             setBackgroundNonSelectionColor(tree.getBackground());
+              // In createMode or layerMode, if the guy is selected, need to change the color so we identify the selected items
+              if ((createMode || layerMode) && (editorModel.isTypeNameSelected(nodeInfo.getTypeName()) || (nodeInfo.type == EntType.Package && StringUtil.equalStrings(nodeInfo.value, editorModel.currentPackage))))
+                 setBackgroundNonSelectionColor(selectedNodeColor);
+              else
+                setBackgroundNonSelectionColor(tree.getBackground());
 
-
-           switch (nodeInfo.type) {
-              case Root:
-              case Comment:
-                 setIcon(null);
-                 break;
-              case ParentType:
-              case Type:
-                 if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
-                    setIcon(GlobalResources.classDynIcon.icon);
-                 else
-                    setIcon(GlobalResources.classIcon.icon);
-                 break;
-              case ParentObject:
-              case Object:
-                 if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
-                    setIcon(GlobalResources.objectDynIcon.icon);
-                 else
-                    setIcon(GlobalResources.objectIcon.icon);
-                 break;
-              case ParentEnum:
-              case ParentEnumConstant:
-              case EnumConstant:
-              case Enum:
-                 if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
-                    setIcon(GlobalResources.enumDynIcon.icon);
-                 else
-                    setIcon(GlobalResources.enumIcon.icon);
-                 break;
-              case ParentInterface:
-              case Interface:
-                 if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
-                    setIcon(GlobalResources.interfaceDynIcon.icon);
-                 else
-                    setIcon(GlobalResources.interfaceIcon.icon);
-                 break;
-              case LayerDir:
-                 if (!layerMode)
+              switch (nodeInfo.type) {
+                 case Root:
+                 case Comment:
+                    setIcon(null);
                     break;
-                 // fall through for layer mode
-              case LayerFile:
-                 if (nodeInfo.layer != null && nodeInfo.layer.dynamic)
-                    setIcon(GlobalResources.layerDynIcon.icon);
-                 else
-                    setIcon(GlobalResources.layerIcon.icon);
-                 break;
-              case InactiveLayer:
-                 setIcon(GlobalResources.inactiveLayerIcon.icon);
-                 break;
-              case Primitive:
-                 String tn = nodeInfo.value;
-                 if (tn.equals("String") || tn.equals("char"))
-                    setIcon(GlobalResources.stringIcon.icon);
-                 else if (tn.equals("int") || tn.equals("short") || tn.equals("byte") || tn.equals("long"))
-                    setIcon(GlobalResources.intIcon.icon);
-                 else if (tn.equals("float") || tn.equals("double"))
-                    setIcon(GlobalResources.floatIcon.icon);
-                 else if (tn.equals("boolean"))
-                    setIcon(GlobalResources.booleanIcon.icon);
-                 else
-                    System.err.println("*** Unknown primitive type: " + tn);
+                 case ParentType:
+                 case Type:
+                    if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
+                       setIcon(GlobalResources.classDynIcon.icon);
+                    else
+                       setIcon(GlobalResources.classIcon.icon);
+                    break;
+                 case ParentObject:
+                 case Object:
+                    if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
+                       setIcon(GlobalResources.objectDynIcon.icon);
+                    else
+                       setIcon(GlobalResources.objectIcon.icon);
+                    break;
+                 case ParentEnum:
+                 case ParentEnumConstant:
+                 case EnumConstant:
+                 case Enum:
+                    if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
+                       setIcon(GlobalResources.enumDynIcon.icon);
+                    else
+                       setIcon(GlobalResources.enumIcon.icon);
+                    break;
+                 case ParentInterface:
+                 case Interface:
+                    if (ModelUtil.isDynamicType(nodeInfo.getTypeDeclaration()))
+                       setIcon(GlobalResources.interfaceDynIcon.icon);
+                    else
+                       setIcon(GlobalResources.interfaceIcon.icon);
+                    break;
+                 case LayerDir:
+                    if (!layerMode)
+                       break;
+                    // fall through for layer mode
+                 case LayerFile:
+                    if (nodeInfo.layer != null && nodeInfo.layer.dynamic)
+                       setIcon(GlobalResources.layerDynIcon.icon);
+                    else
+                       setIcon(GlobalResources.layerIcon.icon);
+                    break;
+                 case InactiveLayer:
+                    setIcon(GlobalResources.inactiveLayerIcon.icon);
+                    break;
+                 case Primitive:
+                    String tn = nodeInfo.value;
+                    if (tn.equals("String") || tn.equals("char"))
+                       setIcon(GlobalResources.stringIcon.icon);
+                    else if (tn.equals("int") || tn.equals("short") || tn.equals("byte") || tn.equals("long"))
+                       setIcon(GlobalResources.intIcon.icon);
+                    else if (tn.equals("float") || tn.equals("double"))
+                       setIcon(GlobalResources.floatIcon.icon);
+                    else if (tn.equals("boolean"))
+                       setIcon(GlobalResources.booleanIcon.icon);
+                    else
+                       System.err.println("*** Unknown primitive type: " + tn);
+              }
+           }
+           else if (obj instanceof InstanceWrapper) {
+              try {
+                 setTextNonSelectionColor(GlobalResources.normalTextColor);
+
+                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+
+                 setIcon(GlobalResources.instanceIcon.icon);
+              }
+              catch (Exception exc) {
+                 System.err.println("*** exc: " + exc);
+                 exc.printStackTrace();
+              }
            }
            return this;
        }

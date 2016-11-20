@@ -1005,6 +1005,8 @@ TypeTreeModel {
       void fetchType() {
          if (needsType) {
             cachedTypeDeclaration = getTypeDeclaration();
+            if (cachedTypeDeclaration == null)
+               needsType = false;
             processEntry();
          }
       }
