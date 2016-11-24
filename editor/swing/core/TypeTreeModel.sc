@@ -30,16 +30,21 @@ TypeTreeModel {
    TreeEnt {
        // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
        DefaultMutableTreeNode treeNode;
-       // Position in the parent
-       int instPos;
+
+       // The path for this node in the tree
+       TreePath path;
 
        DefaultTreeModel getTreeModel() {
           return isTypeTree ? rootTypeTreeModel : rootLayerTreeModel;
        }
 
+       Map<String, List<TreePath>> getTypeTreeIndex() {
+          return isTypeTree ? rootTypeTreeIndex : rootLayerTreeIndex;
+       }
+
        void refreshNode() {
           if (treeNode != null)
-             updateInstanceTreeNodes(this, treeNode, treeModel, instPos);
+             updateInstanceTreeNodes(this, treeNode, treeModel);
        }
    }
 
@@ -126,77 +131,37 @@ TypeTreeModel {
       return tp;
    }
 
-   void updatePackageContents(DirEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel,
+   void updatePackageContents(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel,
                               Map<String, List<TreePath>> index, TreePath parent, boolean byLayer) {
 
        ents.treeNode = treeNode;
-       Map<String,DirEnt> subDirs = ents.subDirs;
+       ents.path = parent;
+       ArrayList<TreeEnt> subDirs = ents.childList;
        int pos = 0;
        int rix;
-       for (DirEnt childEnt:subDirs.values()) {
-          rix = -1;
-          int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
-          if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
-             removeChildNode(treeNode, childEnt, treeModel);
-             childEnt.treeNode = null;
-             if (rix != -1)
-                ents.removed.remove(rix);
-             continue;
-          }
-
-          DefaultMutableTreeNode childTree = findChildNode(treeNode, childEnt);
-          if (childTree == null) {
-             childTree = new DefaultMutableTreeNode(childEnt);
-
-             treeModel.insertNodeInto(childTree, treeNode, pos);
-          }
-          TreePath path = addToIndex(childEnt, childTree, index, parent);
-          updatePackageContents(childEnt, childTree, treeModel, index, path, byLayer);
-          pos++;
-       }
-       for (TreeEnt element:ents.entries) {
-          rix = -1;
-          int tix = ents.removed != null ? ents.removed.indexOf(element) : -2;
-          // Make sure that we don't call isVisible or anything on a removed element - the src might not be there, the class might be there and it could get loaded unnecessarily
-          if ((ents.removed != null && (rix = ents.removed.indexOf(element)) != -1) || !element.isVisible(byLayer)) {
-             removeChildNode(treeNode, element, treeModel);
-             element.treeNode = null;
-             if (rix != -1)
-                ents.removed.remove(rix);
-             continue;
-          }
-
-          int ix = findChildNodeIndex(treeNode, element);
-
-          // If there's already a directory element for this node, don't add a second one for the leaves
-          if (subDirs.get(element.value) == null) {
-             DefaultMutableTreeNode childNode;
-             if (ix == -1) {
-                childNode = new DefaultMutableTreeNode(element);
-                treeModel.insertNodeInto(childNode, treeNode, pos);
+       if (subDirs != null) {
+          for (TreeEnt childEnt:subDirs) {
+             rix = -1;
+             int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
+             if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
+                removeChildNode(treeNode, childEnt, treeModel);
+                childEnt.treeNode = null;
+                if (rix != -1)
+                   ents.removed.remove(rix);
+                continue;
              }
-             else {
-                if (ix == pos)
-                   childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix);
-                else {
-                   // Need to reorder this element
-                   treeModel.removeNodeFromParent(childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix));
-                   treeModel.insertNodeInto(childNode, treeNode, pos);
-                }
+
+             DefaultMutableTreeNode childTree = findChildNode(treeNode, childEnt);
+             if (childTree == null) {
+                childTree = new DefaultMutableTreeNode(childEnt);
+
+                treeModel.insertNodeInto(childTree, treeNode, pos);
              }
-             element.treeNode = childNode;
-             updateInstanceTreeNodes(element, childNode, treeModel, pos);
+             TreePath path = addToIndex(childEnt, childTree, index, parent);
+             updatePackageContents(childEnt, childTree, treeModel, index, path, byLayer);
              pos++;
-             addToIndex(element, childNode, index, parent);
-          }
-          else if (ix != -1) {
-             removeChildNode(treeNode, element, treeModel);
-             element.treeNode = null;
           }
        }
-       // For when we refresh the instance nodes, keep track of the node where they are placed.
-       ents.instPos = pos;
-       updateInstanceTreeNodes(ents, treeNode, treeModel, pos);
        if (ents.removed != null) {
           // TODO: no longer need this loop?
           for (TreeEnt rem:ents.removed) {
@@ -207,7 +172,7 @@ TypeTreeModel {
        }
    }
 
-   void updateInstanceTreeNodes(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel, int pos) {
+   void updateInstanceTreeNodes(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel) {
        List<InstanceWrapper> insts = null;
        if (includeInstances) {
           if (ents.cachedTypeDeclaration == null && ents.open) {
@@ -217,38 +182,8 @@ TypeTreeModel {
              insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
           }
        }
-       if (insts != null) {
-          for (InstanceWrapper inst:insts) {
-             DefaultMutableTreeNode childNode;
-             int ix = findChildNodeIndex(treeNode, inst);
-             if (ix == -1) {
-                childNode = new DefaultMutableTreeNode(inst);
-                treeModel.insertNodeInto(childNode, treeNode, pos);
-             }
-             else {
-                 if (ix == pos) {
-                    childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix);
-                 }
-                 else {
-                   // Reorder
-                   treeModel.removeNodeFromParent(childNode = (DefaultMutableTreeNode) treeNode.getChildAt(ix));
-                   treeModel.insertNodeInto(childNode, treeNode, pos);
-                 }
-             }
-             pos++;
-             // TODO addToIndex here - need to support InstanceWrapper instead of TreeEnt
-          }
-       }
-       removeExtraInstanceTreeNodes(treeNode, treeModel, insts);
-   }
-
-   void removeExtraInstanceTreeNodes(DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel, List<InstanceWrapper> insts) {
-      for (int i = 0; i < treeNode.getChildCount(); i++) {
-         Object userObj = ((DefaultMutableTreeNode) treeNode.getChildAt(i)).getUserObject();
-         if (userObj instanceof InstanceWrapper && (insts == null || !insts.contains(userObj))) {
-             treeModel.removeNodeFromParent((DefaultMutableTreeNode) treeNode.getChildAt(i));
-         }
-      }
+       ents.updateInstances(insts);
+       updatePackageContents(ents, treeNode, treeModel, ents.typeTreeIndex, ents.path, ents.isTypeTree);
    }
 
    DefaultMutableTreeNode findChildNode(DefaultMutableTreeNode parent, Object userObj) {
@@ -435,6 +370,10 @@ TypeTreeModel {
                        setIcon(GlobalResources.booleanIcon.icon);
                     else
                        System.err.println("*** Unknown primitive type: " + tn);
+                    break;
+                 case Instance:
+                    setIcon(GlobalResources.instanceIcon.icon);
+                    break;
               }
            }
            else if (obj instanceof InstanceWrapper) {

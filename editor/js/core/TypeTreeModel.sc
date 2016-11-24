@@ -22,27 +22,13 @@ TypeTreeModel {
    @Sync(syncMode=SyncMode.Disabled)
    class TreeNode {
       TreeEnt ent;
+      ArrayList<TreeNode> children = new ArrayList<TreeNode>();;
       TreeNode(TreeEnt e) {
          ent = e;
       }
 
       boolean getHasChildren() {
-         return false;
-      }
-
-      boolean getNeedsOpenClose() {
-         return ent.needsOpenClose;
-      }
-   }
-
-   class DirTreeNode extends TreeNode {
-      ArrayList<TreeNode> children = new ArrayList<TreeNode>();;
-      DirTreeNode(DirEnt e) {
-         super(e);
-      }
-
-      boolean getHasChildren() {
-         return true;
+         return ent.hasChildren;
       }
 
       boolean getNeedsOpenClose() {
@@ -52,8 +38,8 @@ TypeTreeModel {
 
    // These are transient so they are not synchronized from client to the server.  That's
    // because we will build these data structures on the server or client 
-   transient DirTreeNode rootTypeTreeNode;
-   transient DirTreeNode rootLayerTreeNode;
+   transient TreeNode rootTypeTreeNode;
+   transient TreeNode rootLayerTreeNode;
 
    // These will be populated from the server automatically.  Sometime after those values
    // are set, we need to refresh the tree.
@@ -76,10 +62,10 @@ TypeTreeModel {
       rootTypeTreeIndex = new HashMap<String, List<TreeNode>>();
 
       String rootName = getTypeRootName();;
-      DirTreeNode rootNode;
+      TreeNode rootNode;
       if (rootTypeTreeNode == null) {
          // Now build the TreeNodes from that, sorting as we go
-         rootNode = new DirTreeNode(rootTypeDirEnt);
+         rootNode = new TreeNode(rootTypeDirEnt);
       }
       else {
          rootTypeTreeNode.ent = rootTypeDirEnt;
@@ -112,12 +98,12 @@ TypeTreeModel {
 
    public final static String PKG_INDEX_PREFIX = "<pkg>:";
 
-   void updatePackageContents(DirEnt ents, DirTreeNode treeNode, Map<String, List<TreeNode>> index, boolean byLayer) {
-       Map<String,DirEnt> subDirs = ents.subDirs;
+   void updatePackageContents(TreeEnt ents, TreeNode treeNode, Map<String, List<TreeNode>> index, boolean byLayer) {
+       Map<String,TreeEnt> subDirs = ents.childEnts;
        int pos = 0;
        int rix;
        if (subDirs != null) {
-          for (DirEnt childEnt:subDirs.values()) {
+          for (TreeEnt childEnt:subDirs.values()) {
              rix = -1;
              int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
              if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
@@ -129,50 +115,13 @@ TypeTreeModel {
 
              TreeNode childTree = findChildNode(treeNode, childEnt);
              if (childTree == null) {
-                childTree = new DirTreeNode(childEnt);
+                childTree = new TreeNode(childEnt);
 
                 treeNode.children.add(pos, childTree);
              }
              addToIndex(childEnt, childTree, index);
-             updatePackageContents(childEnt, (DirTreeNode) childTree, index, byLayer);
+             updatePackageContents(childEnt, (TreeNode) childTree, index, byLayer);
              pos++;
-          }
-       }
-       if (ents.entries != null) {
-          for (TreeEnt element:ents.entries) {
-             rix = -1;
-             int tix = ents.removed != null ? ents.removed.indexOf(element) : -2;
-             // Make sure that we don't call isVisible or anything on a removed element - the src might not be there, the class might be there and it could get loaded unnecessarily
-             if ((ents.removed != null && (rix = ents.removed.indexOf(element)) != -1) || !element.isVisible(byLayer)) {
-                removeChildNode(treeNode, element);
-                if (rix != -1)
-                   ents.removed.remove(rix);
-                continue;
-             }
-
-             int ix = findChildNodeIndex(treeNode, element);
-
-             // If there's already a directory element for this node, don't add a second one for the leaves
-             if (subDirs == null || subDirs.get(element.value) == null) {
-                TreeNode childNode;
-                if (ix == -1) {
-                   childNode = new TreeNode(element);
-                   treeNode.children.add(pos, childNode);
-                }
-                else {
-                   if (ix == pos)
-                      childNode = (TreeNode) treeNode.children.get(ix);
-                   else {
-                      // Need to reorder this element
-                      childNode = treeNode.children.remove(ix);
-                      treeNode.children.add(pos, childNode);
-                   }
-                }
-                pos++;
-                addToIndex(element, childNode, index);
-             }
-             else if (ix != -1)
-                removeChildNode(treeNode, element);
           }
        }
        if (ents.removed != null) {
@@ -202,14 +151,14 @@ TypeTreeModel {
       }
    }
 
-   TreeNode findChildNode(DirTreeNode parent, TreeEnt treeEnt) {
+   TreeNode findChildNode(TreeNode parent, TreeEnt treeEnt) {
       int ix = findChildNodeIndex(parent, treeEnt);
       if (ix == -1)
          return null;
       return (TreeNode) parent.children.get(ix);
    }
 
-   void removeChildNode(DirTreeNode parent, TreeEnt treeEnt) {
+   void removeChildNode(TreeNode parent, TreeEnt treeEnt) {
       int ix = findChildNodeIndex(parent, treeEnt);
       if (ix == -1) {
          return;
@@ -217,7 +166,7 @@ TypeTreeModel {
       parent.children.remove(ix);
    }
 
-   int findChildNodeIndex(DirTreeNode parent, TreeEnt treeEnt) {
+   int findChildNodeIndex(TreeNode parent, TreeEnt treeEnt) {
       int sz = parent.children.size();
       for (int i = 0; i < sz; i++) {
          if (((TreeNode) parent.children.get(i)).ent == treeEnt)
@@ -239,7 +188,7 @@ TypeTreeModel {
 
       if (rootLayerTreeNode == null) {
          // Now build the TreeNodes from that, sorting as we go
-         rootLayerTreeNode = new DirTreeNode(rootLayerDirEnt);
+         rootLayerTreeNode = new TreeNode(rootLayerDirEnt);
       }
       else
          rootLayerTreeNode.ent = rootLayerDirEnt;

@@ -259,10 +259,10 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                  return;
                }
 
-               ArrayList<Object> treeEnts = new ArrayList<Object>();
+               ArrayList<TypeTreeModel.TreeEnt> treeEnts = new ArrayList<TypeTreeModel.TreeEnt>();
                for (TreePath path:paths) {
                   Object userObj = ((DefaultMutableTreeNode) path.lastPathComponent).userObject;
-                  treeEnts.add(userObj);
+                  treeEnts.add((TypeTreeModel.TreeEnt) userObj);
                }
 
                selectTreeNodes(treeEnts);
@@ -478,7 +478,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       location := SwingUtil.point(editorX, editorY);
       size := SwingUtil.dimension(editorWidth, editorHeight);
       editorModel := EditorPanel.this.editorModel;
-      viewVisible = false;
+      viewVisible = true;
    }
 
    object formView extends FormView {

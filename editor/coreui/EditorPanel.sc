@@ -37,7 +37,7 @@ class EditorPanel {
       boolean byLayer = false;
 
       String[] selectedTypeNames :=: editorModel.typeNames;
-      ArrayList<Object> selectedTreeNodes = new ArrayList<Object>();
+      ArrayList<TypeTreeModel.TreeEnt> selectedTreeNodes = new ArrayList<TypeTreeModel.TreeEnt>();
 
       public void clearSelection() {
          if (selectedTreeNodes != null) {
@@ -59,7 +59,7 @@ class EditorPanel {
          if (staleSelection) {
             for (Object selNode:selectedTreeNodes) {
                if (selNode instanceof TypeTreeModel.TreeEnt) {
-                  TypeTreeModel.TreeEnt selEnt = ((TypeTreeModel.TreeEnt)selEnt);
+                  TypeTreeModel.TreeEnt selEnt = ((TypeTreeModel.TreeEnt)selNode);
                   selEnt.selected = false;
                   if (selEnt.cachedTypeDeclaration == null)
                     return;
@@ -93,115 +93,115 @@ class EditorPanel {
          }
       }
 
-      public void selectTreeNodes(ArrayList<Object> treeNodes) {
+      public void selectTreeNodes(ArrayList<TypeTreeModel.TreeEnt> treeNodes) {
          ArrayList<String> newTypeNames = new ArrayList<String>();
+         ArrayList<InstanceWrapper> newInstances = new ArrayList<InstanceWrapper>();
 
          boolean changeTypeNames = false;
          boolean firstType = true;
          String newPackageNode = null;
          boolean changePackageNode = false;
          for (Object treeNode:treeNodes) {
-            if (treeNode instanceof TypeTreeModel.TreeEnt) {
-               TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) treeNode;
-               switch (treeEnt.type) {
-                  case Package:
-                     if (!typeTreeModel.createMode) {
-                        newPackageNode = treeEnt.value;
-                        changePackageNode = true;
-                        editorModel.currentPackage = treeEnt.typeName;
-                        editorModel.currentLayer = null;
-                        changeTypeNames = true;
-                     }
-                     break;
-
-                  case LayerDir:
-                     if (!typeTreeModel.createMode) {
-                        newPackageNode = treeEnt.value;
-                        changePackageNode = true;
-                        editorModel.currentPackage = treeEnt.layer.packagePrefix;
-                        editorModel.currentLayer = treeEnt.layer;
-                        // The dir does not select the layer
-                        //changeTypeNames = true;
-                        //if (!newTypeNames.contains(treeEnt.typeName))
-                        //   newTypeNames.add(treeEnt.typeName);
-                     }
-                     if (typeTreeModel.layerMode) {
-                        newLayerNameField = treeEnt.layer.layerName;
-                     }
-                     break;
-
-                  case InactiveLayer:
-                     newLayerNameField = treeEnt.srcTypeName;
-                     break;
-
-                  case LayerGroup:
-                  /* layer groups do not have a package name so.
-                     no easy way to register htem with the other view so
-                     if (!typeTreeModel.createMode) {
-                        changeTypeNames = true;
-                        newPackageNode = treeEnt.value;
-                        changePackageNode = true;
-                     }
-                  */
-                     break;
-
-                  case Comment:
-                     break;
-
-                  default:
-                     newPackageNode = null; // Replace currently selected package
+            TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) treeNode;
+            switch (treeEnt.type) {
+               case Package:
+                  if (!typeTreeModel.createMode) {
+                     newPackageNode = treeEnt.value;
                      changePackageNode = true;
-                     String newTypeName;
-                     if (treeEnt.type == TypeTreeModel.EntType.LayerFile || treeEnt.type == TypeTreeModel.EntType.LayerDir) {
-                        if (treeEnt.layer != null) {
-                           editorModel.currentPackage = treeEnt.layer.packagePrefix;
-                           newTypeName = treeEnt.layer.layerName;
-                        }
-                        else {
-                           editorModel.currentPackage = null;
-                           newTypeName = treeEnt.srcTypeName;
-                        }
+                     editorModel.currentPackage = treeEnt.typeName;
+                     editorModel.currentLayer = null;
+                     changeTypeNames = true;
+                  }
+                  break;
+
+               case LayerDir:
+                  if (!typeTreeModel.createMode) {
+                     newPackageNode = treeEnt.value;
+                     changePackageNode = true;
+                     editorModel.currentPackage = treeEnt.layer.packagePrefix;
+                     editorModel.currentLayer = treeEnt.layer;
+                     // The dir does not select the layer
+                     //changeTypeNames = true;
+                     //if (!newTypeNames.contains(treeEnt.typeName))
+                     //   newTypeNames.add(treeEnt.typeName);
+                  }
+                  if (typeTreeModel.layerMode) {
+                     newLayerNameField = treeEnt.layer.layerName;
+                  }
+                  break;
+
+               case InactiveLayer:
+                  newLayerNameField = treeEnt.srcTypeName;
+                  break;
+
+               case LayerGroup:
+               /* layer groups do not have a package name so.
+                  no easy way to register htem with the other view so
+                  if (!typeTreeModel.createMode) {
+                     changeTypeNames = true;
+                     newPackageNode = treeEnt.value;
+                     changePackageNode = true;
+                  }
+               */
+                  break;
+
+               case Comment:
+                  break;
+
+               default:
+                  newPackageNode = null; // Replace currently selected package
+                  changePackageNode = true;
+                  String newTypeName;
+                  if (treeEnt.type == TypeTreeModel.EntType.LayerFile || treeEnt.type == TypeTreeModel.EntType.LayerDir) {
+                     if (treeEnt.layer != null) {
+                        editorModel.currentPackage = treeEnt.layer.packagePrefix;
+                        newTypeName = treeEnt.layer.layerName;
                      }
                      else {
-                        // Setting package to null also resets the property mode so leave it alone for primitives which do not have a package name
-                        if (treeEnt.type != TypeTreeModel.EntType.Primitive && treeEnt.typeDeclaration != null) {
-                           editorModel.currentPackage = ModelUtil.getPackageName(treeEnt.typeDeclaration);
-                        }
-                        newTypeName = treeEnt.imported ? CTypeUtil.getClassName(treeEnt.typeName) : (editorModel.currentType != null && treeEnt.packageName != null && treeEnt.packageName.equals(CTypeUtil.getPackageName(DynUtil.getTypeName(editorModel.currentType, false))) ? treeEnt.value : treeEnt.typeName);
+                        editorModel.currentPackage = null;
+                        newTypeName = treeEnt.srcTypeName;
                      }
-                     if (!typeTreeModel.createMode) {
-                        changeTypeNames = true;
-                        if (!newTypeNames.contains(treeEnt.typeName))
-                           newTypeNames.add(treeEnt.typeName);
-                        if (byLayer) {
-                           if (lastUpdateSelectionCount == updateSelectionCount) {
-                              // When you choose a type in the layer view, it also by default sets the current layer
-                              editorModel.currentLayer = treeEnt.layer;
-                           }
-                           //viewTabsScroll.viewTabs.mergeToggle.selected = false;
+                  }
+                  else {
+                     // Setting package to null also resets the property mode so leave it alone for primitives which do not have a package name
+                     if (treeEnt.type != TypeTreeModel.EntType.Primitive && treeEnt.typeDeclaration != null) {
+                        editorModel.currentPackage = ModelUtil.getPackageName(treeEnt.typeDeclaration);
+                     }
+                     newTypeName = treeEnt.imported ? CTypeUtil.getClassName(treeEnt.typeName) : (editorModel.currentType != null && treeEnt.packageName != null && treeEnt.packageName.equals(CTypeUtil.getPackageName(DynUtil.getTypeName(editorModel.currentType, false))) ? treeEnt.value : treeEnt.typeName);
+                  }
+                  if (!typeTreeModel.createMode) {
+                     changeTypeNames = true;
+                     if (!newTypeNames.contains(treeEnt.typeName))
+                        newTypeNames.add(treeEnt.typeName);
+                     if (byLayer) {
+                        if (lastUpdateSelectionCount == updateSelectionCount) {
+                           // When you choose a type in the layer view, it also by default sets the current layer
+                           editorModel.currentLayer = treeEnt.layer;
                         }
-                        else {
-                           // If the current layer does not apply to the newly selected object, reset it to "all" so we get
-                           // the latest one.
-                           //Layer curLayer = viewTabsScroll.viewTabs.selectedLayer;
-                           //if (curLayer != null && !ModelUtil.definedInLayer(treeEnt.getTypeDeclaration(), curLayer))
+                        //viewTabsScroll.viewTabs.mergeToggle.selected = false;
+                     }
+                     else {
+                        // If the current layer does not apply to the newly selected object, reset it to "all" so we get
+                        // the latest one.
+                        //Layer curLayer = viewTabsScroll.viewTabs.selectedLayer;
+                        //if (curLayer != null && !ModelUtil.definedInLayer(treeEnt.getTypeDeclaration(), curLayer))
 
-                           // Now the type tree always resets the layer to null instead of only when it was not in the current type
-                           if (lastUpdateSelectionCount == updateSelectionCount) {
-                              editorModel.currentLayer = ModelUtil.getLayerForType(null, treeEnt.getTypeDeclaration());
-                           }
-                           //viewTabsScroll.viewTabs.mergeToggle.selected = true;
+                        // Now the type tree always resets the layer to null instead of only when it was not in the current type
+                        if (lastUpdateSelectionCount == updateSelectionCount) {
+                           editorModel.currentLayer = ModelUtil.getLayerForType(null, treeEnt.getTypeDeclaration());
                         }
+                        //viewTabsScroll.viewTabs.mergeToggle.selected = true;
                      }
-                     // In createMode only looking at the first path selected
-                     else if (firstType){
-                         newTypeNameField = newTypeName;
-                     }
-                     break;
-               }
-            }
-            else if (treeNode instanceof InstanceWrapper) {
 
+                     if (treeEnt.instance != null) {
+                        newInstances.add(treeEnt.instance);
+                     }
+                  }
+                  // In createMode only looking at the first path selected
+                  else if (firstType){
+                      newTypeNameField = newTypeName;
+                  }
+                  break;
             }
 
             if (firstType)
@@ -223,6 +223,7 @@ class EditorPanel {
                editorModel.selectionChanged++;
             }
          }
+         editorModel.selectedInstances = newInstances;
          lastUpdateSelectionCount = updateSelectionCount;
       }
 

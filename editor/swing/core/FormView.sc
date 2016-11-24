@@ -78,8 +78,11 @@ FormView {
             Object currentObj = null;
             if (instanceMode) {
                // TODO: if this is a nested type, we should find the sub-object of the parent type
-               if (editorModel.selectedInstances != null && editorModel.selectedInstances.size() > ix)
+               if (editorModel.selectedInstances != null && editorModel.selectedInstances.size() > ix) {
                   currentObj = editorModel.selectedInstances.get(ix);
+                  if (currentObj instanceof InstanceWrapper)
+                     currentObj = ((InstanceWrapper) currentObj).instance;
+               }
             }
             /*
             Object currentObj = ModelUtil.isObjectType(currentType) ? editorModel.system.resolveName(currentType.getFullTypeName(), false) :

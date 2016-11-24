@@ -52,8 +52,8 @@ class TypeTreeModel {
    transient boolean typeTreeBuilt = false, layerTreeBuilt = false;
 
    // These are the two main trees of TreeEnt objects.  This tree is not directly displayed but is referenced from the TreeNode classes which are displayed.
-   DirEnt rootTypeDirEnt;
-   DirEnt rootLayerDirEnt;
+   TreeEnt rootTypeDirEnt;
+   TreeEnt rootLayerDirEnt;
 
    TypeTreeSelectionListener typeListener;
    TypeTreeSelectionListener layerListener;
@@ -97,11 +97,21 @@ class TypeTreeModel {
       String value;
       String srcTypeName;
       Layer layer;
+      // For TreeEnts which represent instances, the wrapper for the instance
+      InstanceWrapper instance;
+
+      @sc.obj.Sync(onDemand=true)
+      HashMap<String,TreeEnt> childEnts;
+      // Parallel to the childEnts map, but retains sort order for display
+      ArrayList<TreeEnt> childList;
+      ArrayList<TreeEnt> removed = null;
+
       boolean imported;
       boolean hasSrc;
       boolean transparent; // Entry does not exist on the file system yet
       boolean isTypeTree; // Or the layer tree
       boolean prependPackage; // Is this a type in the type tree or a file like web.xml which does not use a type name
+      boolean marked; // Temp flag used to mark in-use objects
       String objectId;
 
       TreeEnt(EntType type, String value, boolean isTypeTree, String srcTypeName, Layer layer) {
@@ -130,6 +140,10 @@ class TypeTreeModel {
       boolean createModeSelected = false;
 
       UIIcon icon;
+
+      boolean hasVisibleChildren;
+
+      children =: refresh();
 
       String toString() {
          return value;
@@ -167,8 +181,7 @@ class TypeTreeModel {
          // parent object is synchronized.  When a user opens the node, the startSync call begins
          // synchronizing this property.  On the client this causes a fetch of the data.
          // On the server, it pushes this property to the client on the next sync.
-         SyncManager.startSync(this, "subDirs");
-         SyncManager.startSync(this, "entries");
+         SyncManager.startSync(this, "childEnts");
       }
 
       void selectType(boolean append) {
@@ -214,33 +227,12 @@ class TypeTreeModel {
          return type != EntType.LayerGroup && type != EntType.Root;
       }
 
-      // Just for childless tree nodes.  The dir does not inherit this method
-      boolean hasAVisibleChild(boolean byLayer) {
-         switch (type) {
-            case Root:
-               return true; // should the root always be visible?
-         }
-         return false;
-      }
-
       int compareTo(TreeEnt c) {
          return value.compareTo(c.value);
       }
 
-      boolean hasChild(String value) {
-         return false;
-      }
-
-      boolean getHasChildren() {
-         return false;
-      }
-
       boolean getNeedsOpenClose() {
          return type != EntType.Root && hasChildren;
-      }
-
-      public int getNumChildren() {
-         return 0;
       }
 
       public boolean isVisible(boolean byLayer) {
@@ -319,6 +311,8 @@ class TypeTreeModel {
 
                 case Primitive:
                    return createMode && propertyMode;
+                case Instance:
+                   return includeInstances;
              }
           }
           return true;
@@ -358,13 +352,104 @@ class TypeTreeModel {
          return true;
       }
 
+      @Constant
+      String getObjectId() {
+         if (objectId != null)
+            return objectId;
+         if (type == null || value == null)
+            return null;
+         String valuePart = CTypeUtil.escapeIdentifierString(srcTypeName == null ? (value == null ? "" : "_" + value.toString()) : "_" + srcTypeName);
+         String typePart = type == null ? "_unknown" : "_" + type;
+         String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
+         objectId = "TE" + (isTypeTree ? "T" : "L") + typePart + layerPart + valuePart;
+         return objectId;
+      }
+
+      void addChild(TreeEnt ent) {
+         if (childEnts == null)
+            childEnts = new HashMap<String,TreeEnt>();
+
+         TreeEnt old = childEnts.put(ent.nodeId, ent);
+         if (childList == null)
+            childList = new ArrayList<TreeEnt>();
+         if (old != null)
+            childList.remove(old);
+         childList.add(ent);
+      }
+
+      void removeChild(TreeEnt ent) {
+         childEnts.remove(ent.nodeId);
+         if (childList != null)
+            childList.remove(ent);
+         removeEntry(ent);
+      }
+
+      void removeChildren() {
+         if (childEnts != null)
+            childEnts.clear();
+         if (childList != null)
+            childList.clear();
+      }
+
+      void removeEntry(TreeEnt toRem) {
+         if (removed == null) {
+            removed = new ArrayList<TreeEnt>(1);
+         }
+         removed.add(toRem);
+      }
+
+      boolean hasChild(String value) {
+         if (childEnts != null) {
+            for (TreeEnt childEnt:childEnts.values()) {
+               if (childEnt.value.equals(value))
+                  return true;
+            }
+         }
+         return false;
+      }
+
+      boolean getHasChildren() {
+         return true;
+      }
+
+      public int getNumChildren() {
+         return (childEnts == null ? 0 : childEnts.size());
+      }
+
+      public List<TreeEnt> getChildren() {
+         ArrayList<TreeEnt> children = new ArrayList<TreeEnt>();
+         if (childEnts != null)
+            children.addAll(childEnts.values());
+         return children;
+      }
+
+      boolean hasAVisibleChild(boolean byLayer) {
+         switch (type) {
+            case Root:
+               return true; // should the root always be visible?
+         }
+         // Not yet fetched so we need to assume there is something visible here
+         if (childEnts == null)
+             return hasVisibleChildren;
+         for (TreeEnt childEnt:childEnts.values()) {
+             if (childEnt.isVisible(byLayer) || childEnt.hasAVisibleChild(byLayer))
+                return hasVisibleChildren = true;
+         }
+         return hasVisibleChildren = false;
+      }
+
       void findTypeTreeEnts(List<TreeEnt> res, String typeName) {
          if (this.typeName != null && this.typeName.equals(typeName)) {
             res.add(this);
          }
+         if (childEnts != null) {
+            for (TreeEnt childEnt:childEnts.values()) {
+               childEnt.findTypeTreeEnts(res, typeName);
+            }
+         }
       }
 
-      public boolean updateSelected() {
+      boolean updateSelected() {
          boolean needsRefresh = false;
          if (typeName == null) {
             // Once there's a current type, all directories are deselected
@@ -385,109 +470,8 @@ class TypeTreeModel {
             open = true;
             needsRefresh = true;
          }
-         return needsRefresh;
-      }
-
-      boolean needsOpen() {
-          return editorModel.createMode ? createModeSelected : selected;
-      }
-
-      @Constant
-      String getObjectId() {
-         if (objectId != null)
-            return objectId;
-         if (type == null || value == null)
-            return null;
-         String valuePart = CTypeUtil.escapeIdentifierString(srcTypeName == null ? (value == null ? "" : "_" + value.toString()) : "_" + srcTypeName);
-         String typePart = type == null ? "_unknown" : "_" + type;
-         String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
-         objectId = (this instanceof DirEnt ? "DE" : "TE") + (isTypeTree ? "T" : "L") + typePart + layerPart + valuePart;
-         return objectId;
-      }
-   }
-
-   @sc.obj.Sync(onDemand=true)
-   class DirEnt extends TreeEnt {
-      @sc.obj.Sync(onDemand=true)
-      LinkedHashMap<String,DirEnt> subDirs;
-      @sc.obj.Sync(onDemand=true)
-      ArrayList<TreeEnt> entries;
-      ArrayList<TreeEnt> removed = null;
-
-      DirEnt(EntType type, String value, boolean isTypeTree, String srcTypeName, Layer layer) {
-         super(type, value, isTypeTree, srcTypeName, layer);
-      }
-
-      boolean hasVisibleChildren;
-
-      subDirs =: refresh();
-
-      void removeEntry(TreeEnt toRem) {
-         if (removed == null) {
-            removed = new ArrayList<TreeEnt>(1);
-         }
-         removed.add(toRem);
-      }
-
-      boolean hasChild(String value) {
-         for (TreeEnt childEnt:entries) {
-            if (childEnt.value.equals(value))
-               return true;
-         }
-         return false;
-      }
-
-      boolean getHasChildren() {
-         return true;
-      }
-
-      public int getNumChildren() {
-         return (entries == null ? 0 : entries.size()) + (subDirs == null ? 0 : subDirs.size());
-      }
-
-      public List<TreeEnt> getChildren() {
-         ArrayList<TreeEnt> children = new ArrayList<TreeEnt>();
-         if (subDirs != null)
-            children.addAll(subDirs.values());
-         if (entries != null)
-            children.addAll(entries);
-         return children;
-      }
-
-      boolean hasAVisibleChild(boolean byLayer) {
-         // Not yet fetched so we need to assume there is something visible here
-         if (subDirs == null || entries == null)
-             return hasVisibleChildren;
-         for (DirEnt childEnt:subDirs.values()) {
-             if (childEnt.isVisible(byLayer) || childEnt.hasAVisibleChild(byLayer))
-                return hasVisibleChildren = true;
-         }
-         // Find all of the sub-dirs which have sub-types for them
-         for (TreeEnt childEnt:entries) {
-            if (childEnt.isVisible(byLayer) || childEnt.hasAVisibleChild(byLayer))
-               return hasVisibleChildren = true;
-         }
-         return hasVisibleChildren = false;
-      }
-
-      void findTypeTreeEnts(List<TreeEnt> res, String typeName) {
-         super.findTypeTreeEnts(res, typeName);
-         if (subDirs != null) {
-            for (DirEnt childEnt:subDirs.values()) {
-               childEnt.findTypeTreeEnts(res, typeName);
-            }
-         }
-         if (entries != null) {
-            for (TreeEnt childEnt:entries) {
-               childEnt.findTypeTreeEnts(res, typeName);
-            }
-         }
-      }
-
-      boolean updateSelected() {
-         boolean needsRefresh = super.updateSelected();
-         if (subDirs != null) {
-            for (DirEnt childEnt:subDirs.values()) {
+         if (childEnts != null) {
+            for (TreeEnt childEnt:childEnts.values()) {
                if (childEnt.updateSelected())
                   needsRefresh = true;
                // auto-open trees when child nodes are selected
@@ -497,37 +481,77 @@ class TypeTreeModel {
                 }
             }
          }
-         if (entries != null) {
-            for (TreeEnt childEnt:entries) {
-               if (childEnt.updateSelected())
-                  needsRefresh = true;
-               if (!open && childEnt.needsOpen()) {
-                  open = true;
-                  needsRefresh = true;
-               }
-            }
-         }
          return needsRefresh;
       }
 
       boolean needsOpen() {
-         if (super.needsOpen())
+         if (editorModel.createMode ? createModeSelected : selected)
             return true;
          // auto-open trees when child nodes are selected
-         if (subDirs != null) {
-            for (DirEnt childEnt:subDirs.values()) {
+         if (childEnts != null) {
+            for (TreeEnt childEnt:childEnts.values()) {
                if (childEnt.needsOpen())
                   return true;
             }
          }
 
-         if (entries != null) {
-            for (TreeEnt childEnt:entries) {
-               if (childEnt.needsOpen())
-                  return true;
+         return false;
+      }
+
+      public void updateInstances(List<InstanceWrapper> insts) {
+         clearMarkedFlag();
+         if (insts != null) {
+            for (InstanceWrapper inst:insts) {
+                TreeEnt childEnt = null;
+                if (childList != null) {
+                   for (TreeEnt ent:childList) {
+                       if (ent.instance != null && ent.instance.equals(inst)) {
+                           childEnt = ent;
+                           break;
+                       }
+                   }
+                }
+                if (childEnt == null) {
+                   childEnt = new TreeEnt(EntType.Instance, inst.toString(), isTypeTree, inst.typeName, null);
+                   childEnt.instance = inst;
+                   if (childEnt.srcTypeName == null)
+                      childEnt.srcTypeName = srcTypeName;
+                   addChild(childEnt);
+                }
+                childEnt.marked = true;
             }
          }
-         return false;
+         removeUnmarkedInstances();
+      }
+
+      public void clearMarkedFlag() {
+         if (childList != null) {
+            for (TreeEnt child:childList)
+               child.marked = false;
+         }
+      }
+
+      public void removeUnmarkedInstances() {
+          if (childList != null) {
+             for (int i = 0; i < childList.size(); i++) {
+                TreeEnt child = childList.get(i);
+                if (!child.marked && child.instance != null) {
+                   childList.remove(i);
+                   i--;
+                   childEnts.remove(child.nodeId);
+                   removeEntry(child);
+                }
+             }
+          }
+      }
+
+      public String getNodeId() {
+         switch (type) {
+            case Instance:
+               return instance.toString();
+            default:
+               return value;
+         }
       }
    }
 

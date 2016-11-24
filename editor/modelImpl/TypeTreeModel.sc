@@ -11,7 +11,6 @@ import sc.lang.java.ModelUtil;
 import sc.lang.java.JavaModel;
 
 import sc.lang.ILanguageModel;
-import sc.lang.InstanceWrapper;
 
 import java.util.Collections;
 
@@ -97,7 +96,7 @@ TypeTreeModel {
    }
 
    boolean rebuildTypeDirEnts() {
-      DirEnt rootEnts = new DirEnt(EntType.Root, "All Types", true, null, null);
+      TreeEnt rootEnts = new TreeEnt(EntType.Root, "All Types", true, null, null);
       rootTypeDirEnt = rootEnts;
 
       if (includePrimitives) {
@@ -109,7 +108,7 @@ TypeTreeModel {
             // Primitives are treated like imported types since they are not defined inside layers as src
             ent.imported = true;
             ent.hasSrc = false;
-            rootEnts.entries.add(ent);
+            rootEnts.addChild(ent);
          }
       }
 
@@ -136,7 +135,7 @@ TypeTreeModel {
          }
       }
 
-      // Then build our DirEnt structure from the Set of src type names we get back
+      // Then build our TreeEnt structure from the Set of src type names we get back
       for (String srcTypeName:srcTypeNames) {
          if (!isFilteredType(srcTypeName)) {
             addModelToTypeTree(srcTypeName, true);
@@ -160,12 +159,12 @@ TypeTreeModel {
             if (pkg == null)
                pkg = "<Global Layers>";
 
-            DirEnt pkgEnts = lookupPackage(rootEnts.subDirs, pkg, EntType.Package, null, null, true, true);
+            TreeEnt pkgEnts = lookupPackage(rootEnts, pkg, EntType.Package, null, null, true, true);
 
             TreeEnt ent = new TreeEnt(EntType.InactiveLayer, lii.layerDirName, true, lii.layerDirName, null);
             ent.prependPackage = true;
 
-            pkgEnts.entries.add(ent);
+            pkgEnts.addChild(ent);
          //}
       }
 
@@ -213,13 +212,13 @@ TypeTreeModel {
          EntType pkgType = EntType.Package;
          if (typeDecl != null && typeDecl.getEnclosingType() != null)
             pkgType = EntType.ParentType;
-         DirEnt pkgEnts = lookupPackage(rootTypeDirEnt.subDirs, pkg, pkgType, null, null, true, true);
+         TreeEnt pkgEnts = lookupPackage(rootTypeDirEnt, pkg, pkgType, null, null, true, true);
          if (!pkgEnts.hasChild(ent.value))
-            pkgEnts.entries.add(ent);
+            pkgEnts.addChild(ent);
       }
       else {
          if (!rootTypeDirEnt.hasChild(ent.value))
-            rootTypeDirEnt.entries.add(ent);
+            rootTypeDirEnt.addChild(ent);
       }
       return ent;
    }
@@ -228,29 +227,20 @@ TypeTreeModel {
       String pkg = CTypeUtil.getPackageName(srcTypeName);
       String className = CTypeUtil.getClassName(srcTypeName);
 
-      DirEnt pkgEnt;
+      TreeEnt pkgEnt;
       TreeEnt foundEnt = null;
 
       if (pkg != null)
-         pkgEnt = lookupPackage(rootTypeDirEnt.subDirs, pkg, EntType.Package, null, null, false, true);
+         pkgEnt = lookupPackage(rootTypeDirEnt, pkg, EntType.Package, null, null, false, true);
       else
          pkgEnt = rootTypeDirEnt;
 
-      if (pkgEnt == null || pkgEnt.subDirs == null)
+      if (pkgEnt == null || pkgEnt.childEnts == null)
          return null;
 
-      DirEnt childDir = pkgEnt.subDirs.get(className);
+      TreeEnt childDir = pkgEnt.childEnts.get(srcTypeName);
       if (childDir != null) {
          return childDir;
-      }
-
-      if (pkgEnt.entries != null) {
-         for (int i = 0; i < pkgEnt.entries.size(); i++) {
-            if (pkgEnt.entries.get(i).value.equals(className)) {
-               foundEnt = pkgEnt.entries.get(i);
-               break;
-            }
-         }
       }
       return foundEnt;
    }
@@ -259,34 +249,21 @@ TypeTreeModel {
       String pkg = CTypeUtil.getPackageName(srcTypeName);
       String className = CTypeUtil.getClassName(srcTypeName);
 
-      DirEnt pkgEnt;
+      TreeEnt pkgEnt;
       TreeEnt foundEnt = null;
 
       if (pkg != null)
-         pkgEnt = lookupPackage(rootTypeDirEnt.subDirs, pkg, EntType.Package, null, null, false, true);
+         pkgEnt = lookupPackage(rootTypeDirEnt, pkg, EntType.Package, null, null, false, true);
       else
          pkgEnt = rootTypeDirEnt;
 
-      if (pkgEnt == null || pkgEnt.subDirs == null)
+      if (pkgEnt == null || pkgEnt.childEnts == null)
          return null;
 
-      DirEnt childDir = pkgEnt.subDirs.get(className);
+      TreeEnt childDir = pkgEnt.childEnts.get(className);
       if (childDir != null) {
-         pkgEnt.subDirs.remove(className);
+         pkgEnt.childEnts.remove(className);
          pkgEnt.removeEntry(childDir);
-      }
-
-      if (pkgEnt.entries != null) {
-         for (int i = 0; i < pkgEnt.entries.size(); i++) {
-            if (pkgEnt.entries.get(i).value.equals(className)) {
-               foundEnt = pkgEnt.entries.get(i);
-
-               pkgEnt.entries.remove(i);
-               pkgEnt.removeEntry(foundEnt);
-
-               break;
-            }
-         }
       }
       return foundEnt;
    }
@@ -296,34 +273,30 @@ TypeTreeModel {
       String pkg = CTypeUtil.getPackageName(srcTypeName);
       String className = CTypeUtil.getClassName(srcTypeName);
 
-      DirEnt pkgEnt;
+      TreeEnt pkgEnt;
       TreeEnt foundEnt = null;
 
       if (pkg != null)
-         pkgEnt = lookupPackage(rootTypeDirEnt.subDirs, pkg, EntType.Package, null, null, false, true);
+         pkgEnt = lookupPackage(rootTypeDirEnt, pkg, EntType.Package, null, null, false, true);
       else
          pkgEnt = rootTypeDirEnt;
 
       if (pkgEnt == null)
          return null;
 
-      for (int i = 0; i < pkgEnt.entries.size(); i++) {
-         if (pkgEnt.entries.get(i).value.equals(className)) {
-            foundEnt = pkgEnt.entries.get(i);
+      for (TreeEnt childEnt:pkgEnt.childEnts.values()) {
+         if (childEnt.value.equals(className)) {
+            foundEnt = childEnt;
 
             if (remove) {
-               pkgEnt.entries.remove(i);
+               pkgEnt.childEnts.remove(foundEnt.srcTypeName);
                pkgEnt.removeEntry(foundEnt);
             }
             else {
                foundEnt.type = EntType.InactiveLayer;
                foundEnt.value = layer.layerDirName;
                foundEnt.srcTypeName = layer.layerDirName;
-               if (foundEnt instanceof DirEnt) {
-                  DirEnt de = (DirEnt) foundEnt;
-                  de.subDirs.clear();
-                  de.entries.clear();
-               }
+               foundEnt.removeChildren();
             }
             break;
          }
@@ -342,11 +315,11 @@ TypeTreeModel {
 
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, true, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, true, false);
 
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerGroup, layer.packagePrefix, null, true, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerGroup, layer.packagePrefix, null, true, false);
       layerDirEnt.srcTypeName = "layerdir:" + layerDirEnt.srcTypeName; // Need to munch this so selecting the dir does not select the file
 
       String layerType = src.relTypeName;
@@ -362,11 +335,11 @@ TypeTreeModel {
          jm = ModelUtil.getJavaModel(td);
       ent.hasSrc = layer.findSrcFile(jm == null ? layerType : jm.getSrcFile().relFileName, true) != null;
       if (fileDir == null) {
-         layerDirEnt.entries.add(ent);
+         layerDirEnt.addChild(ent);
       }
       else {
-         DirEnt fileEnt = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
-         fileEnt.entries.add(ent);
+         TreeEnt fileEnt = lookupPackage(layerDirEnt, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
+         fileEnt.addChild(ent);
       }
 
       return ent;
@@ -386,11 +359,11 @@ TypeTreeModel {
 
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, true, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, true, false);
 
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerGroup, layer.packagePrefix, null, true, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerGroup, layer.packagePrefix, null, true, false);
       layerDirEnt.srcTypeName = "layerdir:" + layerDirEnt.srcTypeName; // Need to munch this so selecting the dir does not select the file
 
       SrcEntry src = td.getJavaModel().getSrcFile();
@@ -404,11 +377,11 @@ TypeTreeModel {
       ent.imported = layer.getImportDecl(fileTail, false) != null;
       ent.hasSrc = true;
       if (fileDir == null) {
-         layerDirEnt.entries.add(ent);
+         layerDirEnt.addChild(ent);
       }
       else {
-         DirEnt fileEnt = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
-         fileEnt.entries.add(ent);
+         TreeEnt fileEnt = lookupPackage(layerDirEnt, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
+         fileEnt.addChild(ent);
       }
       return ent;
    }
@@ -423,14 +396,14 @@ TypeTreeModel {
       String layerName = layer.layerName;
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, false, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, false, false);
 
       if (layerParentEnt == null)
          return null;
 
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
 
       if (layerDirEnt == null)
          return null;
@@ -440,18 +413,17 @@ TypeTreeModel {
       String fileTail = CTypeUtil.getClassName(layerType);
 
       if (fileDir != null) {
-         layerDirEnt = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
+         layerDirEnt = lookupPackage(layerDirEnt, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
       }
       if (layerDirEnt == null)
          return null;
 
       TreeEnt foundEnt = null;
-      for (int i = 0; i < layerDirEnt.entries.size(); i++) {
-         TreeEnt ent = layerDirEnt.entries.get(i);
+      //for (int i = 0; i < layerDirEnt.entries.size(); i++) {
+      for (TreeEnt ent:layerDirEnt.childEnts.values()) {
          if (ent.value.equals(fileTail)) {
             foundEnt = ent;
-            layerDirEnt.entries.remove(i);
-            layerDirEnt.removeEntry(foundEnt);
+            layerDirEnt.removeChild(ent);
             break;
          }
       }
@@ -473,14 +445,14 @@ TypeTreeModel {
       String layerName = layer.layerName;
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, false, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, false, false);
 
       if (layerParentEnt == null)
          return null;
 
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
 
       if (layerDirEnt == null)
          return null;
@@ -490,19 +462,20 @@ TypeTreeModel {
       String fileTail = CTypeUtil.getClassName(layerType);
 
       if (fileDir != null) {
-         layerDirEnt = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
+         layerDirEnt = lookupPackage(layerDirEnt, fileDir, EntType.Type, layer.packagePrefix, layer, true, false);
       }
       if (layerDirEnt == null)
          return null;
 
       TreeEnt foundEnt = null;
-      for (int i = 0; i < layerDirEnt.entries.size(); i++) {
-         TreeEnt ent = layerDirEnt.entries.get(i);
-         if (ent.value.equals(fileTail)) {
-            foundEnt = ent;
-            layerDirEnt.entries.remove(i);
-            layerDirEnt.removeEntry(foundEnt);
-            break;
+      if (layerDirEnt.childEnts != null) {
+         for (TreeEnt ent:layerDirEnt.childEnts.values()) {
+            if (ent.value.equals(fileTail)) {
+               foundEnt = ent;
+               layerDirEnt.childEnts.remove(layerDirEnt.srcTypeName);
+               layerDirEnt.removeEntry(foundEnt);
+               break;
+            }
          }
       }
       return foundEnt;
@@ -512,28 +485,30 @@ TypeTreeModel {
       String layerName = layer.layerName;
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, false, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, false, false);
 
       if (layerParentEnt == null)
          return null;
 
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerGroup, layer.packagePrefix, null, false, false);
 
       if (layerDirEnt == null)
          return null;
 
       if (remove) {
-         layerParentEnt.subDirs.remove(layerFile);
+         layerParentEnt.childEnts.remove(layerFile);
          layerParentEnt.removeEntry(layerDirEnt);
       }
       else {
          layerDirEnt.type = EntType.InactiveLayer;
          layerDirEnt.value = CTypeUtil.getClassName(layer.layerDirName);
          layerDirEnt.srcTypeName = layer.layerDirName;
-         layerDirEnt.subDirs.clear();
-         layerDirEnt.entries.clear();
+         if (layerDirEnt.childEnts != null) {
+            layerDirEnt.childEnts.clear();
+            layerDirEnt.childList.clear();
+         }
       }
 
       return layerDirEnt;
@@ -542,12 +517,12 @@ TypeTreeModel {
    TreeEnt findTypeInLayerTree(BodyTypeDeclaration td) {
       Layer typeLayer = td.getLayer();
 
-      DirEnt layerDirEnt = lookupPackage(rootLayerDirEnt.subDirs, typeLayer.layerName, EntType.LayerGroup, typeLayer.packagePrefix, null, false, false);
-      if (layerDirEnt == null)
+      TreeEnt layerDirEnt = lookupPackage(rootLayerDirEnt, typeLayer.layerName, EntType.LayerGroup, typeLayer.packagePrefix, null, false, false);
+      if (layerDirEnt == null || layerDirEnt.childEnts == null)
          return null;
 
       int i = 0;
-      for (TreeEnt ent:layerDirEnt.entries) {
+      for (TreeEnt ent:layerDirEnt.childEnts.values()) {
          if (ent.srcTypeName.equals(td.getFullTypeName())) {
             return ent;
          }
@@ -731,17 +706,18 @@ TypeTreeModel {
          refresh();
    }
 
-   DirEnt lookupPackage(Map<String,DirEnt> index, String pkgName, EntType type, String srcPrefix, Layer layer, boolean create, boolean isTypeTree) {
+   TreeEnt lookupPackage(TreeEnt parentEnt, String pkgName, EntType type, String srcPrefix, Layer layer, boolean create, boolean isTypeTree) {
+      Map<String, TreeEnt> index = parentEnt.childEnts;
       String root = CTypeUtil.getHeadType(pkgName);
       String tail = CTypeUtil.getTailType(pkgName);
 
       if (root == null) {
-         DirEnt ents = index.get(pkgName);
+         TreeEnt ents = index == null ? null : index.get(pkgName);
          if (ents == null) {
             if (!create)
                return null;
 
-            ents = new DirEnt(type, pkgName, isTypeTree, CTypeUtil.prefixPath(srcPrefix, pkgName), layer);
+            ents = new TreeEnt(type, pkgName, isTypeTree, CTypeUtil.prefixPath(srcPrefix, pkgName), layer);
             ents.prependPackage = true;
 
             String srcTypeName = ents.srcTypeName = CTypeUtil.prefixPath(srcPrefix, pkgName);
@@ -751,12 +727,12 @@ TypeTreeModel {
 
             ents.hasSrc = system.getSrcTypeDeclaration(srcTypeName, null, true) != null;
 
-            index.put(pkgName, ents);
+            parentEnt.addChild(ents);
          }
          return ents;
       }
       else {
-         DirEnt ents = index.get(root);
+         TreeEnt ents = index == null ? null : index.get(root);
 
          // Layer dir's should replace InactiveLayers when we add them.
          if (type == EntType.LayerDir && ents.type == EntType.InactiveLayer)
@@ -766,22 +742,21 @@ TypeTreeModel {
             if (!create)
                return null;
 
-            ents = new DirEnt(type, root, isTypeTree, (type == EntType.LayerGroup ? "layerGroup:" : "") + CTypeUtil.prefixPath(srcPrefix, root), layer);
+            ents = new TreeEnt(type, root, isTypeTree, (type == EntType.LayerGroup ? "layerGroup:" : "") + CTypeUtil.prefixPath(srcPrefix, root), layer);
             ents.imported = false;
             ents.hasSrc = true;
             ents.prependPackage = true;
-            index.put(root, ents);
+            parentEnt.addChild(ents);
          }
 
-         Map<String,DirEnt> childIndex = ents.subDirs;
-         return lookupPackage(childIndex, tail, type, CTypeUtil.prefixPath(srcPrefix, root), layer, create, isTypeTree);
+         return lookupPackage(ents, tail, type, CTypeUtil.prefixPath(srcPrefix, root), layer, create, isTypeTree);
       }
    }
 
    /** ---- Layer tree ---- */
 
    boolean rebuildLayerDirEnts() {
-      DirEnt rootEnts = new DirEnt(EntType.Root, "By Layer", false, null, null);
+      TreeEnt rootEnts = new TreeEnt(EntType.Root, "By Layer", false, null, null);
       rootLayerDirEnt = rootEnts;
 
       for (int i = 0; i < system.layers.size(); i++) {
@@ -807,16 +782,16 @@ TypeTreeModel {
             String layerDirName = lii.layerDirName;
             String layerGroup = CTypeUtil.getPackageName(layerDirName);
 
-            DirEnt pkgEnts;
+            TreeEnt pkgEnts;
             if (layerGroup != null)
-               pkgEnts = lookupPackage(rootEnts.subDirs, layerGroup, EntType.LayerGroup, null, null, true, false);
+               pkgEnts = lookupPackage(rootEnts, layerGroup, EntType.LayerGroup, null, null, true, false);
             else
                pkgEnts = rootEnts;
 
             TreeEnt ent = new TreeEnt(EntType.InactiveLayer, CTypeUtil.getClassName(lii.layerDirName), false, lii.layerDirName, null);
             ent.prependPackage = true;
 
-            pkgEnts.entries.add(ent);
+            pkgEnts.addChild(ent);
          //}
       }
       rootEnts.processEntry();
@@ -824,23 +799,23 @@ TypeTreeModel {
       return true;
    }
 
-   DirEnt addLayerDirEnt(Layer layer) {
+   TreeEnt addLayerDirEnt(Layer layer) {
       return addLayerFilesWithName(layer, layer, false);
    }
 
    int typesCreated = 0;
    int layersCreated = 0;
 
-   void addLayerType(String layerType, Layer srcLayer, Layer fileLayer, boolean transparentLayer, DirEnt layerDirEnt, boolean prependPackage, boolean imported, boolean addInnerTypes) {
+   void addLayerType(String layerType, Layer srcLayer, Layer fileLayer, boolean transparentLayer, TreeEnt layerDirEnt, boolean prependPackage, boolean imported, boolean addInnerTypes) {
        String fileDir = CTypeUtil.getPackageName(layerType);
        String fileTail = CTypeUtil.getClassName(layerType);
 
-       DirEnt layerParent;
+       TreeEnt layerParent;
        if (fileDir == null) {
           layerParent = layerDirEnt;
        }
        else {
-          layerParent = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, fileLayer.packagePrefix, fileLayer, true, false);
+          layerParent = lookupPackage(layerDirEnt, fileDir, EntType.Type, fileLayer.packagePrefix, fileLayer, true, false);
        }
 
        if (transparentLayer) {
@@ -883,7 +858,7 @@ TypeTreeModel {
              ent.hasSrc = true; // TODO: can't we compute this without parsing the type!
           }
 
-          layerParent.entries.add(ent);
+          layerParent.addChild(ent);
 
           if (loadInnerTypesAtStartup && addInnerTypes) {
              Object typeDecl = ent.typeDeclaration;
@@ -904,21 +879,15 @@ TypeTreeModel {
      * the same unless transparentLayer is true... in that case, we are adding the files from srcFile to fileLayer's tree unless those files
      * already exist in fileLayer
      */
-   DirEnt addLayerFilesWithName(Layer srcLayer, Layer fileLayer, boolean transparentLayer) {
+   TreeEnt addLayerFilesWithName(Layer srcLayer, Layer fileLayer, boolean transparentLayer) {
       String layerName = fileLayer.layerName;
       String layerGroup = CTypeUtil.getPackageName(layerName);
       String layerFile = CTypeUtil.getClassName(layerName);
-      DirEnt layerParentEnt = rootLayerDirEnt;
+      TreeEnt layerParentEnt = rootLayerDirEnt;
       if (layerGroup != null)
-         layerParentEnt = lookupPackage(rootLayerDirEnt.subDirs, layerGroup, EntType.LayerGroup, null, null, true, false);
+         layerParentEnt = lookupPackage(rootLayerDirEnt, layerGroup, EntType.LayerGroup, null, null, true, false);
 
-      //TreeEnt ent = new TreeEnt();
-      //ent.srcTypeName = layer.layerUniqueName;
-      //ent.value = layerFile;
-      //ent.type = EntType.Layer;
-      //layerParentEnt.entries.add(ent);
-
-      DirEnt layerDirEnt = lookupPackage(layerParentEnt.subDirs, layerFile, EntType.LayerDir, fileLayer.packagePrefix, null, true, false);
+      TreeEnt layerDirEnt = lookupPackage(layerParentEnt, layerFile, EntType.LayerDir, fileLayer.packagePrefix, null, true, false);
       layerDirEnt.type = EntType.LayerDir; // Might exist as Inactive if we're loading this new
 
       layerDirEnt.layer = fileLayer;
@@ -959,11 +928,11 @@ TypeTreeModel {
             }
             String fileDir = CTypeUtil.getPackageName(layerType);
             String fileTail = CTypeUtil.getClassName(layerType);
-            DirEnt layerParent;
+            TreeEnt layerParent;
             if (fileDir == null)
                layerParent = layerDirEnt;
             else
-               layerParent = lookupPackage(layerDirEnt.subDirs, fileDir, EntType.Type, fileLayer.packagePrefix, fileLayer, true, false);
+               layerParent = lookupPackage(layerDirEnt, fileDir, EntType.Type, fileLayer.packagePrefix, fileLayer, true, false);
 
             if (!layerParent.hasChild(fileTail)) {
                TreeEnt ent = new TreeEnt(EntType.Type, fileTail, false, layerFullType, fileLayer);
@@ -971,7 +940,7 @@ TypeTreeModel {
                // If this entity is imported into this layer from outside, set the imported flag
                ent.imported = true;
                ent.hasSrc = fileLayer.findSrcFile(layerType.replace('.', '/'), true) != null;
-               layerParent.entries.add(ent);
+               layerParent.addChild(ent);
             }
          }
       }
@@ -983,7 +952,7 @@ TypeTreeModel {
       if (!typeTreeBuilt || !layerTreeBuilt)
          return;
 
-      DirEnt ent = addLayerDirEnt(layer);
+      TreeEnt ent = addLayerDirEnt(layer);
       ent.processEntry();
 
       // Then build our DirEnt structure from the Set of src type names we get back
@@ -1008,6 +977,9 @@ TypeTreeModel {
             if (cachedTypeDeclaration == null)
                needsType = false;
             processEntry();
+            if (cachedTypeDeclaration != null) {
+               initChildren();
+            }
          }
       }
 
@@ -1078,6 +1050,7 @@ TypeTreeModel {
             case LayerGroup:
             case InactiveLayer:
             case Primitive:
+            case Instance:
                newIcon = findIcon();
                if (newIcon != null && newIcon != icon)
                   icon = newIcon;
@@ -1209,25 +1182,19 @@ TypeTreeModel {
                  return GlobalResources.booleanIcon;
               else
                  System.err.println("*** Unknown primitive type: " + tn);
+              break;
+           case Instance:
+              return GlobalResources.instanceIcon;
          }
          return null;
       }
-   }
-
-   DirEnt {
-      subDirs = new LinkedHashMap<String,DirEnt>();
-      entries = new ArrayList<TreeEnt>();
 
       void processEntry() {
-         super.processEntry();
-
-         Collections.sort(entries);
-         for (DirEnt childEnt:subDirs.values()) {
-             childEnt.processEntry();
-         }
-         // Find all of the sub-dirs which have sub-types for them
-         for (TreeEnt childEnt:entries) {
-            childEnt.processEntry();
+         if (childEnts != null) {
+            Collections.sort(childList);
+            for (TreeEnt childEnt:childEnts.values()) {
+               childEnt.processEntry();
+            }
          }
 
          // Accumulate the entCodeTypes and Functions from all child nodes so that we know whether or not to
@@ -1235,14 +1202,11 @@ TypeTreeModel {
          if (entCodeTypes == null || entCodeFunctions == null) {
             entCodeTypes = new ArrayList<CodeType>();
             entCodeFunctions = new ArrayList<CodeFunction>();
-            for (DirEnt childEnt:subDirs.values()) {
-               addCodeTypes(childEnt.entCodeTypes, entCodeTypes);
-               addCodeFunctions(childEnt.entCodeFunctions, entCodeFunctions);
-            }
-            // Find all of the sub-dirs which have sub-types for them
-            for (TreeEnt childEnt:entries) {
-               addCodeTypes(childEnt.entCodeTypes, entCodeTypes);
-               addCodeFunctions(childEnt.entCodeFunctions, entCodeFunctions);
+            if (childEnts != null) {
+               for (TreeEnt childEnt:childEnts.values()) {
+                  addCodeTypes(childEnt.entCodeTypes, entCodeTypes);
+                  addCodeFunctions(childEnt.entCodeFunctions, entCodeFunctions);
+               }
             }
          }
       }
@@ -1264,15 +1228,6 @@ TypeTreeModel {
             CodeFunction s = src.get(i);
             if (!dst.contains(s))
                dst.add(s);
-         }
-      }
-
-      void fetchType() {
-         if (needsType) {
-            super.fetchType();
-            if (cachedTypeDeclaration != null) {
-               initChildren();
-            }
          }
       }
    }
