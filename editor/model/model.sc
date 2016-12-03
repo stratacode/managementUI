@@ -24,6 +24,9 @@ import sc.bind.Bind;
 import sc.bind.IListener;
 import sc.bind.AbstractListener;
 
+import sc.obj.Sync;
+import sc.obj.SyncMode;
+
 import sc.lang.java.JavaModel;
 import sc.lang.template.Template;
 import sc.lang.java.VariableDefinition;

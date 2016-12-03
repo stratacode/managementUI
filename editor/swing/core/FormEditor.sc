@@ -66,19 +66,7 @@ FormEditor {
       public IElementEditor createRepeatElement(Object prop, int ix, Object oldComp) {
          IElementEditor res = null;
 
-         if (prop instanceof BodyTypeDeclaration) {
-            BodyTypeDeclaration subType = (BodyTypeDeclaration) prop;
-            Object subInst = null;
-            if (FormEditor.this.instance != null && DynUtil.isObjectType(subType)) {
-               subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
-            }
-            FormEditor editor = new FormEditor(parentFormView, FormEditor.this, subType, subInst);
-            res = editor;
-         }
-         else if (ModelUtil.isProperty(prop)) {
-            ElementEditor elemView = new TextFieldEditor(FormEditor.this, prop);
-            res = elemView;
-         }
+         res = createChildElementEditor(prop, ix);
 
          updateCell(res, ix);
 

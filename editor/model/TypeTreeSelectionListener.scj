@@ -1,5 +1,5 @@
 interface TypeTreeSelectionListener {
-   void selectTreeEnt(TypeTreeModel.TreeEnt treeEnt, boolean append);
+   void selectTreeEnt(TypeTree.TreeEnt treeEnt, boolean append);
 
-   void treeTypeAvailable(TypeTreeModel.TreeEnt treeEnt);
+   void treeTypeAvailable(TypeTree.TreeEnt treeEnt);
 }

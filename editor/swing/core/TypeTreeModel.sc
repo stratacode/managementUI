@@ -8,45 +8,10 @@ import javax.swing.tree.TreePath;
 
 /** Stores the data behind the type tree, used for both the by types and by layers views. */
 TypeTreeModel {
-   createMode =: selectionChanged();
-   addLayerMode =: selectionChanged();
-   createLayerMode =: selectionChanged();
-   propertyMode =: refresh();
-
-   DefaultTreeModel rootTypeTreeModel, rootLayerTreeModel;
-
-   DefaultMutableTreeNode rootTypeTreeNode;
-
-   DefaultMutableTreeNode rootLayerTreeNode;
-
-   Map<String, List<TreePath>> rootLayerTreeIndex;
-   Map<String, List<TreePath>> rootTypeTreeIndex;
-
    // Event property incremented each time we need to increment the "root" tree object
    int openRoot;
 
    boolean ignoreSelectionEvents = false;
-
-   TreeEnt {
-       // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
-       DefaultMutableTreeNode treeNode;
-
-       // The path for this node in the tree
-       TreePath path;
-
-       DefaultTreeModel getTreeModel() {
-          return isTypeTree ? rootTypeTreeModel : rootLayerTreeModel;
-       }
-
-       Map<String, List<TreePath>> getTypeTreeIndex() {
-          return isTypeTree ? rootTypeTreeIndex : rootLayerTreeIndex;
-       }
-
-       void refreshNode() {
-          if (treeNode != null)
-             updateInstanceTreeNodes(this, treeNode, treeModel);
-       }
-   }
 
    public void scheduleBuild() {
       SwingUtilities.invokeLater(new Runnable() {
@@ -55,219 +20,7 @@ TypeTreeModel {
          }});
    }
 
-   void refreshTypeTree() {
-      if (codeTypes == null || codeFunctions == null)
-         return;
-
-      boolean needsOpenRoot = false;
-      if (rootTypeDirEnt == null) {
-         needsOpenRoot = true;
-         rebuildTypeDirEnts();
-      }
-
-      rootTypeTreeIndex = new HashMap<String, List<TreePath>>();
-
-      String rootName = getTypeRootName();;
-      if (rootTypeTreeNode == null) {
-         // Now build the TreeNodes from that, sorting as we go
-         rootTypeTreeNode = new DefaultMutableTreeNode(rootName);
-         rootTypeTreeModel = new DefaultTreeModel(rootTypeTreeNode);
-      }
-      else {
-         rootTypeTreeNode.setUserObject(rootName);
-         rootTypeTreeModel.nodeChanged(rootTypeTreeNode);
-      }
-
-      DefaultMutableTreeNode defaultNode = findChildNode(rootTypeTreeNode, typeEmptyCommentNode);
-      if (defaultNode != null) {
-         removeChildNode(rootTypeTreeNode, typeEmptyCommentNode, rootTypeTreeModel);
-         needsOpenRoot = true;
-      }
-      updatePackageContents(rootTypeDirEnt, rootTypeTreeNode, rootTypeTreeModel, rootTypeTreeIndex, new TreePath(rootTypeTreeNode), false);
-      if (rootTypeTreeNode.getChildCount() == 0) {
-         if (editorModel.codeFunctions.size() == CodeFunction.allSet.size() && editorModel.codeTypes.size() == CodeType.allSet.size())
-            typeEmptyCommentNode.value = "<No types>";
-         else
-            typeEmptyCommentNode.value = "<No matching types>";
-         defaultNode = new DefaultMutableTreeNode(typeEmptyCommentNode);
-         rootTypeTreeModel.insertNodeInto(defaultNode, rootTypeTreeNode, 0);
-         needsOpenRoot = true;
-      }
-
-      typeTreeBuilt = true;
-
-      if (needsOpenRoot) {
-         openRoot++;
-      }
-
-   }
-
    public final static String PKG_INDEX_PREFIX = "<pkg>:";
-
-   // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name
-   // to TreePath for the selection.
-   TreePath addToIndex(TreeEnt childEnt, TreeNode treeNode, Map<String,List<TreePath>> index, TreePath parent) {
-      Object[] parentPaths = parent.getPath();
-      int pl = parentPaths.length;
-      Object[] paths = new Object[pl + 1];
-      System.arraycopy(parentPaths, 0, paths, 0, pl);
-      paths[pl] = treeNode;
-      TreePath tp = new TreePath(paths);
-
-      if (childEnt.isSelectable()) {
-         List<TreePath> l = index.get(childEnt.typeName);
-         if (l == null) {
-            l = new ArrayList<TreePath>();
-
-            if (childEnt.type != EntType.LayerDir)
-               index.put(childEnt.typeName, l);
-
-            if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
-               index.put(PKG_INDEX_PREFIX + childEnt.value, l);
-         }
-         l.add(tp);
-      }
-
-      return tp;
-   }
-
-   void updatePackageContents(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel,
-                              Map<String, List<TreePath>> index, TreePath parent, boolean byLayer) {
-
-       ents.treeNode = treeNode;
-       ents.path = parent;
-       ArrayList<TreeEnt> subDirs = ents.childList;
-       int pos = 0;
-       int rix;
-       if (subDirs != null) {
-          for (TreeEnt childEnt:subDirs) {
-             rix = -1;
-             int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
-             if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
-                removeChildNode(treeNode, childEnt, treeModel);
-                childEnt.treeNode = null;
-                if (rix != -1)
-                   ents.removed.remove(rix);
-                continue;
-             }
-
-             DefaultMutableTreeNode childTree = findChildNode(treeNode, childEnt);
-             if (childTree == null) {
-                childTree = new DefaultMutableTreeNode(childEnt);
-
-                treeModel.insertNodeInto(childTree, treeNode, pos);
-             }
-             TreePath path = addToIndex(childEnt, childTree, index, parent);
-             updatePackageContents(childEnt, childTree, treeModel, index, path, byLayer);
-             pos++;
-          }
-       }
-       if (ents.removed != null) {
-          // TODO: no longer need this loop?
-          for (TreeEnt rem:ents.removed) {
-             removeChildNode(treeNode, rem, treeModel);
-             rem.treeNode = null;
-          }
-          ents.removed = null;
-       }
-   }
-
-   void updateInstanceTreeNodes(TreeEnt ents, DefaultMutableTreeNode treeNode, DefaultTreeModel treeModel) {
-       List<InstanceWrapper> insts = null;
-       if (includeInstances) {
-          if (ents.cachedTypeDeclaration == null && ents.open) {
-              ents.needsType = true;
-          }
-          if (ents.cachedTypeDeclaration != null) {
-             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
-          }
-       }
-       ents.updateInstances(insts);
-       updatePackageContents(ents, treeNode, treeModel, ents.typeTreeIndex, ents.path, ents.isTypeTree);
-   }
-
-   DefaultMutableTreeNode findChildNode(DefaultMutableTreeNode parent, Object userObj) {
-      int ix = findChildNodeIndex(parent, userObj);
-      if (ix == -1)
-         return null;
-      return (DefaultMutableTreeNode) parent.getChildAt(ix);
-   }
-
-   void removeChildNode(DefaultMutableTreeNode parent, Object userObj, DefaultTreeModel treeModel) {
-      int ix = findChildNodeIndex(parent, userObj);
-      if (ix == -1) {
-         return;
-      }
-
-      // For some reason removing a selected node, even when there are multiple selections causes a change event
-      // showing null paths.  When swapping visibility of nodes, this is a PITA.
-      ignoreSelectionEvents = true;
-      try {
-         treeModel.removeNodeFromParent((DefaultMutableTreeNode) parent.getChildAt(ix));
-      }
-      finally {
-         ignoreSelectionEvents = false;
-      }
-      // parent.remove(ix);
-   }
-
-   int findChildNodeIndex(DefaultMutableTreeNode parent, Object userObj) {
-      for (int i = 0; i < parent.getChildCount(); i++) {
-         Object childUserObj = ((DefaultMutableTreeNode) parent.getChildAt(i)).getUserObject();
-         if (DynUtil.equalObjects(childUserObj, userObj))
-            return i;
-      }
-      return -1;
-   }
-
-   void refreshLayerTree() {
-      if (codeTypes == null || codeFunctions == null)
-         return;
-
-      boolean needsOpenRoot = false;
-      if (rootLayerDirEnt == null) {
-         rebuildLayerDirEnts();
-         needsOpenRoot = true;
-      }
-
-      String rootName = getLayerRootName();
-
-      // Now build the TreeNodes from that, sorting as we go
-      if (rootLayerTreeNode == null) {
-         rootLayerTreeNode = new DefaultMutableTreeNode(rootName);
-         rootLayerTreeModel = new DefaultTreeModel(rootLayerTreeNode);
-      }
-      else {
-         rootLayerTreeNode.setUserObject(rootName);
-         if (rootLayerTreeNode.getChildCount() == 0)
-            needsOpenRoot = true;
-         rootLayerTreeModel.nodeChanged(rootLayerTreeNode);
-      }
-
-      rootLayerTreeIndex = new HashMap<String, List<TreePath>>();
-
-      DefaultMutableTreeNode defaultNode = findChildNode(rootLayerTreeNode, layerEmptyCommentNode);
-      if (defaultNode != null) {
-         removeChildNode(rootLayerTreeNode, layerEmptyCommentNode, rootLayerTreeModel);
-         needsOpenRoot = true;
-      }
-      updatePackageContents(rootLayerDirEnt, rootLayerTreeNode, rootLayerTreeModel, rootLayerTreeIndex, new TreePath(rootLayerTreeNode), true);
-
-      if (rootLayerTreeNode.childCount == 0) {
-         if (editorModel.codeFunctions.size()== CodeFunction.allSet.size() && editorModel.codeTypes.size()== CodeType.allSet.size())
-            layerEmptyCommentNode.value = "<No layers>";
-         else
-            layerEmptyCommentNode.value = "<No matching layers>";
-         defaultNode = new DefaultMutableTreeNode(layerEmptyCommentNode);
-         rootLayerTreeModel.insertNodeInto(defaultNode, rootLayerTreeNode,0);
-         needsOpenRoot = true;
-      }
-
-      layerTreeBuilt = true;
-
-      if (needsOpenRoot)
-         openRoot++;
-   }
 
    static Color selectedNodeColor = new UIColor(0xFF, 0xFE, 0xDF);
 
@@ -275,7 +28,7 @@ TypeTreeModel {
        public java.awt.Component getTreeCellRendererComponent(
                            javax.swing.JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
-           DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+           TypeTree.TreeNode node = (TypeTree.TreeNode) value;
            Object obj = node.getUserObject();
 
            setBackgroundNonSelectionColor(new UIColor((java.awt.Color) UIManager.get("Tree.textBackground")));
@@ -290,8 +43,8 @@ TypeTreeModel {
               return this;
            }
 
-           if (obj instanceof TreeEnt) {
-              TreeEnt nodeInfo = (TreeEnt) obj;
+           if (obj instanceof TypeTree.TreeEnt) {
+              TypeTree.TreeEnt nodeInfo = (TypeTree.TreeEnt) obj;
 
               if (nodeInfo.transparent)
                  setTextNonSelectionColor(GlobalResources.transparentTextColor);
@@ -305,7 +58,7 @@ TypeTreeModel {
               super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
               // In createMode or layerMode, if the guy is selected, need to change the color so we identify the selected items
-              if ((createMode || layerMode) && (editorModel.isTypeNameSelected(nodeInfo.getTypeName()) || (nodeInfo.type == EntType.Package && StringUtil.equalStrings(nodeInfo.value, editorModel.currentPackage))))
+              if ((createMode || layerMode) && (editorModel.isTypeNameSelected(nodeInfo.getTypeName()) || (nodeInfo.type == TypeTree.EntType.Package && StringUtil.equalStrings(nodeInfo.value, editorModel.currentPackage))))
                  setBackgroundNonSelectionColor(selectedNodeColor);
               else
                 setBackgroundNonSelectionColor(tree.getBackground());
@@ -398,7 +151,7 @@ TypeTreeModel {
    }
 
    void addTreePaths(List<TreePath> paths, boolean byLayer, String typeOrPkgName, boolean pkgName) {
-      Map<String, List<TreePath>> index = byLayer ? rootLayerTreeIndex : rootTypeTreeIndex;
+      Map<String, List<TreePath>> index = byLayer ? byLayerTypeTree.rootPathIndex : typeTree.rootPathIndex;
       if (index == null) // not initialized yet
          return;
       if (pkgName)
@@ -412,16 +165,11 @@ TypeTreeModel {
       }
    }
 
-   TreePath getTreePath(boolean byLayer, String typeName) {
-      Map<String, List<TreePath>> index = byLayer ? rootLayerTreeIndex : rootTypeTreeIndex;
-      List<TreePath> l = index.get(typeName);
-      if (l == null || l.size() == 0)
-         return null;
-      // TODO: look for current selected layer and choose that one?
-      return l.get(0);
-   }
-
    boolean nodeExists(String typeName) {
-      return getTreePath(false, typeName) != null;;
+       for (TypeTree typeTree:typeTrees) {
+          if (typeTree.getTreePath(typeName) != null)
+             return true;
+       }
+       return false;
    }
 }

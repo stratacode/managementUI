@@ -2,11 +2,7 @@ import sc.type.RTypeUtil;
 import sc.lang.java.JavaSemanticNode;
 
 // view types: text field view {int, string}, enum, sub-object, list/array
-class TextFieldEditor extends LabeledEditor {
-   // Want value set in the constructor both so it is not null and does not send an extra set of change events during initialization
-   TextFieldEditor(FormEditor editor, Object prop) {
-      super(editor, prop);
-   }
+TextFieldEditor extends LabeledEditor {
    void displayFormError(String msg) {
       int ix = msg.indexOf(" - ");
       if (ix != -1) {

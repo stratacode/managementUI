@@ -44,4 +44,28 @@ class FormEditor extends TypeEditor {
           instance = DynUtil.getPropertyPath(parentInst, CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)));
        }
    }
+
+   Object getInnerTypeInstance(BodyTypeDeclaration subType) {
+      Object subInst = null;
+      if (FormEditor.this.instance != null && DynUtil.isObjectType(subType)) {
+         subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
+      }
+      return subInst;
+   }
+
+   IElementEditor createChildElementEditor(Object prop, int ix) {
+      IElementEditor res = null;
+      if (prop instanceof BodyTypeDeclaration) {
+         BodyTypeDeclaration subType = (BodyTypeDeclaration) prop;
+         Object subInst = getInnerTypeInstance(subType);
+         FormEditor editor = new FormEditor(parentFormView, FormEditor.this, subType, subInst);
+         res = editor;
+      }
+      else if (ModelUtil.isProperty(prop)) {
+         TextFieldEditor elemView = new TextFieldEditor(FormEditor.this, prop);
+         res = elemView;
+      }
+      return res;
+   }
+
 }

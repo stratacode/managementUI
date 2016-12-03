@@ -37,13 +37,13 @@ class EditorPanel {
       boolean byLayer = false;
 
       String[] selectedTypeNames :=: editorModel.typeNames;
-      ArrayList<TypeTreeModel.TreeEnt> selectedTreeNodes = new ArrayList<TypeTreeModel.TreeEnt>();
+      ArrayList<TypeTree.TreeEnt> selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
 
       public void clearSelection() {
          if (selectedTreeNodes != null) {
             for (Object selEnt:selectedTreeNodes) {
-               if (selEnt instanceof TypeTreeModel.TreeEnt)
-                  ((TypeTreeModel.TreeEnt)selEnt).selected = false;
+               if (selEnt instanceof TypeTree.TreeEnt)
+                  ((TypeTree.TreeEnt)selEnt).selected = false;
             }
             selectedTreeNodes.clear();
          }
@@ -55,11 +55,11 @@ class EditorPanel {
       int updateSelectionCount = 0;
       int lastUpdateSelectionCount = 0;
 
-      public void treeTypeAvailable(TypeTreeModel.TreeEnt treeEnt) {
+      public void treeTypeAvailable(TypeTree.TreeEnt treeEnt) {
          if (staleSelection) {
             for (Object selNode:selectedTreeNodes) {
-               if (selNode instanceof TypeTreeModel.TreeEnt) {
-                  TypeTreeModel.TreeEnt selEnt = ((TypeTreeModel.TreeEnt)selNode);
+               if (selNode instanceof TypeTree.TreeEnt) {
+                  TypeTree.TreeEnt selEnt = ((TypeTree.TreeEnt)selNode);
                   selEnt.selected = false;
                   if (selEnt.cachedTypeDeclaration == null)
                     return;
@@ -70,7 +70,7 @@ class EditorPanel {
          }
       }
 
-      public void selectTreeEnt(TypeTreeModel.TreeEnt treeEnt, boolean append) {
+      public void selectTreeEnt(TypeTree.TreeEnt treeEnt, boolean append) {
          if (!append)
             clearSelection();
          boolean createMode = editorModel.createMode;
@@ -83,7 +83,7 @@ class EditorPanel {
             System.out.println("*** type name: " + treeEnt.typeName + " is selected");
             if (selectedTreeNodes == null) {
                System.err.println("*** Null treeEnts!");
-               selectedTreeNodes = new ArrayList<TypeTreeModel.TreeEnt>();
+               selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
             }
             selectedTreeNodes.add(treeEnt);
             if (treeEnt.cachedTypeDeclaration == null)
@@ -93,7 +93,7 @@ class EditorPanel {
          }
       }
 
-      public void selectTreeNodes(ArrayList<TypeTreeModel.TreeEnt> treeNodes) {
+      public void selectTreeNodes(ArrayList<TypeTree.TreeEnt> treeNodes) {
          ArrayList<String> newTypeNames = new ArrayList<String>();
          ArrayList<InstanceWrapper> newInstances = new ArrayList<InstanceWrapper>();
 
@@ -102,7 +102,7 @@ class EditorPanel {
          String newPackageNode = null;
          boolean changePackageNode = false;
          for (Object treeNode:treeNodes) {
-            TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) treeNode;
+            TypeTree.TreeEnt treeEnt = (TypeTree.TreeEnt) treeNode;
             switch (treeEnt.type) {
                case Package:
                   if (!typeTreeModel.createMode) {
@@ -152,7 +152,7 @@ class EditorPanel {
                   newPackageNode = null; // Replace currently selected package
                   changePackageNode = true;
                   String newTypeName;
-                  if (treeEnt.type == TypeTreeModel.EntType.LayerFile || treeEnt.type == TypeTreeModel.EntType.LayerDir) {
+                  if (treeEnt.type == TypeTree.EntType.LayerFile || treeEnt.type == TypeTree.EntType.LayerDir) {
                      if (treeEnt.layer != null) {
                         editorModel.currentPackage = treeEnt.layer.packagePrefix;
                         newTypeName = treeEnt.layer.layerName;
@@ -164,7 +164,7 @@ class EditorPanel {
                   }
                   else {
                      // Setting package to null also resets the property mode so leave it alone for primitives which do not have a package name
-                     if (treeEnt.type != TypeTreeModel.EntType.Primitive && treeEnt.typeDeclaration != null) {
+                     if (treeEnt.type != TypeTree.EntType.Primitive && treeEnt.typeDeclaration != null) {
                         editorModel.currentPackage = ModelUtil.getPackageName(treeEnt.typeDeclaration);
                      }
                      newTypeName = treeEnt.imported ? CTypeUtil.getClassName(treeEnt.typeName) : (editorModel.currentType != null && treeEnt.packageName != null && treeEnt.packageName.equals(CTypeUtil.getPackageName(DynUtil.getTypeName(editorModel.currentType, false))) ? treeEnt.value : treeEnt.typeName);
@@ -228,8 +228,8 @@ class EditorPanel {
       }
 
       void updateListSelection() {
-         boolean needsRefresh = typeTreeModel.rootTypeDirEnt.updateSelected();
-         if (typeTreeModel.rootLayerDirEnt.updateSelected())
+         boolean needsRefresh = typeTreeModel.typeTree.rootDirEnt.updateSelected();
+         if (typeTreeModel.byLayerTypeTree.rootDirEnt.updateSelected())
             needsRefresh = true;
          if (needsRefresh)
             typeTreeModel.refresh();

@@ -259,10 +259,10 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                  return;
                }
 
-               ArrayList<TypeTreeModel.TreeEnt> treeEnts = new ArrayList<TypeTreeModel.TreeEnt>();
+               ArrayList<TypeTree.TreeEnt> treeEnts = new ArrayList<TypeTree.TreeEnt>();
                for (TreePath path:paths) {
                   Object userObj = ((DefaultMutableTreeNode) path.lastPathComponent).userObject;
-                  treeEnts.add((TypeTreeModel.TreeEnt) userObj);
+                  treeEnts.add((TypeTree.TreeEnt) userObj);
                }
 
                selectTreeNodes(treeEnts);
@@ -274,8 +274,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
                if (typeTreeModel.includeInstances) {
                   Object userObj = ((DefaultMutableTreeNode) expandPath.lastPathComponent).userObject;
-                  if (userObj instanceof TypeTreeModel.TreeEnt) {
-                     TypeTreeModel.TreeEnt treeEnt = (TypeTreeModel.TreeEnt) userObj;
+                  if (userObj instanceof TypeTree.TreeEnt) {
+                     TypeTree.TreeEnt treeEnt = (TypeTree.TreeEnt) userObj;
                      if (!treeEnt.open) {
                         treeEnt.open = true;
                         treeEnt.refreshNode();
@@ -332,7 +332,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          viewportView = typeTree;
 
          object typeTree extends BaseTypeTree {
-            model := typeTreeModel.rootTypeTreeModel;
+            model := typeTreeModel.typeTree.rootTreeModel;
 
             rootTreeNode =: setCellRenderer(typeTreeModel.getCellRenderer());
          }
@@ -343,7 +343,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
          object layerTree extends BaseTypeTree {
             byLayer = true;
-            model := typeTreeModel.rootLayerTreeModel;
+            model := typeTreeModel.byLayerTypeTree.rootTreeModel;
          }
       }
    }
