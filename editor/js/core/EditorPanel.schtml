@@ -6,8 +6,10 @@
    BaseTypeTree extends TreeView {}
    @Component
    typeTreeModel {
-       typeListener = trees.typeList.typeTree; 
-       layerListener = trees.layerList.layerTree; 
+       {
+           typeTree.selectionListener = trees.typeList.typeTree;
+           byLayerTypeTree.selectionListener = trees.layerList.layerTree;
+       }
    }
 
    double topTreeHeight = -1;
@@ -62,7 +64,7 @@
           
    <div id="trees" visible=":= windowOpen">
       <ul id="typeList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
-         <li id="typeTree" extends="BaseTypeTree" tree=":= typeTreeModel.rootTypeTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+         <li id="typeTree" extends="BaseTypeTree" tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreePercent == -1 ? "99.5%" : "99.5%") + ";"'/>
       </ul>
 
@@ -70,7 +72,7 @@
            maxPercent=":= menuStyle.treePanePer * 2"/>
 
       <ul id="layerList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
-         <li id="layerTree" extends="BaseTypeTree" byLayer="true" tree=":= typeTreeModel.rootLayerTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+         <li id="layerTree" extends="BaseTypeTree" byLayer="true" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreeHeight == -1 ? "99.5%" : (100 - topTreePercent - 1) + "%") + ";"'/>
       </ul>
    </div>
@@ -89,7 +91,7 @@
            editorModel=":= EditorPanel.this.editorModel">
       </div>
 
-      <div id="formView" extends="FormView" style=':= editorViewStyle' viewVisible="= true"
+      <div id="formView" extends="FormView" style=':= editorViewStyle' viewVisible="= false"
            editorModel=":= EditorPanel.this.editorModel">
       </div>
 

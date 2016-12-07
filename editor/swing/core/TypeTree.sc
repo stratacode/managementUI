@@ -22,12 +22,8 @@ TypeTree {
          return (TreeNode) getChildAt(ix);
       }
 
-      void removeChildNode(TreeEnt ent) {
-         int ix = findChildIndexForEnt(ent);
-         if (ix == -1) {
-            return;
-         }
 
+      void removeChildAt(int ix) {
          // For some reason removing a selected node, even when there are multiple selections causes a change event
          // showing null paths.  When swapping visibility of nodes, this is a PITA.
          treeModel.ignoreSelectionEvents = true;
@@ -43,9 +39,6 @@ TypeTree {
 
 
    TreeEnt {
-       // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
-       TreeNode treeNode;
-
        // The path for this node in the tree
        TreePath path;
 

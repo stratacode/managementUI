@@ -13,12 +13,20 @@ TypeTree {
          return children.get(ix);
       }
 
-      void removeChildNode(TreeEnt childEnt) {
-          int ix = findChildIndexForEnt(childEnt);
-          if (ix != -1)
-             children.remove(ix);
-          else
-             System.err.println("*** Unable to remove child node");
+      void removeChildAt(int ix) {
+         children.remove(ix);
+      }
+   }
+
+   TreeEnt {
+       void refreshNode() {
+          if (treeNode != null)
+             updateInstanceTreeNodes(this, treeNode);
+       }
+
+      void toggleOpen() {
+          refreshNode();
+          super.toggleOpen();
       }
    }
 
@@ -70,15 +78,22 @@ TypeTree {
    }
 
    void updatePackageContents(TreeEnt ents, TreeNode treeNode, Map<String, List<TreeNode>> index, boolean byLayer) {
-       Map<String,TreeEnt> subDirs = ents.childEnts;
+       ents.treeNode = treeNode;
+       ArrayList<TreeEnt> subList = ents.childList;
        int pos = 0;
        int rix;
-       if (subDirs != null) {
-          for (TreeEnt childEnt:subDirs.values()) {
+       if (ents.srcTypeName != null && ents.srcTypeName.contains("UnitConverter"))
+          System.out.println("***");
+
+       boolean changed = false;
+       treeNode.clearMarkedFlag();
+       if (subList != null) {
+          for (TreeEnt childEnt:subList) {
              rix = -1;
              int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
              if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
                 treeNode.removeChildNode(childEnt);
+                changed = true;
                 if (rix != -1)
                    ents.removed.remove(rix);
                 continue;
@@ -89,7 +104,9 @@ TypeTree {
                 childTree = new TreeNode(childEnt);
 
                 treeNode.children.add(pos, childTree);
+                changed = true;
              }
+             childTree.marked = true;
              addToIndex(childEnt, childTree, index);
              updatePackageContents(childEnt, (TreeNode) childTree, index, byLayer);
              pos++;
@@ -99,9 +116,31 @@ TypeTree {
           // TODO: no longer need this loop?
           for (TreeEnt rem:ents.removed) {
              treeNode.removeChildNode(rem);
+             changed = true;
           }
           ents.removed = null;
        }
+       if (treeNode.removeUnmarkedChildren())
+          changed = true;
+
+       if (changed) {
+          ents.sendChangedEvent();
+          treeNode.sendChangedEvent();
+       }
+   }
+
+   void updateInstanceTreeNodes(TreeEnt ents, TreeNode treeNode) {
+       List<InstanceWrapper> insts = null;
+       if (treeModel.includeInstances) {
+          if (ents.cachedTypeDeclaration == null && ents.open) {
+              ents.needsType = true;
+          }
+          if (ents.cachedTypeDeclaration != null) {
+             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
+          }
+       }
+       ents.updateInstances(insts);
+       updatePackageContents(ents, treeNode, rootTreeIndex, !isTypeTree());
    }
 
    // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name

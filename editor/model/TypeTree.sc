@@ -71,6 +71,7 @@ class TypeTree {
       Instance;
    }
 
+   @Sync(syncMode=SyncMode.Disabled)
    EditorModel getEditorModel() {
       return treeModel.editorModel;
    }
@@ -81,6 +82,8 @@ class TypeTree {
    @Sync(syncMode=SyncMode.Disabled)
    class TreeNode {
       TreeEnt ent;
+      // Flag used temporarily to do fast and orderly removal of elements that are no longer being used
+      boolean marked;
 
       boolean getHasChildren() {
          return ent.hasChildren;
@@ -113,7 +116,40 @@ class TypeTree {
           return null;
       }
 
-      abstract void removeChildNode(TreeEnt childEnt);
+      void removeChildNode(TreeEnt childEnt) {
+          int ix = findChildIndexForEnt(childEnt);
+          if (ix != -1)
+             removeChildAt(ix);
+      }
+
+      abstract void removeChildAt(int ix);
+
+      void clearMarkedFlag() {
+         int numChildren = getNumChildren();
+         for (int i = 0; i < numChildren; i++) {
+            TreeNode child = getChildNode(i);
+            child.marked = false;
+         }
+      }
+
+      boolean removeUnmarkedChildren() {
+         int numChildren = getNumChildren();
+         boolean any = false;
+         for (int i = 0; i < numChildren; i++) {
+            TreeNode child = getChildNode(i);
+            if (!child.marked) {
+               removeChildAt(i);
+               i--;
+               numChildren--;
+               any = true;
+            }
+         }
+         return any;
+      }
+
+      void sendChangedEvent() {
+        sc.bind.Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
+      }
    }
 
    @sc.obj.Sync(onDemand=true)
@@ -139,6 +175,10 @@ class TypeTree {
       boolean prependPackage; // Is this a type in the type tree or a file like web.xml which does not use a type name
       boolean marked; // Temp flag used to mark in-use objects
       String objectId;
+
+      // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
+      @Sync(syncMode=SyncMode.Disabled)
+      TreeNode treeNode;
 
       TreeEnt(EntType type, String value, TypeTree typeTree, String srcTypeName, Layer layer) {
          this.type = type;
@@ -202,13 +242,15 @@ class TypeTree {
       }
 
       public void initChildren() {
-         // childEnts and childList are marked @Sync(onDemand=true) so they are left out of the sync when the
-         // parent object is synchronized.  When a user opens the node, the startSync call begins
-         // synchronizing this property.  On the client this causes a fetch of the data.
-         // On the server, it pushes this property to the client on the next sync.
-         // When childEnts is set, the change of that property calls refresh().
-         SyncManager.startSync(this, "childEnts");
-         SyncManager.startSync(this, "childList");
+         if (childEnts == null) {
+            // childEnts and childList are marked @Sync(onDemand=true) so they are left out of the sync when the
+            // parent object is synchronized.  When a user opens the node, the startSync call begins
+            // synchronizing this property.  On the client this causes a fetch of the data.
+            // On the server, it pushes this property to the client on the next sync.
+            // When childEnts is set, the change of that property calls refresh().
+            SyncManager.startSync(this, "childEnts");
+            SyncManager.startSync(this, "childList");
+         }
       }
 
       void selectType(boolean append) {
@@ -380,6 +422,8 @@ class TypeTree {
          String valuePart = CTypeUtil.escapeIdentifierString(srcTypeName == null ? (value == null ? "" : "_" + value.toString()) : "_" + srcTypeName);
          String typePart = type == null ? "_unknown" : "_" + type;
          String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
+         if (typePart.contains("null"))
+            System.out.println("***");
          objectId = "TE" + getIdPrefix() + typePart + layerPart + valuePart;
          return objectId;
       }
@@ -428,7 +472,9 @@ class TypeTree {
       }
 
       boolean getHasChildren() {
-         return true;
+         // Need to assume we have children until they are fetched
+         return getNumChildren() > 0 || childList == null;
+         //return true;
       }
 
       public int getNumChildren() {
@@ -572,6 +618,10 @@ class TypeTree {
                return value;
          }
       }
+
+      void sendChangedEvent() {
+        sc.bind.Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
+      }
    }
 
    String getRootName() {
@@ -595,5 +645,9 @@ class TypeTree {
 
    public boolean isTypeTree() {
       return !(this instanceof ByLayerTypeTree);
+   }
+
+   public boolean rebuildDirEnts() {
+      return false;
    }
 }

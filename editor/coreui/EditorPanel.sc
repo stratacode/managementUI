@@ -228,6 +228,8 @@ class EditorPanel {
       }
 
       void updateListSelection() {
+         if (typeTreeModel == null || typeTreeModel.typeTree == null)
+            return;
          boolean needsRefresh = typeTreeModel.typeTree.rootDirEnt.updateSelected();
          if (typeTreeModel.byLayerTypeTree.rootDirEnt.updateSelected())
             needsRefresh = true;

@@ -1,5 +1,5 @@
 <li class=':= tree != null && tree.hasChildren ? (tree.ent.open ? "sctTreeNode sctParentOpen" : "sctTreeNode sctParentClosed") : "sctTreeNode sctLeaf"'>
-   <%! TypeTreeModel.TreeNode tree; %>
+   <%! TypeTree.TreeNode tree; %>
 
    <a href="#" clickEvent="=: tree.ent.toggleOpen()" class=':= tree != null && tree.ent.selected ? "selectedItem" : ""'>
       <img height="18" width="18" src=':= tree != null && tree.ent.open ? "/images/listClose.png" : "/images/listOpen.png"' visible=':= tree != null && tree.needsOpenClose' style="vertical-align:-4px">
