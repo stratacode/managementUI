@@ -127,4 +127,8 @@ TextFieldEditor extends LabeledEditor {
       foreground := GlobalResources.errorTextColor;
    }
    height := (int) (errorLabel.size.height + textField.size.height + ypad);
+
+   String getTextFieldValue() {
+      return textField.enteredText;
+   }
 }

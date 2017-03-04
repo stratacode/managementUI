@@ -6,13 +6,15 @@
       <%! Element createElement(Object value, int ix, Element oldTag) {
           FormEditor res;
           BodyTypeDeclaration type = (BodyTypeDeclaration) value;
+          Object currentObj = getObjectForListElement(ix);
           if (oldTag instanceof FormEditor) {
              res = (FormEditor) oldTag;
              res.type = type;
+             res.instance = currentObj;
           }
           else {
              // TODO: supply the current instance here
-             res = new FormEditor(FormView.this, null, type, null);
+             res = new FormEditor(FormView.this, null, type, currentObj);
           }
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);

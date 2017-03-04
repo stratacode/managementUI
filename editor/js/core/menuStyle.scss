@@ -23,7 +23,7 @@
    int leftPad2 = 2;
    int buttonLeftPad := windowState == 0 ? 4 : leftPad2;
 
-   int formLabelPer = 30;
+   int formLabelPer = 31;
    int toolbarHeightPix = 50; // This is 32 plus padding plus ??
    int menubarHeightPix = 18;
    int statusBarHeightPix := twoColumns ? 50 : 150;
@@ -420,6 +420,15 @@ a.tooltip:hover span {
 
 .textField {
    width: <%= 100 - formLabelPer - 2 %>%;
+}
+
+.formEditor {
+   clear: both;
+   margin-left: 15px;
+}
+
+.elementEditor {
+   clear: both;
 }
 
 #fieldValueEditor input {

@@ -1,4 +1,6 @@
-class ElementEditor extends PrimitiveEditor {
+import sc.lang.java.ModelUtil;
+
+class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    FormEditor formEditor;
    Object propC;
    String propertyName := getPropertyNameString(propC);
@@ -38,7 +40,7 @@ class ElementEditor extends PrimitiveEditor {
 
    object valueEventListener extends AbstractListener {
       public boolean valueValidated(Object obj, Object prop, Object eventDetail, boolean apply) {
-         changeCt++; // A signal to call getPropertyStringValue again as the value has changed.
+         changeCt++; // Sends a change event so getPropertyStringValue is called again to update the changed value.
          return true;
       }
    }
@@ -62,17 +64,19 @@ class ElementEditor extends PrimitiveEditor {
       return ModelUtil.getPropertyName(prop);
    }
 
-   /** Because this tag has component="true", it can override the component's stop method to remove the listener */
+   /** Part of the IStoppable implementation */
    void stop() {
-      //propC = null;
-      formEditor.instance = null;
-      updateListeners(); // Dispose has already been called at this point
+      removeListeners(); // Dispose has already been called at this point
+      visible = false;
    }
 
-   void updateListeners() {
-      String propName = varInit == null ? null : varInit.variableName;
-      String simpleProp;
+   private String getVariableName() {
+      return varInit == null ? null : varInit.variableName;
+   }
 
+   private String getSimplePropName() {
+      String propName = getVariableName();
+      String simpleProp;
       if (propName != null) {
          int ix = propName.indexOf("[");
          if (ix == -1)
@@ -83,15 +87,42 @@ class ElementEditor extends PrimitiveEditor {
       else
          simpleProp = propName;
 
+      return simpleProp;
+   }
+
+   boolean getInstanceMode() {
+      return formEditor.parentFormView.instanceMode;
+   }
+
+   public void updateInstanceProperty() {
+      if (formEditor.instance != null) {
+         Object propType = ModelUtil.getPropertyType(propC);
+         try {
+            Object newVal = sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), textFieldValue);
+            DynUtil.setPropertyValue(formEditor.instance, propertyName, newVal);
+         }
+         catch (IllegalArgumentException exc) {
+            errorText = exc.toString();
+         }
+         catch (UnsupportedOperationException exc1) {
+            errorText = exc1.toString();
+         }
+      }
+      else
+         errorText = "No instance to update";
+   }
+
+
+   abstract String getTextFieldValue();
+
+   void updateListeners() {
+      String simpleProp = getSimplePropName();
+      String propName = getVariableName();
+
       if (oldListenerInstance == formEditor.instance && propName == oldPropName)
          return;
 
-      if (oldPropName != null && !oldPropName.equals("<null>")) {
-         if (oldListenerInstance != null) {
-            Bind.removeDynamicListener(oldListenerInstance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
-            oldListenerInstance = null;
-         }
-      }
+      removeListeners();
 
       if (propName != null && !propName.equals("<null>")) {
          if (formEditor.instance != null) {
@@ -103,7 +134,11 @@ class ElementEditor extends PrimitiveEditor {
    }
 
    void removeListeners() {
-      formEditor.instance = null;
-      updateListeners();
+      if (oldPropName != null && !oldPropName.equals("<null>")) {
+         if (oldListenerInstance != null) {
+            Bind.removeDynamicListener(oldListenerInstance, formEditor.type, getSimplePropName(), valueEventListener, IListener.VALUE_CHANGED);
+            oldListenerInstance = null;
+         }
+      }
    }
 }

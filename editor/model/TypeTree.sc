@@ -35,9 +35,9 @@ class TypeTree {
    // are set, we need to refresh the tree.
    rootDirEnt =: treeModel.refresh();
 
-   TypeTreeSelectionListener selectionListener;
+   transient TypeTreeSelectionListener selectionListener;
 
-   TreeEnt emptyCommentNode;
+   transient TreeEnt emptyCommentNode;
 
    // These are transient so they are not synchronized from client to the server.  That's
    // because we will build these data structures on the server or client
@@ -47,6 +47,9 @@ class TypeTree {
 
    public TypeTree(TypeTreeModel model) {
       treeModel = model;
+   }
+
+   public TypeTree() {
    }
 
    enum EntType {
@@ -224,7 +227,6 @@ class TypeTree {
             open = false;
             closed = true; // Track when we explicit close it and then don't re-open it again
          }
-         selectType(false);
       }
 
       private boolean open = false;
@@ -234,23 +236,24 @@ class TypeTree {
          open = newOpen;
          if (!orig && newOpen) {
             initChildren();
+            refreshNode();
          }
       }
+
+      abstract void refreshNode();
 
       boolean getOpen() {
          return open;
       }
 
       public void initChildren() {
-         if (childEnts == null) {
-            // childEnts and childList are marked @Sync(onDemand=true) so they are left out of the sync when the
-            // parent object is synchronized.  When a user opens the node, the startSync call begins
-            // synchronizing this property.  On the client this causes a fetch of the data.
-            // On the server, it pushes this property to the client on the next sync.
-            // When childEnts is set, the change of that property calls refresh().
-            SyncManager.startSync(this, "childEnts");
-            SyncManager.startSync(this, "childList");
-         }
+         // childEnts and childList are marked @Sync(onDemand=true) so they are left out of the sync when the
+         // parent object is synchronized.  When a user opens the node, the startSync call begins
+         // synchronizing this property.  On the client this causes a fetch of the data.
+         // On the server, it pushes this property to the client on the next sync.
+         // When childEnts is set, the change of that property calls refresh().
+         SyncManager.startSync(this, "childEnts");
+         SyncManager.startSync(this, "childList");
       }
 
       void selectType(boolean append) {
@@ -409,6 +412,15 @@ class TypeTree {
          return true;
       }
 
+      boolean needsInstances() {
+         switch(type) {
+            case ParentType:
+            case Type:
+               return true;
+         }
+         return false;
+      }
+
       public String getIdPrefix() {
           return "T";
       }
@@ -563,7 +575,22 @@ class TypeTree {
          return false;
       }
 
-      public void updateInstances(List<InstanceWrapper> insts) {
+      public void updateInstances() {
+         if (!needsInstances())
+            return;
+         List<InstanceWrapper> insts = null;
+         if (treeModel.includeInstances) {
+            if (cachedTypeDeclaration == null && open) {
+                 needsType = true;
+            }
+            if (cachedTypeDeclaration != null) {
+               insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false);
+            }
+         }
+         updateInstances(insts);
+      }
+
+      void updateInstances(List<InstanceWrapper> insts) {
          clearMarkedFlag();
          if (insts != null) {
             for (InstanceWrapper inst:insts) {
@@ -581,6 +608,7 @@ class TypeTree {
                    childEnt.instance = inst;
                    if (childEnt.srcTypeName == null)
                       childEnt.srcTypeName = srcTypeName;
+                   childEnt.cachedTypeDeclaration = cachedTypeDeclaration;
                    addChild(childEnt);
                 }
                 childEnt.marked = true;
@@ -650,4 +678,6 @@ class TypeTree {
    public boolean rebuildDirEnts() {
       return false;
    }
+
+   public abstract void refreshTree(); 
 }

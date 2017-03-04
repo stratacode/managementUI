@@ -44,7 +44,7 @@ TypeTree {
 
        void refreshNode() {
           if (treeNode != null)
-             updateInstanceTreeNodes(this, treeNode);
+             updateInstances();
        }
    }
 
@@ -168,20 +168,6 @@ TypeTree {
           }
           ents.removed = null;
        }
-   }
-
-   void updateInstanceTreeNodes(TreeEnt ents, TreeNode treeNode) {
-       List<InstanceWrapper> insts = null;
-       if (treeModel.includeInstances) {
-          if (ents.cachedTypeDeclaration == null && ents.open) {
-              ents.needsType = true;
-          }
-          if (ents.cachedTypeDeclaration != null) {
-             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
-          }
-       }
-       ents.updateInstances(insts);
-       updatePackageContents(ents, treeNode, rootPathIndex, ents.path);
    }
 
    TreeNode findChildNode(TreeNode parent, Object userObj) {

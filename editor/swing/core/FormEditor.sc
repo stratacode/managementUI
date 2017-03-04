@@ -52,6 +52,10 @@ FormEditor {
       childList.refreshList();
    }
 
+   void refreshChildren() {
+      childList.refreshList();
+   }
+
    object childList extends RepeatComponent<IElementEditor> {
       repeat := properties;
 

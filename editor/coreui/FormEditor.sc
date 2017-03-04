@@ -1,3 +1,5 @@
+import sc.lang.java.DeclarationType;
+
 class FormEditor extends TypeEditor {
    Object instance;
    Object oldInstance;
@@ -11,6 +13,17 @@ class FormEditor extends TypeEditor {
 
       this.instance = instance;
    }
+
+   @sc.obj.ManualGetSet
+   public void setTypeAndInstance(BodyTypeDeclaration type, Object inst) {
+      setTypeNoChange(type);
+      this.instance = inst;
+      Bind.sendChange(this, "type", type);
+      refreshChildren();
+      Bind.sendChange(this, "instance", inst);
+   }
+
+   abstract void refreshChildren();
 
    void init() {
       // Bindings not set before we set the instance property so need to do this once up front
@@ -29,11 +42,13 @@ class FormEditor extends TypeEditor {
    }
 
    void updateChildInsts() {
-      for (IElementEditor view:childViews) {
-        if (view instanceof TypeEditor) {
-           TypeEditor te = ((TypeEditor) view);
-           te.parentInstanceChanged(instance);
-        }
+      if (childViews != null) {
+         for (IElementEditor view:childViews) {
+           if (view instanceof TypeEditor) {
+              TypeEditor te = ((TypeEditor) view);
+              te.parentInstanceChanged(instance);
+           }
+         }
       }
    }
 
@@ -41,13 +56,13 @@ class FormEditor extends TypeEditor {
        if (parentInst == null)
           instance = null;
        else {
-          instance = DynUtil.getPropertyPath(parentInst, CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)));
+          instance = DynUtil.getProperty(parentInst, CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)));
        }
    }
 
    Object getInnerTypeInstance(BodyTypeDeclaration subType) {
       Object subInst = null;
-      if (FormEditor.this.instance != null && DynUtil.isObjectType(subType)) {
+      if (FormEditor.this.instance != null && subType.getDeclarationType() == DeclarationType.OBJECT) {
          subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
       }
       return subInst;

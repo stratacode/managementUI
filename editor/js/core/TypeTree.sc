@@ -21,7 +21,7 @@ TypeTree {
    TreeEnt {
        void refreshNode() {
           if (treeNode != null)
-             updateInstanceTreeNodes(this, treeNode);
+             updateInstances();
        }
 
       void toggleOpen() {
@@ -39,6 +39,9 @@ TypeTree {
             return;
          }
       }
+      // The children have not been fetched yet
+      if (rootDirEnt.childEnts == null)
+         return;
 
       rootTreeIndex = new HashMap<String, List<TreeNode>>();
 
@@ -82,8 +85,9 @@ TypeTree {
        ArrayList<TreeEnt> subList = ents.childList;
        int pos = 0;
        int rix;
-       if (ents.srcTypeName != null && ents.srcTypeName.contains("UnitConverter"))
-          System.out.println("***");
+
+       // If there are instances in this node, we need to build up the treeEnts for them.
+       ents.updateInstances();
 
        boolean changed = false;
        treeNode.clearMarkedFlag();

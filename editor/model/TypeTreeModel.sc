@@ -51,8 +51,16 @@ class TypeTreeModel {
 
    transient boolean uiBuilt = false;
 
-   TypeTree typeTree = new TypeTree(this);
-   ByLayerTypeTree byLayerTypeTree = new ByLayerTypeTree(this);
+   //TypeTree typeTree = new TypeTree(this);
+   //ByLayerTypeTree byLayerTypeTree = new ByLayerTypeTree(this);
+
+   object typeTree extends TypeTree {
+      treeModel = TypeTreeModel.this;
+   }
+   object byLayerTypeTree extends ByLayerTypeTree {
+      treeModel = TypeTreeModel.this;
+   }
+
    List<TypeTree> typeTrees = new ArrayList<TypeTree>();
    {
       typeTrees.add(typeTree);

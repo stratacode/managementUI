@@ -57,6 +57,7 @@ TypeTree {
          return res;
       }
 
+/*
       boolean getTypeIsVisible() {
          // TODO: method to find the set of layers for a file name - filter those layers
          if (cachedTypeDeclaration != null || treeModel.loadInnerTypesAtStartup) {
@@ -71,6 +72,7 @@ TypeTree {
          }
          return true;
       }
+   */
 
       void processTypeInfo() {
          // type is already assigned for these types
@@ -286,7 +288,7 @@ TypeTree {
          }
       }
 
-      TreeEnt cent = emptyCommentNode = new TreeEnt(EntType.Comment, "No visible types", this, null, null);
+      emptyCommentNode = new TreeEnt(EntType.Comment, "No visible types", this, null, null);
 
       Set<String> srcTypeNames = treeModel.getSrcTypeNames();
 

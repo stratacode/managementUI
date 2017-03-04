@@ -1,8 +1,7 @@
-<div id="FormEditor">
+<div id="FormEditor" class="formEditor">
    <%!
       ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
       UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
-      type =: updateInstance(null);
       List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
       int instSelectedIndex = 0;
 
@@ -17,6 +16,9 @@
          if (inst == null)
             return 0;
          return -1;
+      }
+      void refreshChildren() {
+         propList_Repeat.refreshRepeat();
       }
 
       void updateWrapper(InstanceWrapper newWrapper) {
@@ -52,9 +54,8 @@
          }
 
          for (Object child:children) {
-            if (child instanceof propList_Repeat.propList) {
-               propList_Repeat.propList pchild = (propList_Repeat.propList) child;
-               childViews.add((IElementEditor) pchild.repeatVar);
+            if (child instanceof IElementEditor) {
+               childViews.add((IElementEditor) child);
             }
          }
          super.updateListeners();
@@ -98,16 +99,21 @@
           // the editor-type name for a given property, type, layer gives enough flexibility.  Because we can
           // have annotation layers, we can layer on the meta-data for a given management view.
           if (ModelUtil.isProperty(value)) {
-             if (oldTag instanceof ElementEditor)
+             if (oldTag instanceof ElementEditor) {
+                ((ElementEditor) oldTag).propC = value;
                 return oldTag;
+             }
              ElementEditor eview = new ElementEditor(FormEditor.this, value);
              res = eview;
           }
           else {
-             if (oldTag instanceof FormEditor)
-                return oldTag;
              BodyTypeDeclaration innerType = (BodyTypeDeclaration) value;
              Object subInst = getInnerTypeInstance(innerType);
+             if (oldTag instanceof FormEditor) {
+                FormEditor oldFormEditor = (FormEditor) oldTag;
+                oldFormEditor.setTypeAndInstance(innerType, subInst);
+                return oldTag;
+             }
              FormEditor cview = new FormEditor(parentFormView, FormEditor.this, innerType, subInst);
              res = cview;
           }
@@ -122,9 +128,7 @@
       <%= (clientType == null ? "null-type" : clientType.declarationType.name) %>
     <span class="classLabel"><%= clientType == null ? "" : clientType.typeName %> </span>
 
-   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance)">
-      <option><%= optionData %></option>
-   </select>
+   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance)"/>
 
-    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
+   <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
 </div>

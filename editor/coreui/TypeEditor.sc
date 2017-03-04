@@ -107,6 +107,12 @@ class TypeEditor extends CompositeEditor {
       }
    }
 
+   // Sets the field without firing a change event
+   @sc.obj.ManualGetSet
+   void setTypeNoChange(BodyTypeDeclaration newType) {
+      type = newType;
+   }
+
    void removeListeners() {
       for (IElementEditor view:childViews)
          view.removeListeners();
@@ -119,7 +125,8 @@ class TypeEditor extends CompositeEditor {
    }
 
    void stop() {
-       removeListeners();
+      removeListeners();
+      setVisible(false);
    }
 
    // Called when the parent is a FormView representing a specific instance.  If we are storing a child instance

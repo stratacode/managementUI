@@ -4,7 +4,9 @@ import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.java.ITypeDeclaration;
 
 class ByLayerTypeTree extends TypeTree {
-   public ByLayerTypeTree(TypeTreeModel model) {
+   ByLayerTypeTree() {}
+
+   ByLayerTypeTree(TypeTreeModel model) {
       super(model);
    }
 
@@ -26,7 +28,7 @@ class ByLayerTypeTree extends TypeTree {
       return rootName;
    }
 
-   public String getIdPrefix() {
+   String getIdPrefix() {
        return "L";
    }
 }
