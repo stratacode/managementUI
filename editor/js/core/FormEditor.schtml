@@ -11,6 +11,7 @@
             if (wrap.instance == inst)
                return i;
             i++;
+
          }
          // The first instance will always be for null even if instancesOfType is not set yet
          if (inst == null)
@@ -89,39 +90,45 @@
    %>
 
    <div id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
-      <%! Element createElement(Object value, int ix, Element oldTag) {
-          Element res;
-          // TODO: call createChildElementEditor here.  One idea is to have a method which gets the
-          // element editor class.  That would let us support the oldTag optimization in a general way
-          // and open up a way to support various factory implementations.  In essence, we want users to
-          // be able to customize the editor class for: a given implementation type, a given property type,
-          // specific properties of a super-type.  any others?  It seems like using an annotation to specify
-          // the editor-type name for a given property, type, layer gives enough flexibility.  Because we can
-          // have annotation layers, we can layer on the meta-data for a given management view.
-          if (ModelUtil.isProperty(value)) {
-             if (oldTag instanceof ElementEditor) {
-                ((ElementEditor) oldTag).propC = value;
-                return oldTag;
-             }
-             ElementEditor eview = new ElementEditor(FormEditor.this, value);
-             res = eview;
-          }
-          else {
-             BodyTypeDeclaration innerType = (BodyTypeDeclaration) value;
-             Object subInst = getInnerTypeInstance(innerType);
-             if (oldTag instanceof FormEditor) {
-                FormEditor oldFormEditor = (FormEditor) oldTag;
-                oldFormEditor.setTypeAndInstance(innerType, subInst);
-                return oldTag;
-             }
-             FormEditor cview = new FormEditor(parentFormView, FormEditor.this, innerType, subInst);
-             res = cview;
-          }
-          res.setRepeatVar(value);
-          res.setRepeatIndex(ix);
+      <%!
+         Element createElement(Object value, int ix, Element oldTag) {
+            Element res;
 
-          return res;
-        } %>
+            // TODO: call createChildElementEditor here.  One idea is to have a method which gets the
+            // element editor class.  That would let us support the oldTag optimization in a general way
+            // and open up a way to support various factory implementations.  In essence, we want users to
+            // be able to customize the editor class for: a given implementation type, a given property type,
+            // specific properties of a super-type.  any others?  It seems like using an annotation to specify
+            // the editor-type name for a given property, type, layer gives enough flexibility.  Because we can
+            // have annotation layers, we can layer on the meta-data for a given management view.
+
+            int xyz;
+
+            if (ModelUtil.isProperty(value)) {
+               if (oldTag instanceof ElementEditor) {
+                  ((ElementEditor) oldTag).propC = value;
+                  return oldTag;
+               }
+               ElementEditor eview = new ElementEditor(FormEditor.this, value);
+               res = eview;
+            }
+            else {
+               BodyTypeDeclaration innerType = (BodyTypeDeclaration) value;
+               Object subInst = getInnerTypeInstance(innerType);
+               if (oldTag instanceof FormEditor) {
+                  FormEditor oldFormEditor = (FormEditor) oldTag;
+                  oldFormEditor.setTypeAndInstance(innerType, subInst);
+                  return oldTag;
+               }
+               FormEditor cview = new FormEditor(parentFormView, FormEditor.this, innerType, subInst);
+               res = cview;
+            }
+            res.setRepeatVar(value);
+            res.setRepeatIndex(ix);
+
+            return res;
+         }
+      %>
     </div>
 
    <img visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>

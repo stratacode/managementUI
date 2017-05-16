@@ -1,6 +1,6 @@
-<span>
+<span style="position: relative; top: -2px">
   <%! boolean enabled = true; %>
-  <a id="cbutton" abstract="true" disabled=":= !enabled">
+  <a id="cbutton" abstract="true" disabled=":= !enabled" style="text-decoration: none">
     <img id="cbImage" class=':= "confirmButtonImage" + (!enabled ? " disabledImage" : "")'/>
   </a>
 

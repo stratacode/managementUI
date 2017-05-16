@@ -5,11 +5,11 @@
        
    <select id="opChoice" 
            optionDataSource="= operatorList" 
-           selectedValue=":=: opStr">
+           selectedValue=":=: opStr" style="margin-left: 5px; margin-right: 5px">
       <option><%= optionData %></option>
    </select>
 
-   <span id="valueField" extends="ValueFieldInput" inputValue=":=: valueStr"/>
+   <span id="valueField" extends="ValueFieldInput" inputValue=":=: valueStr" style="flex: 1 1 auto"/>
    <span class="errorText"><%= errorText %></span>
 
    <span id="confirmButtons" extends="ConfirmButtons">
