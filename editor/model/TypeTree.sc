@@ -575,9 +575,9 @@ class TypeTree {
          return false;
       }
 
-      public void updateInstances() {
+      public boolean updateInstances() {
          if (!needsInstances())
-            return;
+            return false;
          List<InstanceWrapper> insts = null;
          if (treeModel.includeInstances) {
             if (cachedTypeDeclaration == null && open) {
@@ -587,11 +587,12 @@ class TypeTree {
                insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false);
             }
          }
-         updateInstances(insts);
+         return updateInstances(insts);
       }
 
-      void updateInstances(List<InstanceWrapper> insts) {
+      boolean updateInstances(List<InstanceWrapper> insts) {
          clearMarkedFlag();
+         boolean anyChanges = false;
          if (insts != null) {
             for (InstanceWrapper inst:insts) {
                 TreeEnt childEnt = null;
@@ -611,11 +612,17 @@ class TypeTree {
                    childEnt.cachedTypeDeclaration = cachedTypeDeclaration;
                    addChild(childEnt);
                 }
+                anyChanges = true;
                 childEnt.marked = true;
             }
          }
-         removeUnmarkedInstances();
+         if (removeUnmarkedInstances())
+            anyChanges = true;
+
+         return anyChanges;
       }
+
+      abstract void refreshChildren();
 
       public void clearMarkedFlag() {
          if (childList != null) {
@@ -624,7 +631,8 @@ class TypeTree {
          }
       }
 
-      public void removeUnmarkedInstances() {
+      public boolean removeUnmarkedInstances() {
+          boolean any = false;
           if (childList != null) {
              for (int i = 0; i < childList.size(); i++) {
                 TreeEnt child = childList.get(i);
@@ -633,9 +641,11 @@ class TypeTree {
                    i--;
                    childEnts.remove(child.nodeId);
                    removeEntry(child);
+                   any = true;
                 }
              }
           }
+          return any;
       }
 
       public String getNodeId() {

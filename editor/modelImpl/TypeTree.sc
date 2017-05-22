@@ -2,8 +2,8 @@ import sc.layer.LayerIndexInfo;
 import sc.lang.java.BodyTypeDeclaration;
 
 TypeTree {
+
    TreeEnt {
-      // When needsType is true, we set the cachedTypeDeclaration property which syncs it to the client
       needsType =: fetchType();
 
       void fetchType() {

@@ -56,7 +56,11 @@ class FormEditor extends TypeEditor {
        if (parentInst == null)
           instance = null;
        else {
-          instance = DynUtil.getProperty(parentInst, CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)));
+          String propName = CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type));
+          if (DynUtil.hasProperty(parentInst, propName))
+             instance = DynUtil.getProperty(parentInst, propName);
+          else
+             instance = null;
        }
    }
 

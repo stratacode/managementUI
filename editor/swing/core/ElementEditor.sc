@@ -13,8 +13,6 @@ ElementEditor {
    int ypad := parentView.ypad;
    int baseline := parentView.baseline;
 
-   Object instance := formEditor.instance;
-
    String propertyOperator(Object instance, Object val) {
       return val == null ? "" : (instance != null ? "" : ModelUtil.getOperator(val) != null ? " " + ModelUtil.getOperator(val) : " =");
    }
@@ -23,4 +21,14 @@ ElementEditor {
    int x := formEditor.columnWidth * col + xpad,
        y := prev == null ? ypad + formEditor.startY : prev.y + prev.height,
        width := formEditor.columnWidth - (parentView.nestWidth + 2*xpad) * formEditor.nestLevel, height;
+
+   String getTextFieldValue() {
+      return "";
+   }
+
+   public boolean isVisible() {
+      return false;
+   }
+
+   public void setVisible(boolean vis) {}
 }

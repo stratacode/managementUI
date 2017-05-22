@@ -20,13 +20,19 @@ TypeTree {
 
    TreeEnt {
        void refreshNode() {
-          if (treeNode != null)
-             updateInstances();
+          if (treeNode != null) {
+             if (updateInstances())
+                refreshChildren();
+          }
        }
 
       void toggleOpen() {
           refreshNode();
           super.toggleOpen();
+      }
+
+      void refreshChildren() {
+          updatePackageContents(this, treeNode, rootTreeIndex, !isTypeTree());
       }
    }
 
@@ -144,7 +150,8 @@ TypeTree {
           }
        }
        ents.updateInstances(insts);
-       updatePackageContents(ents, treeNode, rootTreeIndex, !isTypeTree());
+       // Now called in refreshChildren
+       //updatePackageContents(ents, treeNode, rootTreeIndex, !isTypeTree());
    }
 
    // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name

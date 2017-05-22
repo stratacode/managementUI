@@ -29,8 +29,8 @@ TextFieldEditor extends LabeledEditor {
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(val), JavaSemanticNode.MemberType.PropertyAnySet, null, null);
          // Update this manually since we change it when moving the operator into the label
          propertyName = getPropertyNameString(propC);
-         propertyOperator = propertyOperator(instance, propC);
-         textField.enteredText = propertyValueString(instance, propC, changeCt);
+         propertyOperator = propertyOperator(formEditor.instance, propC);
+         textField.enteredText = propertyValueString(formEditor.instance, propC, changeCt);
          if (error != null)
             displayFormError(error);
       }
@@ -54,12 +54,9 @@ TextFieldEditor extends LabeledEditor {
    }
 
    propertyName =: updateListeners();
-   Object oldListenerInstance = null;
    JavaModel oldListenerModel = null;
-   String oldPropName = null;
 
    void removeListeners() {
-       instance = null;
        updateListeners();
 
        DynUtil.dispose(this);
@@ -73,8 +70,8 @@ TextFieldEditor extends LabeledEditor {
          simpleProp = propName;
       else
          simpleProp = propName.substring(0, ix);
-      JavaModel javaModel = instance == null ? ModelUtil.getJavaModel(formEditor.type) : null;
-      if (oldListenerInstance == instance && propName == oldPropName && oldListenerModel == javaModel)
+      JavaModel javaModel = formEditor.instance == null ? ModelUtil.getJavaModel(formEditor.type) : null;
+      if (oldListenerInstance == formEditor.instance && propName == oldPropName && oldListenerModel == javaModel)
          return;
 
       if (oldPropName != null && !oldPropName.equals("<null>")) {
@@ -89,9 +86,9 @@ TextFieldEditor extends LabeledEditor {
       }
 
       if (propName != null && !propName.equals("<null>")) {
-         if (instance != null) {
-            Bind.addDynamicListener(instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
-            oldListenerInstance = instance;
+         if (formEditor.instance != null) {
+            Bind.addDynamicListener(formEditor.instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
+            oldListenerInstance = formEditor.instance;
          }
          else if (javaModel != null) {
             Bind.addListener(javaModel, null, valueEventListener, IListener.VALUE_CHANGED);
@@ -110,16 +107,16 @@ TextFieldEditor extends LabeledEditor {
       }
 
       // If we have a fromString converter registered, we can edit this guy in value mode
-      boolean settable := instance == null || RTypeUtil.canConvertTypeFromString(ModelUtil.getPropertyType(propC));
+      boolean settable := formEditor.instance == null || RTypeUtil.canConvertTypeFromString(ModelUtil.getPropertyType(propC));
       foreground := settable ? ComponentStyle.defaultForeground : SwingUtil.averageColors(ComponentStyle.defaultForeground, ComponentStyle.defaultBackground);
 
       // instance could be retrieved through type hierarchy but we need to update the binding when the instance changes
-      enteredText := propertyValueString(instance, propC, changeCt);
+      enteredText := propertyValueString(formEditor.instance, propC, changeCt);
 
       // Only trigger the change to the model when the user enters the text.  Not when we set enteredText because the value changed
-      userEnteredCount =: settable ? setElementValue(formEditor.type, instance, propC, enteredText) : errorLabel.text = "This view shows the toString output of property: " + propertyName + " No string conversion for type: " ;
+      userEnteredCount =: settable ? setElementValue(formEditor.type, formEditor.instance, propC, enteredText) : errorLabel.text = "This view shows the toString output of property: " + propertyName + " No string conversion for type: " ;
 
-      focus =: formEditor.parentFormView.focusChanged(this, propC, instance, focus);
+      focus =: formEditor.parentFormView.focusChanged(this, propC, formEditor.instance, focus);
    }
    object errorLabel extends JLabel {
       location := SwingUtil.point(textField.location.x, textField.location.y + textField.size.height + ypad);

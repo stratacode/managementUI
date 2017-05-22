@@ -43,8 +43,14 @@ TypeTree {
        TreePath path;
 
        void refreshNode() {
-          if (treeNode != null)
-             updateInstances();
+          if (treeNode != null) {
+             if (updateInstances())
+                refreshChildren();
+          }
+       }
+
+       void refreshChildren() {
+           updatePackageContents(this, treeNode, rootPathIndex, path);
        }
    }
 
