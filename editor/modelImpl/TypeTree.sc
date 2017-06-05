@@ -288,8 +288,6 @@ TypeTree {
          }
       }
 
-      emptyCommentNode = new TreeEnt(EntType.Comment, "No visible types", this, null, null);
-
       Set<String> srcTypeNames = treeModel.getSrcTypeNames();
 
       // Then build our TreeEnt structure from the Set of src type names we get back

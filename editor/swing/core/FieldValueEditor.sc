@@ -30,10 +30,10 @@ class FieldValueEditor extends JPanel implements EditorPanelStyle {
          }
          String err = ModelUtil.validateElement(TemplateLanguage.getTemplateLanguage().expression, text, false);
          if (err != null) {
-             valueFieldError.text = err;
+            valueFieldError.text = err;
          }
          else
-             valueFieldError.text = "";
+            valueFieldError.text = "";
       }
    }
 

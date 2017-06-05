@@ -15,7 +15,6 @@ import sc.lang.ILanguageModel;
 import java.util.Collections;
 
 TypeTreeModel {
-   ArrayList<String> packageFilter;
 
    // TODO: not implemented yet Populated from specifiedLayerNames.  Defines the layers from which we are doing source files.
    ArrayList<Layer> specifiedLayers;
@@ -72,23 +71,33 @@ TypeTreeModel {
    boolean includePrimitives = false;
 
    boolean isFilteredType(String typeName) {
-      if (packageFilter == null)
+      if (includePackages == null && excludePackages == null)
          return false;
       if (typeName == null)
          return true;
-      for (String pkg:packageFilter) {
-         if (typeName.startsWith(pkg))
-            return false;
+      if (excludePackages != null) {
+         for (String pkg:excludePackages) {
+            if (typeName.startsWith(pkg))
+               return true;
+         }
       }
+      if (includePackages != null) {
+         for (String pkg:includePackages) {
+            if (typeName.startsWith(pkg))
+               return false;
+         }
+      }
+      else
+         return false;
       return true;
    }
 
    boolean isFilteredPackage(String pkgName) {
-      if (packageFilter == null)
+      if (includePackages == null)
          return false;
       if (pkgName == null)
          return false;
-      for (String pkgFilter:packageFilter) {
+      for (String pkgFilter:includePackages) {
          if (pkgName.startsWith(pkgFilter) || pkgFilter.startsWith(pkgName))
             return false;
       }

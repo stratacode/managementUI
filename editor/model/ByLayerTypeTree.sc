@@ -4,10 +4,13 @@ import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.java.ITypeDeclaration;
 
 class ByLayerTypeTree extends TypeTree {
-   ByLayerTypeTree() {}
+   ByLayerTypeTree() {
+      byLayer = true;
+   }
 
    ByLayerTypeTree(TypeTreeModel model) {
       super(model);
+      byLayer = true;
    }
 
 

@@ -8,6 +8,8 @@ import javax.swing.tree.TreePath;
 
 /** Stores the data behind the type tree, used for both the by types and by layers views. */
 TypeTreeModel {
+   excludePackages = {"java.awt", "javax.swing", "sc.obj", "java.util"};
+
    // Event property incremented each time we need to increment the "root" tree object
    int openRoot;
 

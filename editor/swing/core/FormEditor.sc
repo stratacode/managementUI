@@ -173,7 +173,7 @@ FormEditor {
       if (removed)
           return;
       if (instanceList.selectedItem == null || ((InstanceWrapper)instanceList.selectedItem).instance != instance) {
-         instanceList.selectedItem = new InstanceWrapper(editorModel.ctx, instance);
+         instanceList.selectedItem = new InstanceWrapper(editorModel.ctx, instance, ((InstanceWrapper) instanceList.selectedItem).typeName);
       }
       super.instanceChanged();
    }

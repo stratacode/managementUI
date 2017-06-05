@@ -78,6 +78,9 @@ class EditorModel implements sc.bind.IChangeable {
    /** Incremented each time the selection changes so we can update any one who depends on the selection from a central event. */
    int selectionChanged = 0;
 
+   /** Incremented each time a new instance is selected with the same type */
+   int newInstSelected = 0;
+
    /** Set to true when changes have been made to source files in the current runtime which require a process restart. */
    boolean staleCompiledModel;
 

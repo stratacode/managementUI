@@ -1,15 +1,18 @@
 import java.util.Arrays;
 
+import sc.obj.Sync;
+import sc.obj.SyncMode;
+
 // Comment before
-@sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
+@Sync(syncMode=SyncMode.Automatic)
 // Comment after
 class EditorPanel {
 
-   @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic, includeSuper=true)
+   @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object editorModel extends EditorModel {
    }
 
-   @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic, includeSuper=true)
+   @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object typeTreeModel extends TypeTreeModel {
       editorModel := EditorPanel.this.editorModel;
    }
@@ -20,16 +23,22 @@ class EditorPanel {
 
    Object createTypeModeName;
 
-   @sc.obj.Sync
+   @Sync
    ViewType viewType = ViewType.DataViewType;
 
    String newTypeNameField :=: editorModel.createModeTypeName;  // Set on selection to a value to pre-populate the 'extends' form field
    String newLayerNameField;           // Set to populate the new layer field properties
 
-   @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
+   @Sync(syncMode=SyncMode.Disabled)
    boolean staleSelection = false;
 
-   @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
+   @Sync(syncMode=SyncMode.Disabled)
+   boolean typeTreeSelection;
+
+   @Sync(syncMode=SyncMode.Disabled)
+   boolean selectionChangeInProgress;
+
+   @Sync(syncMode=SyncMode.Automatic)
    class BaseTypeTree implements TypeTreeSelectionListener {
       // When a package is selected, stores the name of that package
       String currentPackageNode;
@@ -37,6 +46,7 @@ class EditorPanel {
       boolean byLayer = false;
 
       String[] selectedTypeNames :=: editorModel.typeNames;
+      List<InstanceWrapper> selectedInstances :=: editorModel.selectedInstances;
       ArrayList<TypeTree.TreeEnt> selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
 
       public void clearSelection() {
@@ -193,6 +203,10 @@ class EditorPanel {
                         //viewTabsScroll.viewTabs.mergeToggle.selected = true;
                      }
 
+                     // Make sure the instance gets updated since we set it the first time we are selected.
+                     treeEnt.selected = true;
+                     treeEnt.updateInstances();
+
                      if (treeEnt.instance != null) {
                         newInstances.add(treeEnt.instance);
                      }
@@ -217,18 +231,32 @@ class EditorPanel {
          if (changeTypeNames) {
             if (!editorModel.createMode) {
                String[] newSelTypes = newTypeNames.toArray(new String[newTypeNames.size()]);
+               boolean typeChanged = false;
+               boolean instChanged = false;
                if (!Arrays.equals(selectedTypeNames, newSelTypes)) {
                   selectedTypeNames = newSelTypes;
+                  typeChanged = true;
                }
-               editorModel.selectionChanged++;
+               if (!DynUtil.equalObjects(editorModel.selectedInstances, newInstances)) {
+                  instChanged = true;
+                  editorModel.selectedInstances = newInstances;
+               }
+               // Always need to update the list selection so we keep both type trees in view
+               if (typeChanged || instChanged)
+                  editorModel.selectionChanged++;
+               // But if only the instance changed we also need to update the instance in the form
+               if (instChanged && !typeChanged)
+                  editorModel.newInstSelected++;
             }
          }
-         editorModel.selectedInstances = newInstances;
          lastUpdateSelectionCount = updateSelectionCount;
       }
 
       void updateListSelection() {
-         if (typeTreeModel == null || typeTreeModel.typeTree == null)
+         if (typeTreeModel == null || typeTreeModel.typeTree == null || 
+             typeTreeModel.typeTree.rootDirEnt == null || 
+             typeTreeModel.byLayerTypeTree == null || 
+             typeTreeModel.byLayerTypeTree.rootDirEnt == null)
             return;
          boolean needsRefresh = typeTreeModel.typeTree.rootDirEnt.updateSelected();
          if (typeTreeModel.byLayerTypeTree.rootDirEnt.updateSelected())

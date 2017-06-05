@@ -2,6 +2,19 @@
     import sc.lang.java.BodyTypeDeclaration;
     import sc.lang.InstanceWrapper; %>
 <div>
+   <%!
+       List<IElementEditor> getChildViews() {
+          Object[] children = formScroll.formList_Repeat.getObjChildren(false);
+          ArrayList<IElementEditor> res = new ArrayList<IElementEditor>();
+          if (children != null) {
+             for (Object child:children) {
+                if (child instanceof IElementEditor)
+                   res.add((IElementEditor)child);
+             }
+          }
+          return res;
+       }
+   %>
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
       <%! Element createElement(Object value, int ix, Element oldTag) {
           FormEditor res;
@@ -9,8 +22,7 @@
           Object currentObj = getObjectForListElement(ix);
           if (oldTag instanceof FormEditor) {
              res = (FormEditor) oldTag;
-             res.type = type;
-             res.instance = currentObj;
+             res.setTypeAndInstance(type, currentObj);
           }
           else {
              // TODO: supply the current instance here

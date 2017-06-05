@@ -2,7 +2,7 @@ GlobalResources {
 
    static UIIcon lookupUIIcon(Object type) {
       if (ModelUtil.isLayerType(type)) {
-         Layer l = LayeredSystem.getCurrent().getLayerByDirName(((ModifyDeclaration) type).typeName);
+         Layer l = LayeredSystem.getCurrent().getLayerByDirName(((TypeDeclaration) type).typeName);
          if (l == null) {
             System.err.println("*** Can't find layer for type: " + type);
             return layerIcon;

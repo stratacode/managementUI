@@ -1,4 +1,4 @@
 TypeTreeModel {
-   packageFilter = {"sc.gui.util"};
+   includePackages = {"sc.gui.util"};
    MAX_TYPES = 10;
 }

@@ -18,9 +18,13 @@ class FormEditor extends TypeEditor {
    public void setTypeAndInstance(BodyTypeDeclaration type, Object inst) {
       setTypeNoChange(type);
       this.instance = inst;
+      // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
+      Bind.sendInvalidate(this, "instance", inst);
+      // This both invalidates and validates for type
       Bind.sendChange(this, "type", type);
       refreshChildren();
-      Bind.sendChange(this, "instance", inst);
+      // Now we're ready to validate the bindings on the instance
+      Bind.sendValidate(this, "instance", inst);
    }
 
    abstract void refreshChildren();
@@ -67,6 +71,11 @@ class FormEditor extends TypeEditor {
    Object getInnerTypeInstance(BodyTypeDeclaration subType) {
       Object subInst = null;
       if (FormEditor.this.instance != null && subType.getDeclarationType() == DeclarationType.OBJECT) {
+         String scopeName = DynUtil.getScopeNameForType(subType);
+         if (scopeName != null) {
+            System.out.println("*** Not returning inner instance for property: " + subType.typeName + " with scope: " + scopeName);
+            return null;
+         }
          subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
       }
       return subInst;

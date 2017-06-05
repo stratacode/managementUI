@@ -1,6 +1,8 @@
 TypeTree {
    TreeNode {
       TreeNode(TreeEnt treeEnt) {
+         if (treeEnt == null)
+            System.out.println("***");
           ent = treeEnt;
       }
       ArrayList<TreeNode> children = new ArrayList<TreeNode>();;

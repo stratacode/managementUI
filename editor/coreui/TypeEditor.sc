@@ -48,10 +48,10 @@ class TypeEditor extends CompositeEditor {
          operatorName = "enum constant";
       else if (ModelUtil.isInterface(type))
          operatorName = "interface";
-      else if (ModelUtil.isObjectType(type))
-         operatorName = "object";
       else if (ModelUtil.isLayerType(type))
          operatorName = "layer";
+      else if (ModelUtil.isObjectType(type))
+         operatorName = "object";
       else
          operatorName = "class";
 

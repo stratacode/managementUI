@@ -51,6 +51,11 @@ class TypeTreeModel {
 
    transient boolean uiBuilt = false;
 
+   @Constant
+   ArrayList<String> includePackages;
+   @Constant
+   ArrayList<String> excludePackages;
+
    //TypeTree typeTree = new TypeTree(this);
    //ByLayerTypeTree byLayerTypeTree = new ByLayerTypeTree(this);
 

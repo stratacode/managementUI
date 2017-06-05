@@ -7,7 +7,7 @@
       </a>
       <a href="#" clickEvent="=: tree.ent.selectType(false)">
          <img src='= tree == null || tree.ent.icon == null ? "" : tree.ent.icon.path' visible=":= tree.ent.icon != null" style="vertical-align:-3px">
-         <%= tree.ent.value %>
+         <%= tree.ent.nodeId %>
       </a>
    </span>
    <ol visible=":= tree != null && tree.hasChildren" class=':= tree != null && tree.ent.open ? "sctOpen" : "sctClosed"'>

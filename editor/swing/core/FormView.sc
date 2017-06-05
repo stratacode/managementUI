@@ -52,7 +52,7 @@ FormView {
    int x = numCols;
 
    // For FormView, this is a copy of the repeatComponents list.  As we add children as a swing child, we add it to childViews.
-   childViews = new ArrayList<IElementEditor>();
+   List<IElementEditor> childViews = new ArrayList<IElementEditor>();
 
    contentPanel {
       int maxChildWidth, maxChildHeight;

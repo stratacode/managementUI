@@ -37,10 +37,10 @@ class TypeTree {
 
    transient TypeTreeSelectionListener selectionListener;
 
-   transient TreeEnt emptyCommentNode;
+   transient TreeEnt emptyCommentNode = new TreeEnt(EntType.Comment, "No visible types", this, null, null);
 
-   // These are transient so they are not synchronized from client to the server.  That's
-   // because we will build these data structures on the server or client
+// These are transient so they are not synchronized from client to the server.  That's
+// because we will build these data structures on the server or client
    transient TreeNode rootTreeNode;
 
    transient Map<String, List<TreeNode>> rootTreeIndex;
@@ -89,6 +89,8 @@ class TypeTree {
       boolean marked;
 
       boolean getHasChildren() {
+         if (ent == null)
+            System.out.println("***");
          return ent.hasChildren;
       }
 
@@ -259,6 +261,7 @@ class TypeTree {
       void selectType(boolean append) {
          if (selectionListener != null)
             selectionListener.selectTreeEnt(this, append);
+         selected = true;
       }
 
       void typeAvailable() {
@@ -416,6 +419,15 @@ class TypeTree {
          switch(type) {
             case ParentType:
             case Type:
+            case ParentObject:
+            case Object:
+            case ParentEnum:
+            case Enum:
+            case ParentEnumConstant:
+            case EnumConstant:
+            case ParentInterface:
+            case Interface:
+            case Instance:
                return true;
          }
          return false;
@@ -431,18 +443,26 @@ class TypeTree {
             return objectId;
          if (type == null || value == null)
             return null;
-         String valuePart = CTypeUtil.escapeIdentifierString(srcTypeName == null ? (value == null ? "" : "_" + value.toString()) : "_" + srcTypeName);
-         String typePart = type == null ? "_unknown" : "_" + type;
+         String valuePart = CTypeUtil.escapeIdentifierString(value == null ? "" : "_" + value.toString());
+         String typeNamePart = srcTypeName == null ? "" : "_" + CTypeUtil.escapeIdentifierString(srcTypeName);
+         String entTypePart = type == null ? "_unknown" : "_" + type;
          String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
-         if (typePart.contains("null"))
+         if (entTypePart.contains("null"))
             System.out.println("***");
-         objectId = "TE" + getIdPrefix() + typePart + layerPart + valuePart;
+         objectId = "TE" + getIdPrefix() + entTypePart + layerPart + typeNamePart + valuePart;
+         if (objectId.startsWith("TET_null_"))
+            System.out.println("***");
          return objectId;
       }
 
       void addChild(TreeEnt ent) {
          if (childEnts == null)
             childEnts = new HashMap<String,TreeEnt>();
+
+         if (ent == null) {
+            System.out.println("*** Error - null child");
+            return;
+         }
 
          TreeEnt old = childEnts.put(ent.nodeId, ent);
          if (childList == null)
@@ -527,29 +547,40 @@ class TypeTree {
       }
 
       boolean updateSelected() {
+         if (type == EntType.Instance)
+            return false;
+
          boolean needsRefresh = false;
          if (typeName == null) {
-            // Once there's a current type, all directories are deselected
-            if (editorModel.typeNames.length > 0)
-               selected = false;
-            // Leave the folder selected as long as it marks the current package
-            else if (!DynUtil.equalObjects(srcTypeName, editorModel.currentPackage))
-               selected = false;
-            return false;
+            if (selected) {
+               // Once there's a current type, all directories are deselected
+               if (editorModel.typeNames.length > 0)
+                  selected = false;
+               // Leave the folder selected as long as it marks the current package
+               else if (!DynUtil.equalObjects(srcTypeName, editorModel.currentPackage))
+                  selected = false;
+            }
          }
-         boolean newSel = editorModel.isTypeNameSelected(typeName);
-         if (newSel != selected)
-            selected = newSel;
-         boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
-         if (newCreate != createModeSelected)
-            createModeSelected = newCreate;
+         else {
+            boolean newSel = editorModel.isTypeNameSelected(typeName);
+            if (newSel != selected)
+               selected = newSel;
+            boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
+            if (newCreate != createModeSelected)
+               createModeSelected = newCreate;
+         }
          if (needsOpen() && !open && !closed) {
             open = true;
             needsRefresh = true;
          }
-         if (childEnts != null) {
-            for (TreeEnt childEnt:childEnts.values()) {
-               if (childEnt.updateSelected())
+         if (childList != null) {
+            for (int i = 0; i < childList.size(); i++) {
+               TreeEnt childEnt = childList.get(i);
+               if (childEnt == null)
+                  System.out.println("*** Error missing child in childList!");
+               else if (childEnt == this)
+                  System.err.println("*** Error - invalid recursive tree!");
+               else if (childEnt.updateSelected())
                   needsRefresh = true;
                // auto-open trees when child nodes are selected
                if (!open && childEnt.needsOpen()) {
@@ -576,11 +607,11 @@ class TypeTree {
       }
 
       public boolean updateInstances() {
-         if (!needsInstances())
+         if (!needsInstances() || type == EntType.Instance)
             return false;
          List<InstanceWrapper> insts = null;
          if (treeModel.includeInstances) {
-            if (cachedTypeDeclaration == null && open) {
+            if (cachedTypeDeclaration == null && (open || selected)) {
                  needsType = true;
             }
             if (cachedTypeDeclaration != null) {
@@ -594,26 +625,39 @@ class TypeTree {
          clearMarkedFlag();
          boolean anyChanges = false;
          if (insts != null) {
-            for (InstanceWrapper inst:insts) {
-                TreeEnt childEnt = null;
-                if (childList != null) {
-                   for (TreeEnt ent:childList) {
-                       if (ent.instance != null && ent.instance.equals(inst)) {
-                           childEnt = ent;
-                           break;
-                       }
+            if (insts.size() == 1) { // TODO: should we make sure this is really a singleton definition?  rootedObject is too strict
+               InstanceWrapper mainInst = insts.get(0);
+               anyChanges = !DynUtil.equalObjects(instance, mainInst);
+               if (anyChanges) {
+                  instance = mainInst;
+               }
+            }
+            else {
+               instance = null;
+               for (InstanceWrapper inst:insts) {
+                   TreeEnt childEnt = null;
+                   if (childList != null) {
+                      for (TreeEnt ent:childList) {
+                          if (ent.instance != null && ent.instance.equals(inst)) {
+                              childEnt = ent;
+                              break;
+                          }
+                      }
                    }
-                }
-                if (childEnt == null) {
-                   childEnt = new TreeEnt(EntType.Instance, inst.toString(), typeTree, inst.typeName, null);
-                   childEnt.instance = inst;
-                   if (childEnt.srcTypeName == null)
-                      childEnt.srcTypeName = srcTypeName;
-                   childEnt.cachedTypeDeclaration = cachedTypeDeclaration;
-                   addChild(childEnt);
-                }
-                anyChanges = true;
-                childEnt.marked = true;
+                   if (childEnt == null) {
+                      childEnt = new TreeEnt(EntType.Instance, inst.toString(), typeTree, inst.typeName, null);
+                      childEnt.instance = inst;
+                      if (childEnt.srcTypeName == null)
+                         childEnt.srcTypeName = srcTypeName;
+                      if (srcTypeName.equals(inst.typeName))
+                         childEnt.cachedTypeDeclaration = cachedTypeDeclaration;
+                      else
+                         childEnt.cachedTypeDeclaration = childEnt.getTypeDeclaration();
+                      addChild(childEnt);
+                   }
+                   anyChanges = true;
+                   childEnt.marked = true;
+               }
             }
          }
          if (removeUnmarkedInstances())
@@ -636,7 +680,7 @@ class TypeTree {
           if (childList != null) {
              for (int i = 0; i < childList.size(); i++) {
                 TreeEnt child = childList.get(i);
-                if (!child.marked && child.instance != null) {
+                if (!child.marked && child.type == EntType.Instance && child.instance != null) {
                    childList.remove(i);
                    i--;
                    childEnts.remove(child.nodeId);

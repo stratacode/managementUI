@@ -20,8 +20,8 @@ import sc.parser.ParseUtil;
 
 @sc.obj.Component
 EditorModel {
-   /** Among the typeNames, set to the type object which has focus */
-   Object currentCtxType :=: ctx.currentType;
+   /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
+   Object currentCtxType :=: currentCtxType instanceof BodyTypeDeclaration ? ctx.currentType : null;
 
    currentCtxType =: changeCurrentType(currentCtxType);
 

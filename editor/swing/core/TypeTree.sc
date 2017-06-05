@@ -42,6 +42,8 @@ TypeTree {
        // The path for this node in the tree
        TreePath path;
 
+       selected =: refreshNode();
+
        void refreshNode() {
           if (treeNode != null) {
              if (updateInstances())
@@ -118,13 +120,21 @@ TypeTree {
       paths[pl] = treeNode;
       TreePath tp = new TreePath(paths);
 
+      if (childEnt.type == EntType.Instance) {
+         System.out.println("***");
+      }
+
+      String childKey = childEnt.type == EntType.Instance ? childEnt.typeName + ":" + childEnt.instance.toString() : childEnt.typeName;
+
       if (childEnt.isSelectable()) {
-         List<TreePath> l = index.get(childEnt.typeName);
+         List<TreePath> l = index.get(childKey);
          if (l == null) {
             l = new ArrayList<TreePath>();
 
+            // For Instances, use a key which is unique to that instance so when we select the instance
+            // in one view, it will show up in the others
             if (childEnt.type != EntType.LayerDir)
-               index.put(childEnt.typeName, l);
+               index.put(childKey, l);
 
             if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
                index.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
@@ -138,42 +148,45 @@ TypeTree {
    void updatePackageContents(TreeEnt ents, TreeNode treeNode,
                               Map<String, List<TreePath>> index, TreePath parent) {
 
-       ents.treeNode = treeNode;
-       ents.path = parent;
-       ArrayList<TreeEnt> subDirs = ents.childList;
-       int pos = 0;
-       int rix;
-       if (subDirs != null) {
-          for (TreeEnt childEnt:subDirs) {
-             rix = -1;
-             int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
-             if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
-                treeNode.removeChildNode(childEnt);
-                childEnt.treeNode = null;
-                if (rix != -1)
-                   ents.removed.remove(rix);
-                continue;
-             }
+      ents.treeNode = treeNode;
+      ents.path = parent;
+      ArrayList<TreeEnt> subDirs = ents.childList;
+      int pos = 0;
+      int rix;
 
-             TreeNode childTree = treeNode.findChildNodeForEnt(childEnt);
-             if (childTree == null) {
-                childTree = new TreeNode(childEnt);
+      ents.updateInstances();
 
-                ents.typeTree.rootTreeModel.insertNodeInto(childTree, treeNode, pos);
-             }
-             TreePath path = addToIndex(childEnt, childTree, index, parent);
-             updatePackageContents(childEnt, childTree, index, path);
-             pos++;
-          }
-       }
-       if (ents.removed != null) {
-          // TODO: no longer need this loop?
-          for (TreeEnt rem:ents.removed) {
-             treeNode.removeChildNode(rem);
-             rem.treeNode = null;
-          }
-          ents.removed = null;
-       }
+      if (subDirs != null) {
+         for (TreeEnt childEnt:subDirs) {
+            rix = -1;
+            int tix = ents.removed != null ? ents.removed.indexOf(childEnt) : -2;
+            if ((ents.removed != null && (rix = ents.removed.indexOf(childEnt)) != -1) || !childEnt.isVisible(byLayer)) {
+               treeNode.removeChildNode(childEnt);
+               childEnt.treeNode = null;
+               if (rix != -1)
+                  ents.removed.remove(rix);
+               continue;
+            }
+
+            TreeNode childTree = treeNode.findChildNodeForEnt(childEnt);
+            if (childTree == null) {
+               childTree = new TreeNode(childEnt);
+
+               ents.typeTree.rootTreeModel.insertNodeInto(childTree, treeNode, pos);
+            }
+            TreePath path = addToIndex(childEnt, childTree, index, parent);
+            updatePackageContents(childEnt, childTree, index, path);
+            pos++;
+         }
+      }
+      if (ents.removed != null) {
+         // TODO: no longer need this loop?
+         for (TreeEnt rem:ents.removed) {
+            treeNode.removeChildNode(rem);
+            rem.treeNode = null;
+         }
+         ents.removed = null;
+      }
    }
 
    TreeNode findChildNode(TreeNode parent, Object userObj) {

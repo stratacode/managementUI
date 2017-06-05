@@ -226,6 +226,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       openRoot =: openRootNode();
 
       String[] lastSelectedTypeNames;
+      List<InstanceWrapper> lastSelectedInstances;
       boolean lastCreateMode = true;
       String lastPackageNode = null;
 
@@ -249,23 +250,35 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                TreePath[] paths = selectionPaths;
+               boolean inProgress = selectionChangeInProgress;
 
-               if (typeTreeModel.ignoreSelectionEvents)
-                  return;
+               try {
+                  // Is this the original selection?  If so keep track of which one is the original and only clear out
+                  // the selection if we are and there are no items selected (since there can be items selected in the other tree view)
+                  if (!selectionChangeInProgress) {
+                     selectionChangeInProgress = true;
+                     typeTreeSelection = byLayer;
 
-               if (paths == null) {
-                 if (!typeTreeModel.createMode)
-                    selectedTypeNames = new String[0];
-                 return;
+                     if (paths == null) {
+                       if (!typeTreeModel.createMode)
+                          selectedTypeNames = new String[0];
+                       return;
+                     }
+                  }
+
+                  if (paths != null) {
+                     ArrayList<TypeTree.TreeEnt> treeEnts = new ArrayList<TypeTree.TreeEnt>();
+                     for (TreePath path:paths) {
+                        Object userObj = ((DefaultMutableTreeNode) path.lastPathComponent).userObject;
+                        treeEnts.add((TypeTree.TreeEnt) userObj);
+                     }
+                     selectTreeNodes(treeEnts);
+                  }
                }
-
-               ArrayList<TypeTree.TreeEnt> treeEnts = new ArrayList<TypeTree.TreeEnt>();
-               for (TreePath path:paths) {
-                  Object userObj = ((DefaultMutableTreeNode) path.lastPathComponent).userObject;
-                  treeEnts.add((TypeTree.TreeEnt) userObj);
+               finally {
+                  if (!inProgress)
+                     selectionChangeInProgress = false;
                }
-
-               selectTreeNodes(treeEnts);
            }
          });
          addTreeWillExpandListener(new TreeWillExpandListener() {
@@ -289,18 +302,27 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       }
 
       void updateListSelection() {
-         if (StringUtil.arraysEqual(lastSelectedTypeNames, selectedTypeNames) && lastCreateMode == typeTreeModel.createMode && StringUtil.equalStrings(currentPackageNode, lastPackageNode))
+         if (StringUtil.arraysEqual(lastSelectedTypeNames, selectedTypeNames) && lastCreateMode == typeTreeModel.createMode &&
+             StringUtil.equalStrings(currentPackageNode, lastPackageNode) &&
+             DynUtil.equalObjects(lastSelectedInstances, selectedInstances))
             return;
          updateSelectionCount++;
          lastSelectedTypeNames = selectedTypeNames;
          lastCreateMode = typeTreeModel.createMode;
          lastPackageNode = currentPackageNode;
+         lastSelectedInstances = new ArrayList<InstanceWrapper>(selectedInstances);
 
          List<TreePath> paths = new ArrayList<TreePath>(selectedTypeNames.length);
 
          // In create mode, we immediately clear the selection because it just temporarily copies the value into the
          // dialog
          if (!typeTreeModel.createMode) {
+            if (selectedInstances != null && selectedInstances.size() > 0) {
+               for (int i = 0; i < selectedInstances.size(); i++) {
+                  InstanceWrapper wrapper = selectedInstances.get(i);
+                  typeTreeModel.addTreePaths(paths, byLayer, wrapper.typeName + ":" + wrapper.toString(), false);
+               }
+            }
             for (int i = 0; i < selectedTypeNames.length; i++) {
                typeTreeModel.addTreePaths(paths, byLayer, selectedTypeNames[i], false);
             }
@@ -308,12 +330,12 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             // a create perhaps.
             if (currentPackageNode != null) {
                typeTreeModel.addTreePaths(paths, byLayer, currentPackageNode, true);
-
             }
          }
          TreePath[] newPaths = paths.toArray(new TreePath[paths.size()]);
-         if (!Arrays.equals(newPaths, selectionModel.selectionPaths))
+         if (!Arrays.equals(newPaths, selectionModel.selectionPaths)) {
             selectionModel.selectionPaths = newPaths;
+         }
 
          super.updateListSelection();
       }

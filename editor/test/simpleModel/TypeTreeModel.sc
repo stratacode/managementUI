@@ -1,4 +1,4 @@
 TypeTreeModel {
-   packageFilter = {"example.simple"};
+   includePackages = {"example.simple"};
    MAX_TYPES = 10;
 }
