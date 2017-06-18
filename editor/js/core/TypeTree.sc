@@ -2,7 +2,7 @@ TypeTree {
    TreeNode {
       TreeNode(TreeEnt treeEnt) {
          if (treeEnt == null)
-            System.out.println("***");
+            System.out.println("*** Error - no treeEnt for node!");
           ent = treeEnt;
       }
       ArrayList<TreeNode> children = new ArrayList<TreeNode>();;

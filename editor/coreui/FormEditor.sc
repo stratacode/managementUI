@@ -5,7 +5,10 @@ class FormEditor extends TypeEditor {
    Object oldInstance;
    FormView parentFormView;
 
+   int instSelectedIndex = 0;
    instance =: instanceChanged();
+
+   List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
 
    FormEditor(FormView view, TypeEditor parentEditor, BodyTypeDeclaration type, Object instance) {
       super(view, parentEditor, type, instance);
@@ -39,10 +42,29 @@ class FormEditor extends TypeEditor {
       if (removed)
           return;
       if (instance != oldInstance) {
-         updateListeners();
-         updateChildInsts();
+         childViewsChanged();
          oldInstance = instance;
       }
+   }
+
+   void childViewsChanged() {
+      updateListeners();
+      updateChildInsts();
+   }
+
+   int getInstSelectedIndex(Object inst, List<InstanceWrapper> instsOfType) {
+      int i = 0;
+      if (instancesOfType != null) {
+         for (InstanceWrapper wrap:instancesOfType) {
+            if (wrap.instance == inst)
+               return i;
+            i++;
+
+         }
+      }
+      //if (inst == null)  needed for js version?
+      //   return 0;
+      return -1;
    }
 
    void updateChildInsts() {
@@ -95,5 +117,4 @@ class FormEditor extends TypeEditor {
       }
       return res;
    }
-
 }

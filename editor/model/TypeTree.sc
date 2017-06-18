@@ -89,8 +89,6 @@ class TypeTree {
       boolean marked;
 
       boolean getHasChildren() {
-         if (ent == null)
-            System.out.println("***");
          return ent.hasChildren;
       }
 
@@ -205,6 +203,16 @@ class TypeTree {
       boolean needsType = false;
 
       boolean selected = false;
+      /*
+      public void setSelected(boolean sel) {
+         if (srcTypeName != null && srcTypeName.equals("sc.util.ArrayList"))
+            System.out.println("***");
+         this.selected = sel;
+      }
+      public boolean getSelected() {
+         return this.selected;
+      }
+      */
 
       boolean closed = false; // Have we explicitly closed this node.  if so, don't reopen it
 
@@ -237,8 +245,13 @@ class TypeTree {
          boolean orig = open;
          open = newOpen;
          if (!orig && newOpen) {
-            initChildren();
-            refreshNode();
+            DynUtil.invokeLater(
+                new Runnable() {
+                    void run() {
+                        initChildren();
+                        refreshNode();
+                    }
+                }, 0);
          }
       }
 
@@ -447,11 +460,7 @@ class TypeTree {
          String typeNamePart = srcTypeName == null ? "" : "_" + CTypeUtil.escapeIdentifierString(srcTypeName);
          String entTypePart = type == null ? "_unknown" : "_" + type;
          String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
-         if (entTypePart.contains("null"))
-            System.out.println("***");
          objectId = "TE" + getIdPrefix() + entTypePart + layerPart + typeNamePart + valuePart;
-         if (objectId.startsWith("TET_null_"))
-            System.out.println("***");
          return objectId;
       }
 

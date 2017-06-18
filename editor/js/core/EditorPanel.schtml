@@ -53,7 +53,7 @@
       <span style="float:right; margin-right: 2px" visible=":= windowOpen" >
          <span id="dataViewButton" extends="ViewTypeRadioButton" icon='/images/dataview.png' alt='Data view'
                 selected=":= viewType == ViewType.DataViewType" selected="=: selected ? viewType = ViewType.DataViewType : null"/>
-         <span id="formViewButton" extends="ViewTypeRadioButton" icon='/images/formview.png' alt='Form view'
+         <span id="formViewButton" extends="ViewTypeRadioButton" icon='/images/formview.png' alt='Type view'
                 selected=":= viewType == ViewType.FormViewType" selected="=: selected ? viewType = ViewType.FormViewType : null"/>
          <span id="codeViewButton" extends="ViewTypeRadioButton" icon='/images/codeview.png' alt='Code view'
                selected=":= viewType == ViewType.CodeViewType"

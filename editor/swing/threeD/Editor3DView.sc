@@ -192,7 +192,7 @@ class Editor3DView extends CGroup {
 
          x := xpad + col * (typeWidth + cellPadX);
 
-         //TypeTemplate tt := row == 0 ? null : LayerTemplate.this.typeTemplates.getNoError((row-1) * numCols + col);
+         //TypeTemplate tt := row == 0 ? null : LayerTemplate.this.typeTemplates.ret((row-1) * numCols + col);
          //y := tt == null ? screenTop - height : tt.y - height - cellPadY;
 
          Object type;

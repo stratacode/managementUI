@@ -1,20 +1,21 @@
 <div id="ElementEditor" class="elementEditor">
-   <%!
-      // When the currentValue changes update the textField's value... preserve transient changes in the form though.
-      currentValue =: textFieldForm.textField.value;
-      propC := repeatVar;
+<%!
+   int elementSubmitCount;
+   // The code to submit a change made directly to a form in this element editor.  This is done in a binding because setElementValue is a remote
+   // method - it will set errorText when the remote result is received.
+   elementSubmitCount =: instanceMode ? updateInstanceProperty() :
+                                 errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, elementValue, instanceMode, formEditor.instance == null);
+   propC := repeatVar;
 
-      String getTextFieldValue() {
-         return textFieldForm.textField.value;
-      }
-    %>
-    <form id="textFieldForm" submitEvent="=: instanceMode ? updateInstanceProperty() :
-          errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, textFieldValue, instanceMode, formEditor.instance == null)"
-          style="display:inline">
-       <label for="= textField.id" class="formFieldLabel">
-          <img visible=":= icon != null" src=':= icon == null ? "" : icon.path' alt=':= icon == null ? "" : icon.desc'>
-          <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>
-       <input id="textField" class="textField" type="text" focusEvent="=: parentView.editorModel.currentProperty = propC">
-       <div visible=":= TextUtil.length(errorText) > 0" class="errorText"><%= errorText %></div>
-    </form>
+   abstract String getFieldId();
+
+   void onFocusEvent() {
+      parentView.editorModel.currentProperty = propC;
+   }
+
+%>
+   <label abstract="true" id="ElementLabel" for="= fieldId" class="formFieldLabel">
+      <img visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
+      <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>
+   <div abstract="true" id="ErrorText" visible=":= TextUtil.length(errorText) > 0" class="errorText"><%= errorText %></div>
 </div>

@@ -1,25 +1,12 @@
 import sc.lang.java.ModelUtil;
+import sc.lang.java.VariableDefinition;
 
-class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
+abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    FormEditor formEditor;
    Object propC;
    String propertyName := getPropertyNameString(propC);
    String propertySuffix = "";
    EditorModel editorModel;
-
-   ElementEditor(FormEditor formEditor, Object prop) {
-      this.formEditor = formEditor;
-      this.propC = prop;
-      editorModel = parentView.editorModel;
-   }
-
-   public BaseView getParentView() {
-      return formEditor == null ? null : formEditor.parentView;
-   }
-
-   String getPropertyNameString(Object val) {
-      return val == null ? "<null>" : ModelUtil.getPropertyName(val) + propertySuffix;
-   }
 
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
    UIIcon icon := propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
@@ -27,15 +14,37 @@ class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    String oldPropName;
    int changeCt = 0;
    Object oldListenerInstance = null;
-   public String currentValue := getPropertyStringValue(propC, formEditor.instance, changeCt);
+   Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt);
+   String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue); // WARNING: using currentValue.toString() does not work because data binding has a bug and won't listen for changes on 'currentValue' in that case
+
+   visible := getPropVisible(formEditor.instance, varInit);
+
+   ElementEditor(FormEditor formEditor, Object prop) {
+      this.formEditor = formEditor;
+      editorModel = parentView.editorModel;
+      this.propC = prop;
+   }
+
+   public BaseView getParentView() {
+      return formEditor == null ? null : formEditor.parentView;
+   }
+
+   String getPropertyNameString(Object prop) {
+      return prop == null ? "<null>" : EditorModel.getPropertyName(prop) + propertySuffix;
+   }
 
    String getOperatorDisplayStr(Object instance, IVariableInitializer varInit) {
       return instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
 
+
    boolean getPropVisible(Object instance, IVariableInitializer varInit) {
       // Hide reverse only bindings when displaying instance since they are not settable
       return varInit != null && (instance == null || !DynUtil.equalObjects(varInit.operatorStr, "=:"));
+   }
+
+   static boolean isIndexedProperty(Object prop) {
+      return prop instanceof VariableDefinition && ((VariableDefinition) prop).indexedProperty;
    }
 
    object valueEventListener extends AbstractListener {
@@ -46,22 +55,24 @@ class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    }
 
    // Using these values as parameters so we get change events for them
-   String getPropertyStringValue(Object prop, Object instance, int changeCt) {
+   static Object getPropertyValue(Object prop, Object instance, int changeCt) {
       if (prop == null)
-         return "";
+         return null;
       if (prop instanceof IVariableInitializer) {
          IVariableInitializer varInit = (IVariableInitializer) prop;
 
          if (instance == null)
             return varInit.initializerExprStr == null ? "" : varInit.initializerExprStr;
-         else {
+         else if (!isIndexedProperty(prop)) {
             Object val = DynUtil.getPropertyValue(instance, varInit.variableName);
             if (val == null)
-               return "";
-            return val.toString();
+               return null;
+            return val;
          }
+         else
+            return "[]"; // TODO: maybe have a ListEditor for these?  
       }
-      return ModelUtil.getPropertyName(prop);
+      return "<unknown property type>";
    }
 
    /** Part of the IStoppable implementation */
@@ -98,7 +109,7 @@ class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
       if (formEditor.instance != null) {
          Object propType = ModelUtil.getPropertyType(propC);
          try {
-            Object newVal = sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), textFieldValue);
+            Object newVal = sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), elementValue);
             DynUtil.setPropertyValue(formEditor.instance, propertyName, newVal);
          }
          catch (IllegalArgumentException exc) {
@@ -113,7 +124,7 @@ class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    }
 
 
-   abstract String getTextFieldValue();
+   abstract String getElementValue();
 
    void updateListeners() {
       String simpleProp = getSimplePropName();
@@ -140,5 +151,12 @@ class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
             oldListenerInstance = null;
          }
       }
+   }
+   public String getIconPath() {
+      return icon == null ? "" : icon.path;
+   }
+
+   public String getIconAlt() {
+      return icon == null ? "" : icon.desc;
    }
 }

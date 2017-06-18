@@ -1,0 +1,16 @@
+<div id="MultiLineTextEditor">
+<%!
+   String getElementValue() {
+      return currentStringValue;
+   }
+
+   String getFieldId() {
+      return textFieldForm.textField.id;
+   }
+%>
+   <form id="textFieldForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
+      <label extends="ElementLabel"/>
+      <textarea id="textField" class="multiLineTextField" focusEvent="=: onFocusEvent()"><%= currentValue %></textarea>
+      <div extends="ErrorText"/>
+   </form>
+</div>

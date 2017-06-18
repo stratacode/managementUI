@@ -2,22 +2,7 @@
    <%!
       ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
       UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
-      List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
-      int instSelectedIndex = 0;
 
-      int getInstSelectedIndex(Object inst) {
-         int i = 0;
-         for (InstanceWrapper wrap:instancesOfType) {
-            if (wrap.instance == inst)
-               return i;
-            i++;
-
-         }
-         // The first instance will always be for null even if instancesOfType is not set yet
-         if (inst == null)
-            return 0;
-         return -1;
-      }
       void refreshChildren() {
          // Skip the rendering if we are not valid since a render might be in-progress and this could
          // validate the child before the parent is attached to the DOM
@@ -94,7 +79,7 @@
 
    <div id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
       <%!
-         Element createElement(Object value, int ix, Element oldTag) {
+         Element createElement(Object elem, int ix, Element oldTag) {
             Element res;
 
             // TODO: call createChildElementEditor here.  One idea is to have a method which gets the
@@ -107,16 +92,25 @@
 
             int xyz;
 
-            if (ModelUtil.isProperty(value)) {
-               if (oldTag instanceof ElementEditor) {
-                  ((ElementEditor) oldTag).propC = value;
-                  return oldTag;
+            if (ModelUtil.isProperty(elem)) {
+               Object propVal = parentFormView.instanceMode ? ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0) : null;
+               ElementEditor eview;
+               // If the value is not a multi-line string use the normal text field editor
+               if (propVal == null || !(propVal instanceof String) || ((String) propVal).indexOf('\n') == -1) {
+                  if (oldTag instanceof TextFieldEditor) {
+                     ((TextFieldEditor) oldTag).propC = elem;
+                     return oldTag;
+                  }
+                  eview = new TextFieldEditor(FormEditor.this, elem);
                }
-               ElementEditor eview = new ElementEditor(FormEditor.this, value);
+               else {
+                  eview = new MultiLineTextEditor(FormEditor.this, elem);
+               }
                res = eview;
+
             }
             else {
-               BodyTypeDeclaration innerType = (BodyTypeDeclaration) value;
+               BodyTypeDeclaration innerType = (BodyTypeDeclaration) elem;
                Object subInst = getInnerTypeInstance(innerType);
                if (oldTag instanceof FormEditor) {
                   FormEditor oldFormEditor = (FormEditor) oldTag;
@@ -126,10 +120,14 @@
                FormEditor cview = new FormEditor(parentFormView, FormEditor.this, innerType, subInst);
                res = cview;
             }
-            res.setRepeatVar(value);
+            res.setRepeatVar(elem);
             res.setRepeatIndex(ix);
 
             return res;
+         }
+
+         void repeatTagsChanged() {
+            childViewsChanged();
          }
       %>
     </div>
@@ -138,7 +136,7 @@
       <%= (clientType == null ? "null-type" : clientType.declarationType.name) %>
     <span class="classLabel"><%= clientType == null ? "" : clientType.typeName %> </span>
 
-   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance)"/>
+   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"/>
 
    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
 </div>

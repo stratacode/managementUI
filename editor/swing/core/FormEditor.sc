@@ -44,7 +44,8 @@ FormEditor {
    object instanceList extends JComboBox {
       location := SwingUtil.point(extendsTypeButton.location.x + extendsTypeButton.size.width + xpad, borderTitleY);
       size := preferredSize;
-      items := editorModel == null ? java.util.Collections.emptyList() : editorModel.ctx.getInstancesOfType(type, 10, true);
+      items := instancesOfType;
+      selectedIndex := getInstSelectedIndex(instance, instancesOfType);
       userSelectedItem =: userSelectedInstance((InstanceWrapper) selectedItem);
    }
 
@@ -172,9 +173,6 @@ FormEditor {
    void instanceChanged() {
       if (removed)
           return;
-      if (instanceList.selectedItem == null || ((InstanceWrapper)instanceList.selectedItem).instance != instance) {
-         instanceList.selectedItem = new InstanceWrapper(editorModel.ctx, instance, ((InstanceWrapper) instanceList.selectedItem).typeName);
-      }
       super.instanceChanged();
    }
 

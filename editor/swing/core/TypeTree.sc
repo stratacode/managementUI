@@ -28,7 +28,10 @@ TypeTree {
          // showing null paths.  When swapping visibility of nodes, this is a PITA.
          treeModel.ignoreSelectionEvents = true;
          try {
-            ent.typeTree.rootTreeModel.removeNodeFromParent((TypeTree.TreeNode) parent.getChildAt(ix));
+            if (ent != null)
+               ent.typeTree.rootTreeModel.removeNodeFromParent((TypeTree.TreeNode) parent.getChildAt(ix));
+            else
+               System.out.println("***");
          }
          finally {
             treeModel.ignoreSelectionEvents = false;
@@ -119,10 +122,6 @@ TypeTree {
       System.arraycopy(parentPaths, 0, paths, 0, pl);
       paths[pl] = treeNode;
       TreePath tp = new TreePath(paths);
-
-      if (childEnt.type == EntType.Instance) {
-         System.out.println("***");
-      }
 
       String childKey = childEnt.type == EntType.Instance ? childEnt.typeName + ":" + childEnt.instance.toString() : childEnt.typeName;
 

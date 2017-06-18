@@ -45,11 +45,11 @@ TextFieldEditor extends LabeledEditor {
 
    String propertyValueString(Object instance, Object val, int changeCt) {
       if (formEditor == null)
-          System.out.println("***");
+          System.err.println("*** Error - no formEditor for propValue");
        if (editorModel == null)
-          System.out.println("***");
+          System.err.println("*** Error - no editor model for propvalue");
        else if (editorModel.ctx == null)
-          System.out.println("***");
+          System.err.println("*** Error - No context for prop value");
       return editorModel.ctx.propertyValueString(formEditor.type, instance, val);
    }
 
@@ -125,7 +125,7 @@ TextFieldEditor extends LabeledEditor {
    }
    height := (int) (errorLabel.size.height + textField.size.height + ypad);
 
-   String getTextFieldValue() {
+   String getElementValue() {
       return textField.enteredText;
    }
 }

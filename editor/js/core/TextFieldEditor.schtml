@@ -1,1 +1,16 @@
-<div id="TextFieldEditor"/>
+<div id="TextFieldEditor" extends="ElementEditor">
+<%!
+   String getFieldId() {
+      return textFieldForm.textField.id;
+   }
+
+   String getElementValue() {
+      return textFieldForm.textField.value;
+   }
+%>
+   <form id="textFieldForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
+      <label extends="ElementLabel"/>
+      <input id="textField" class="textField" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue"/>
+      <div extends="ErrorText"/>
+   </form>
+</div>

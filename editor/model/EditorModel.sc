@@ -5,6 +5,7 @@ import sc.obj.SyncMode;
 import sc.lang.html.Element;
 import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.InstanceWrapper;
+import sc.lang.java.ModelUtil;
 
 /** 
    The main view model object for viewing and editing of the program model.  It exposes
@@ -284,5 +285,19 @@ class EditorModel implements sc.bind.IChangeable {
          return (BodyTypeDeclaration) typeObj;
       }
       return null;
+   }
+
+   static String getPropertyName(Object prop) {
+      String name = (String) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "displayName");
+      if (name != null && name.length() > 0)
+         return name;
+      return ModelUtil.getPropertyName(prop);
+   }
+
+   boolean isVisible(Object prop) {
+      Boolean vis = (Boolean) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "visible");
+      if (vis != null && !vis)
+         return false;
+      return true;
    }
 }

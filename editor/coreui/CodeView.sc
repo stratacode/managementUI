@@ -52,7 +52,7 @@ class CodeView extends BaseView {
 
    @sc.obj.Sync(syncMode = sc.obj.SyncMode.Automatic)
    class CodeEditor {
-      @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
+      //@sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
       EditorModel.SelectedFile file;
 
       // Using TextUtil.length works around a bug in data binding.  It's not listening on the object for the .length() object.
@@ -65,6 +65,8 @@ class CodeView extends BaseView {
       CodeEditor() {}
 
       CodeEditor(EditorModel.SelectedFile f) {
+         if (f == null)
+            System.err.println("*** No file in code editor");
          file = f;
       }
 

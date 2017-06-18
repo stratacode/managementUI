@@ -208,7 +208,8 @@ class EditorPanel {
                      treeEnt.updateInstances();
 
                      if (treeEnt.instance != null) {
-                        newInstances.add(treeEnt.instance);
+                        if (!newInstances.contains(treeEnt.instance))
+                           newInstances.add(treeEnt.instance);
                      }
                   }
                   // In createMode only looking at the first path selected

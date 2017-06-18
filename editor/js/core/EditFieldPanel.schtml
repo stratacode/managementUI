@@ -1,9 +1,9 @@
 <%@ import sc.lang.java.ModelUtil; %>
 <span style="display: flex; flex: 1 1 auto">
    <%! 
-       EditorModel editorModel; 
-       Object currentProperty := editorModel.currentProperty;
-       UIIcon currentIcon := editorModel.currentPropertyIcon;
+      EditorModel editorModel;
+      Object currentProperty := editorModel.currentProperty;
+      UIIcon currentIcon := editorModel.currentPropertyIcon;
    %>
 
    <span id="currentTypeTextField" extends="CompletionTextField"
@@ -21,7 +21,7 @@
           style="display: flex; width: 50%"
           opStr=":=: editorModel.currentPropertyOperator"
           valueStr=":=: editorModel.currentPropertyValue"
-          submitEvent="=: doEvent"
+          submitEvent="=: fieldValueSubmitted()"
           editorModel=":= EditFieldPanel.this.editorModel">
       <span id="confirmButtons" 
           enabled=":= editorModel.enableUpdateProperty && TextUtil.length(valueField.errorText) == 0"/>

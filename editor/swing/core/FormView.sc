@@ -54,6 +54,10 @@ FormView {
    // For FormView, this is a copy of the repeatComponents list.  As we add children as a swing child, we add it to childViews.
    List<IElementEditor> childViews = new ArrayList<IElementEditor>();
 
+   List<IElementEditor> getChildViews() {
+      return childViews;
+   }
+
    contentPanel {
       int maxChildWidth, maxChildHeight;
       preferredSize := SwingUtil.dimension(maxChildWidth, maxChildHeight);
@@ -69,7 +73,7 @@ FormView {
          int oldNumRows, oldNumCols;
 
          // No need to refresh
-         disableRefresh := !visible;
+         disableRefresh := !FormView.this.visible;
 
          FormEditor[][] viewsGrid;
 

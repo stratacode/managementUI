@@ -264,7 +264,6 @@ EditorModel {
 
       modelValidating = false;
 
-
       // Send an event so people can listen on this value and update dependent data structures
       Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
    }

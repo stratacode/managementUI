@@ -1,5 +1,5 @@
 EditFieldOp {
-   doEvent =: doEditField();
+   updateTypeCount =: doEditField();
 
    void doEditField() {
       String error = editorModel.updateCurrentProperty(opStr, valueStr);
