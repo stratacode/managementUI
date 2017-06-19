@@ -161,7 +161,7 @@ FormEditor {
             FormEditor cview = (FormEditor) view;
             if (cview.type instanceof BodyTypeDeclaration) {
                BodyTypeDeclaration btd = (BodyTypeDeclaration) cview.type;
-               if (btd.getDefinesCurrentObject()) {
+               if (hasInnerTypeInstance(btd)) {
                   Object childInst = instance == null ? null : DynUtil.getProperty(instance, btd.getTypeName());
                   cview.setSelectedInstance(childInst);
                }

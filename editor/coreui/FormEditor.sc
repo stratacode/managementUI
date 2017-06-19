@@ -90,14 +90,19 @@ class FormEditor extends TypeEditor {
        }
    }
 
-   Object getInnerTypeInstance(BodyTypeDeclaration subType) {
-      Object subInst = null;
+   boolean hasInnerTypeInstance(BodyTypeDeclaration subType) {
       if (FormEditor.this.instance != null && subType.getDeclarationType() == DeclarationType.OBJECT) {
          String scopeName = DynUtil.getScopeNameForType(subType);
-         if (scopeName != null) {
-            System.out.println("*** Not returning inner instance for property: " + subType.typeName + " with scope: " + scopeName);
-            return null;
-         }
+         if (scopeName != null)
+            return false;
+         return true;
+      }
+      return false;
+   }
+
+   Object getInnerTypeInstance(BodyTypeDeclaration subType) {
+      Object subInst = null;
+      if (hasInnerTypeInstance(subType)) {
          subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
       }
       return subInst;
