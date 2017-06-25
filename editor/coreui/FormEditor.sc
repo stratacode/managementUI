@@ -10,8 +10,8 @@ class FormEditor extends TypeEditor {
 
    List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
 
-   FormEditor(FormView view, TypeEditor parentEditor, BodyTypeDeclaration type, Object instance) {
-      super(view, parentEditor, type, instance);
+   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, BodyTypeDeclaration type, Object instance) {
+      super(view, parentEditor, parentProperty, type);
       parentFormView = view;
 
       this.instance = instance;
@@ -113,7 +113,7 @@ class FormEditor extends TypeEditor {
       if (prop instanceof BodyTypeDeclaration) {
          BodyTypeDeclaration subType = (BodyTypeDeclaration) prop;
          Object subInst = getInnerTypeInstance(subType);
-         FormEditor editor = new FormEditor(parentFormView, FormEditor.this, subType, subInst);
+         FormEditor editor = new FormEditor(parentFormView, FormEditor.this, null, subType, subInst);
          res = editor;
       }
       else if (ModelUtil.isProperty(prop)) {

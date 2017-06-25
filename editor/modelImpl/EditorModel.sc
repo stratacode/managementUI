@@ -23,7 +23,7 @@ EditorModel {
    /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
    Object currentCtxType :=: currentCtxType instanceof BodyTypeDeclaration ? ctx.currentType : null;
 
-   currentCtxType =: changeCurrentType(currentCtxType);
+   currentCtxType =: changeCurrentType(currentCtxType, null);
 
    currentProperty =: validateCurrentProperty();
 
@@ -544,8 +544,8 @@ EditorModel {
       }
    }
 
-   void changeCurrentType(Object type) {
-      super.changeCurrentType(type);
+   void changeCurrentType(Object type, Object inst) {
+      super.changeCurrentType(type, inst);
 
       // Push this back if the change is coming from the editor model side
       if (currentCtxType != type)
@@ -647,7 +647,7 @@ EditorModel {
          }
          theType = types.get(0);
       }
-      changeCurrentType(theType);
+      changeCurrentType(theType, null);
       return null;
    }
 
@@ -702,7 +702,7 @@ EditorModel {
       if (res instanceof String)
          return (String) res;
 
-      changeCurrentType(res);
+      changeCurrentType(res, null);
 
       return null;
    }

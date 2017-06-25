@@ -22,8 +22,8 @@ FormEditor {
    object nameButton extends LinkButton {
       location := SwingUtil.point(objectLabel.location.x + objectLabel.size.width + xpad, borderTitleY + baseline);
       size := preferredSize;
-      text := type == null ? "<null>" : ModelUtil.getClassName(type);
-      clickCount =: editorModel.changeCurrentType(type);
+      text := displayName;
+      clickCount =: editorModel.changeCurrentType(type, instance);
       foreground := transparentType ? GlobalResources.transparentTextColor : GlobalResources.normalTextColor;
    }
 
@@ -38,7 +38,7 @@ FormEditor {
       location := SwingUtil.point(extendsLabel.location.x + extendsLabel.size.width + xpad, borderTitleY + baseline);
       size := preferredSize;
       text := extTypeName == null ? "" : CTypeUtil.getClassName(extTypeName);
-      clickCount =: editorModel.changeCurrentType(DynUtil.findType(extTypeName));
+      clickCount =: editorModel.changeCurrentType(DynUtil.findType(extTypeName), null);
    }
 
    object instanceList extends JComboBox {

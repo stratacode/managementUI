@@ -117,7 +117,7 @@
                   oldFormEditor.setTypeAndInstance(innerType, subInst);
                   return oldTag;
                }
-               FormEditor cview = new FormEditor(parentFormView, FormEditor.this, innerType, subInst);
+               FormEditor cview = new FormEditor(parentFormView, FormEditor.this, null, innerType, subInst);
                res = cview;
             }
             res.setRepeatVar(elem);
@@ -133,8 +133,8 @@
     </div>
 
    <img visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
-      <%= (clientType == null ? "null-type" : clientType.declarationType.name) %>
-    <span class="classLabel"><%= clientType == null ? "" : clientType.typeName %> </span>
+      <%= operatorName %>
+    <span class="classLabel"><%= displayName %></span>
 
    <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"/>
 

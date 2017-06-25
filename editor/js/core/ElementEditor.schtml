@@ -14,6 +14,7 @@
    }
 
 %>
+   <!-- Defines the label as an abstract class so implementations can easily instantiate one and customize it -->
    <label abstract="true" id="ElementLabel" for="= fieldId" class="formFieldLabel">
       <img visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
       <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>

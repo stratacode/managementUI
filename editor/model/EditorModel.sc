@@ -155,15 +155,20 @@ class EditorModel implements sc.bind.IChangeable {
       return createModeTypeName.equals(typeName);
    }
 
-   void changeCurrentType(Object type) {
+   void changeCurrentType(Object type, Object inst) {
       if (type == null || type == currentType)
          return;
 
       String[] newTypeNames = new String[1];
-      newTypeNames[0] = DynUtil.getTypeName(type, true);
+      String newTypeName = DynUtil.getTypeName(type, true);
+      newTypeNames[0] = newTypeName;
       typeNames = newTypeNames;
 
       currentType = type;
+      currentInstance = inst;
+      List<InstanceWrapper> selInstances = new ArrayList<InstanceWrapper>(1);
+      selInstances.add(new InstanceWrapper(ctx, inst, newTypeName));
+      selectedInstances = selInstances;
 
       selectionChanged++;
    }
@@ -171,6 +176,7 @@ class EditorModel implements sc.bind.IChangeable {
    void clearCurrentType() {
       typeNames = new String[0];
       currentType = null;
+      currentInstance = null;
    }
 
    void changeCurrentTypeName(String typeName) {
@@ -287,11 +293,25 @@ class EditorModel implements sc.bind.IChangeable {
       return null;
    }
 
-   static String getPropertyName(Object prop) {
-      String name = (String) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "displayName");
+   static String getDisplayNameAnnotation(Object typeOrProp) {
+      String name = (String) ModelUtil.getAnnotationValue(typeOrProp, "sc.obj.EditorSettings", "displayName");
       if (name != null && name.length() > 0)
          return name;
+      return null;
+   }
+
+   static String getPropertyName(Object prop) {
+      String name = getDisplayNameAnnotation(prop);
+      if (name != null)
+         return name;
       return ModelUtil.getPropertyName(prop);
+   }
+
+   static String getClassDisplayName(Object type) {
+      String name = getDisplayNameAnnotation(type);
+      if (name != null)
+         return name;
+      return ModelUtil.getClassName(type);
    }
 
    boolean isVisible(Object prop) {

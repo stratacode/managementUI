@@ -1,8 +1,9 @@
 
 @Component
 class TypeEditor extends CompositeEditor {
-   BaseView parentView;
-   TypeEditor parentEditor;
+   BaseView parentView;  // The root view for this editor
+   TypeEditor parentEditor; // The parent editor if this editor is parent of a hierarchy.
+   Object parentProperty;  // If this editor is defined from a property in the parent editor - otherwise, it's null
 
    int numCols = 1;
 
@@ -17,18 +18,20 @@ class TypeEditor extends CompositeEditor {
 
    String operatorName;
    String extTypeName;
+   String displayName;
 
    List<IElementEditor> childViews;
 
-   String title;
+   //String title;
 
    int nestLevel = 0;
 
    type =: typeChanged();
 
-   TypeEditor(BaseView view, TypeEditor parentEditor, BodyTypeDeclaration type, Object instance) {
+   TypeEditor(BaseView view, TypeEditor parentEditor, Object parentProperty, BodyTypeDeclaration type) {
       parentView = view;
       this.parentEditor = parentEditor;
+      this.parentProperty = parentProperty;
       this.type = type;
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
@@ -42,6 +45,8 @@ class TypeEditor extends CompositeEditor {
    void typeChanged() {
       if (type == null)
          operatorName = null;
+      else if (parentProperty != null)
+          operatorName = "property";
       else if (ModelUtil.isEnumType(type))
          operatorName = "enum";
       else if (ModelUtil.isEnum(type))
@@ -55,9 +60,16 @@ class TypeEditor extends CompositeEditor {
       else
          operatorName = "class";
 
+      if (parentProperty != null)
+         displayName = editorModel.getPropertyName(parentProperty);
+      else if (type != null)
+         displayName = editorModel.getClassDisplayName(type);
+      else
+         displayName = "...unknown...";
+
       if (type != null) {
          extTypeName = type.extendsTypeName;
-         title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
+         //title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
          Object[] newProps = editorModel.getPropertiesForType(type);
          ArrayList<Object> visProps = new ArrayList<Object>();
          if (newProps != null) {
