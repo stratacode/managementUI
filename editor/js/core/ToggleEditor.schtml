@@ -1,0 +1,16 @@
+<div id="ToggleEditor">
+   <%!
+      String getFieldId() {
+         return toggleForm.checkbox.id;
+      }
+
+      String getElementValue() {
+         return String.valueOf(toggleForm.checkbox.checked);
+      }
+   %>
+   <form id="toggleForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
+      <label extends="ElementLabel"/>
+      <input id="checkbox" class="toggle" type="checkbox" focusEvent="=: onFocusEvent()" checked=":= checkedValue"/>
+      <div extends="ErrorText"/>
+   </form>
+</div>

@@ -4,13 +4,13 @@
       return textFieldForm.textField.id;
    }
 
-   String getElementValue() {
+   String getElementStringValue() {
       return textFieldForm.textField.value;
    }
 %>
    <form id="textFieldForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
       <label extends="ElementLabel"/>
-      <input id="textField" class="textField" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue"/>
+      <input id="textField" class="formFieldValue" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue" disabled=":= !editable"/>
       <div extends="ErrorText"/>
    </form>
 </div>

@@ -246,7 +246,7 @@ class Editor3DView extends CGroup {
             int ix = 0;
             if (props != null) {
                for (Object p:props) {
-                  if (model.filteredProperty(type, p, !mergeLayers))
+                  if (model.filteredProperty(type, p, !mergeLayers, false))
                      continue;
 
                   Object member = p;
@@ -265,7 +265,7 @@ class Editor3DView extends CGroup {
                   ix++;
                }
                for (Object p:props) {
-                  if (model.filteredProperty(type, p, !mergeLayers))
+                  if (model.filteredProperty(type, p, !mergeLayers, false))
                      continue;
 
                   Object member = p;

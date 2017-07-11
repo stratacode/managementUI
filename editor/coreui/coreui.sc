@@ -5,6 +5,7 @@ import sc.lang.java.JavaModel;
 import sc.lang.java.IVariableInitializer;
 import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.InstanceWrapper;
+import sc.type.PTypeUtil;
 
 @sc.js.JSSettings(jsModuleFile="js/sceditor.js")
 public editor.coreui extends model, gui.util.core {

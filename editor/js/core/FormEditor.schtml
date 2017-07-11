@@ -1,7 +1,5 @@
 <div id="FormEditor" class="formEditor">
    <%!
-      ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
-      UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
 
       void refreshChildren() {
          // Skip the rendering if we are not valid since a render might be in-progress and this could
@@ -50,9 +48,6 @@
          super.updateListeners();
       }
 
-      void removeListeners() {
-      }
-
       void updateChildren() {
          Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
          if (children == null)
@@ -66,9 +61,9 @@
 
                if (childView instanceof FormEditor) {
                    FormEditor childCView = (FormEditor) childView;
-                   BodyTypeDeclaration childType = childCView.type;
+                   Object childType = childCView.type;
                    if (childType != null && ModelUtil.isObjectType(childType) && !ModelUtil.hasModifier(childType, "static")) {
-                      Object childInst = instance == null ? null : DynUtil.getPropertyValue(instance, childType.typeName);
+                      Object childInst = instance == null ? null : DynUtil.getPropertyValue(instance, ModelUtil.getTypeName(childType));
                       childCView.updateInstance(childInst);
                    }
                }
@@ -80,50 +75,7 @@
    <div id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
       <%!
          Element createElement(Object elem, int ix, Element oldTag) {
-            Element res;
-
-            // TODO: call createChildElementEditor here.  One idea is to have a method which gets the
-            // element editor class.  That would let us support the oldTag optimization in a general way
-            // and open up a way to support various factory implementations.  In essence, we want users to
-            // be able to customize the editor class for: a given implementation type, a given property type,
-            // specific properties of a super-type.  any others?  It seems like using an annotation to specify
-            // the editor-type name for a given property, type, layer gives enough flexibility.  Because we can
-            // have annotation layers, we can layer on the meta-data for a given management view.
-
-            int xyz;
-
-            if (ModelUtil.isProperty(elem)) {
-               Object propVal = parentFormView.instanceMode ? ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0) : null;
-               ElementEditor eview;
-               // If the value is not a multi-line string use the normal text field editor
-               if (propVal == null || !(propVal instanceof String) || ((String) propVal).indexOf('\n') == -1) {
-                  if (oldTag instanceof TextFieldEditor) {
-                     ((TextFieldEditor) oldTag).propC = elem;
-                     return oldTag;
-                  }
-                  eview = new TextFieldEditor(FormEditor.this, elem);
-               }
-               else {
-                  eview = new MultiLineTextEditor(FormEditor.this, elem);
-               }
-               res = eview;
-
-            }
-            else {
-               BodyTypeDeclaration innerType = (BodyTypeDeclaration) elem;
-               Object subInst = getInnerTypeInstance(innerType);
-               if (oldTag instanceof FormEditor) {
-                  FormEditor oldFormEditor = (FormEditor) oldTag;
-                  oldFormEditor.setTypeAndInstance(innerType, subInst);
-                  return oldTag;
-               }
-               FormEditor cview = new FormEditor(parentFormView, FormEditor.this, null, innerType, subInst);
-               res = cview;
-            }
-            res.setRepeatVar(elem);
-            res.setRepeatIndex(ix);
-
-            return res;
+            return (Element) FormEditor.this.createElementEditor(elem, ix, (IElementEditor) oldTag);
          }
 
          void repeatTagsChanged() {

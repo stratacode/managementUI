@@ -1,55 +1,13 @@
 import sc.lang.java.DeclarationType;
 
-class FormEditor extends TypeEditor {
-   Object instance;
-   Object oldInstance;
-   FormView parentFormView;
+class FormEditor extends InstanceEditor {
 
    int instSelectedIndex = 0;
-   instance =: instanceChanged();
 
    List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
 
-   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, BodyTypeDeclaration type, Object instance) {
-      super(view, parentEditor, parentProperty, type);
-      parentFormView = view;
-
-      this.instance = instance;
-   }
-
-   @sc.obj.ManualGetSet
-   public void setTypeAndInstance(BodyTypeDeclaration type, Object inst) {
-      setTypeNoChange(type);
-      this.instance = inst;
-      // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
-      Bind.sendInvalidate(this, "instance", inst);
-      // This both invalidates and validates for type
-      Bind.sendChange(this, "type", type);
-      refreshChildren();
-      // Now we're ready to validate the bindings on the instance
-      Bind.sendValidate(this, "instance", inst);
-   }
-
-   abstract void refreshChildren();
-
-   void init() {
-      // Bindings not set before we set the instance property so need to do this once up front
-      super.init();
-      instanceChanged();
-   }
-
-   void instanceChanged() {
-      if (removed)
-          return;
-      if (instance != oldInstance) {
-         childViewsChanged();
-         oldInstance = instance;
-      }
-   }
-
-   void childViewsChanged() {
-      updateListeners();
-      updateChildInsts();
+   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance) {
+      super(view, parentEditor, parentProperty, type, instance);
    }
 
    int getInstSelectedIndex(Object inst, List<InstanceWrapper> instsOfType) {
@@ -65,29 +23,6 @@ class FormEditor extends TypeEditor {
       //if (inst == null)  needed for js version?
       //   return 0;
       return -1;
-   }
-
-   void updateChildInsts() {
-      if (childViews != null) {
-         for (IElementEditor view:childViews) {
-           if (view instanceof TypeEditor) {
-              TypeEditor te = ((TypeEditor) view);
-              te.parentInstanceChanged(instance);
-           }
-         }
-      }
-   }
-
-   void parentInstanceChanged(Object parentInst) {
-       if (parentInst == null)
-          instance = null;
-       else {
-          String propName = CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type));
-          if (DynUtil.hasProperty(parentInst, propName))
-             instance = DynUtil.getProperty(parentInst, propName);
-          else
-             instance = null;
-       }
    }
 
    boolean hasInnerTypeInstance(BodyTypeDeclaration subType) {
@@ -108,18 +43,42 @@ class FormEditor extends TypeEditor {
       return subInst;
    }
 
-   IElementEditor createChildElementEditor(Object prop, int ix) {
-      IElementEditor res = null;
-      if (prop instanceof BodyTypeDeclaration) {
-         BodyTypeDeclaration subType = (BodyTypeDeclaration) prop;
-         Object subInst = getInnerTypeInstance(subType);
-         FormEditor editor = new FormEditor(parentFormView, FormEditor.this, null, subType, subInst);
-         res = editor;
+   IElementEditor createElementEditor(Object elem, int ix, IElementEditor oldTag) {
+      Object propInst;
+      Object propType;
+      BodyTypeDeclaration innerType = null;
+
+      Object prop = null;
+      // A property
+      if (ModelUtil.isProperty(elem)) {
+         prop = elem;
+         propType = ModelUtil.getPropertyType(elem);
+         propInst = parentView.instanceMode ? ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0) : null;
       }
-      else if (ModelUtil.isProperty(prop)) {
-         TextFieldEditor elemView = new TextFieldEditor(FormEditor.this, prop);
-         res = elemView;
+      // An inner type
+      else if (elem instanceof BodyTypeDeclaration) {
+         innerType = (BodyTypeDeclaration) elem;
+         propInst = getInnerTypeInstance(innerType);
+         propType = innerType;
       }
-      return res;
+      else {
+         propInst = null;
+         propType = null;
+      }
+
+      String editorType = getEditorType(elem, prop, propType, propInst, instanceMode);
+      Object editorClass = getEditorClass(editorType);
+
+      Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
+      if (oldClass == editorClass) {
+         ((IElementEditor) oldTag).updateEditor(elem, prop, propType, propInst);
+         return oldTag;
+      }
+      else {
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, FormEditor.this, prop, propType, propInst);
+         newEditor.setRepeatVar(elem);
+         newEditor.setRepeatIndex(ix);
+         return newEditor;
+      }
    }
 }

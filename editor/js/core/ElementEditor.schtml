@@ -4,7 +4,7 @@
    // The code to submit a change made directly to a form in this element editor.  This is done in a binding because setElementValue is a remote
    // method - it will set errorText when the remote result is received.
    elementSubmitCount =: instanceMode ? updateInstanceProperty() :
-                                 errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, elementValue, instanceMode, formEditor.instance == null);
+                                 errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), instanceMode, formEditor.instance == null);
    propC := repeatVar;
 
    abstract String getFieldId();
@@ -17,6 +17,6 @@
    <!-- Defines the label as an abstract class so implementations can easily instantiate one and customize it -->
    <label abstract="true" id="ElementLabel" for="= fieldId" class="formFieldLabel">
       <img visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
-      <%= getPropertyNameString(propC) %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>
+      <%= propertyName %> <%= getOperatorDisplayStr(formEditor.instance, varInit) %>&nbsp;</label>
    <div abstract="true" id="ErrorText" visible=":= TextUtil.length(errorText) > 0" class="errorText"><%= errorText %></div>
 </div>

@@ -400,15 +400,18 @@ EditorModel {
    static {
       filteredProps.add("class");
       filteredProps.add("initState");
+      filteredProps.add("serialVersionUID");
    }
 
-   public boolean filteredProperty(Object type, Object p, boolean perLayer) {
-      // For now, only StrataCode members
-      if (p instanceof java.lang.reflect.Member)
-         return true;
+   public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
+      if (!instanceMode) {
+         // For now, only StrataCode members
+         if (p instanceof java.lang.reflect.Member)
+            return true;
 
-      if (p instanceof IBeanMapper && ((IBeanMapper) p).getPropertyMember() instanceof java.lang.reflect.Member)
-         return true;
+         if (p instanceof IBeanMapper && ((IBeanMapper) p).getPropertyMember() instanceof java.lang.reflect.Member)
+            return true;
+      }
 
       Object ownerType = ModelUtil.getEnclosingType(p);
 
@@ -434,15 +437,15 @@ EditorModel {
       if (!mergeLayers) {
          // Transparent layers need to grab all of the properties so we can filter them in the code
          if (!inherit && (currentLayer == null || !currentLayer.transparent))
-            props = ModelUtil.getDeclaredPropertiesAndTypes(type, null);
+            props = ModelUtil.getDeclaredPropertiesAndTypes(type, "public", system);
           else
-            props = ModelUtil.getPropertiesAndTypes(type, null);
+            props = ModelUtil.getPropertiesAndTypes(type, "public");
       }
       else {
          if (!inherit && (currentLayer == null || !currentLayer.transparent))
-            props = ModelUtil.getDeclaredMergedPropertiesAndTypes(type, null, true);
+            props = ModelUtil.getDeclaredMergedPropertiesAndTypes(type, "public", true);
          else
-            props = ModelUtil.getMergedPropertiesAndTypes(type, null);
+            props = ModelUtil.getMergedPropertiesAndTypes(type, "public", system);
       }
       return props;
    }

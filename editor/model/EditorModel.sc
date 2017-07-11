@@ -8,11 +8,11 @@ import sc.lang.InstanceWrapper;
 import sc.lang.java.ModelUtil;
 
 /** 
-   The main view model object for viewing and editing of the program model.  It exposes
+   The main view model object for viewing and editing of the program model or instances.  It exposes
    the current selection and provides access to the currently selected property, types and layers. 
    */
 class EditorModel implements sc.bind.IChangeable {
-   /** Specifies the list of types for the model */
+   /** Specifies the current list of types for the model */
    String[] typeNames = new String[0];
 
    List<InstanceWrapper> selectedInstances = null;
@@ -89,7 +89,7 @@ class EditorModel implements sc.bind.IChangeable {
    boolean editSelectionEnabled = false;
 
    /** Generated values, kept in sync when you change typeNames and currentLayer */
-   ArrayList<Object> types;                 // The global list of just the selected types
+   ArrayList<Object> types;                 // The current list of just the selected types
    ArrayList<Object> inheritedTypes;        // Like types only includes any inherited types as well when inherit is true
    @Sync(syncMode=SyncMode.Disabled)
    ArrayList<Object> filteredTypes;         // The merged list of the most specific type in the current selected set of types/layers
@@ -100,7 +100,7 @@ class EditorModel implements sc.bind.IChangeable {
    ArrayList<List<Object>> typesPerLayer;   // For each layer in the current set, the set of types in this layer - used for 3d view
    @Sync(syncMode=SyncMode.Disabled)
    Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
-   ArrayList<Object> visibleTypes = new ArrayList<Object>();     // Used in form view - filters the set of types by the merge and inherited
+   ArrayList<Object> visibleTypes = new ArrayList<Object>();     // The list of types used to create the form view - removes types filtered by the merge and inherited flags
 
    class SelectedFile {
       SrcEntry file;
@@ -273,8 +273,14 @@ class EditorModel implements sc.bind.IChangeable {
    //abstract String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateInstances, boolean valueIsExpr);
 
 
-   public boolean filteredProperty(Object type, Object p, boolean perLayer) {
+   public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
       return false;
+   }
+
+   public boolean isConstantProperty(Object prop) {
+      if (prop == null)
+         return true;
+      return ModelUtil.hasAnnotation(prop, "sc.obj.Constant") || ModelUtil.hasModifier(prop, "final");
    }
 
    /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
@@ -317,6 +323,14 @@ class EditorModel implements sc.bind.IChangeable {
    boolean isVisible(Object prop) {
       Boolean vis = (Boolean) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "visible");
       if (vis != null && !vis)
+         return false;
+      return true;
+   }
+
+   boolean isReferenceType(Object type) {
+      if (ModelUtil.isObjectType(type))
+         return true;
+      if (ModelUtil.isCompiledClass(type) || ModelUtil.hasAnnotation(type, "sc.obj.ValueObject"))
          return false;
       return true;
    }

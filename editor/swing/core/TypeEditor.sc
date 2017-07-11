@@ -35,6 +35,16 @@ TypeEditor {
 
    int titleBorderX = 30;
 
+   @Bindable
+   Object repeatVar;
+
+   @Bindable
+   int repeatIndex;
+
+   public static Icon getSwingIcon(UIIcon icon) {
+      return icon == null ? null : icon.icon;
+   }
+
    void validateTree() {
    }
 }

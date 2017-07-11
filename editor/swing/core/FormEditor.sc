@@ -1,5 +1,4 @@
 FormEditor {
-
    // A border around the contents of the group with the group name
    //border := BorderFactory.createCompoundBorder (BorderFactory.createEmptyBorder(borderSize, borderSize, borderSize, borderSize), BorderFactory.createTitledBorder(title));
    //border := BorderFactory.createTitledBorder(title);
@@ -13,7 +12,7 @@ FormEditor {
 
    object objectLabel extends JLabel {
       location := SwingUtil.point(2*xpad + borderSize + titleBorderX, borderTitleY + baseline);
-      icon := GlobalResources.lookupIcon(type);
+      icon := getSwingIcon(FormEditor.this.icon);
       size := preferredSize;
       text := operatorName;
       border = BorderFactory.createEmptyBorder();
@@ -30,10 +29,11 @@ FormEditor {
    object extendsLabel extends JLabel {
       location := SwingUtil.point(nameButton.location.x + nameButton.size.width + xpad, borderTitleY + baseline);
       size := preferredSize;
-      text := extTypeName == null ? "" : "extends";
+      text := extTypeName == null ? "" : (parentProperty == null ? "extends" : "type");
       border = BorderFactory.createEmptyBorder();
    }
 
+   // TODO: rename this to 'formType'?   When we are editing a property, it's the type of the property not the base type
    object extendsTypeButton extends LinkButton {
       location := SwingUtil.point(extendsLabel.location.x + extendsLabel.size.width + xpad, borderTitleY + baseline);
       size := preferredSize;
@@ -44,9 +44,10 @@ FormEditor {
    object instanceList extends JComboBox {
       location := SwingUtil.point(extendsTypeButton.location.x + extendsTypeButton.size.width + xpad, borderTitleY);
       size := preferredSize;
-      items := instancesOfType;
+      items := !visible ? java.util.Collections.emptyList() : instancesOfType;
       selectedIndex := getInstSelectedIndex(instance, instancesOfType);
       userSelectedItem =: userSelectedInstance((InstanceWrapper) selectedItem);
+      visible := parentProperty == null;
    }
 
    void validateTree() {
@@ -71,7 +72,7 @@ FormEditor {
       public IElementEditor createRepeatElement(Object prop, int ix, Object oldComp) {
          IElementEditor res = null;
 
-         res = createChildElementEditor(prop, ix);
+         res = createElementEditor(prop, ix, (IElementEditor)oldComp);
 
          updateCell(res, ix);
 
@@ -79,32 +80,34 @@ FormEditor {
       }
 
       void refreshList() {
-          int size = DynUtil.getArrayLength(repeat);
+         int size = DynUtil.getArrayLength(repeat);
 
-          boolean gridChanged = false;
-          if (oldNumRows != numRows || oldNumCols != numCols) {
-             gridChanged = true;
-             viewsGrid = new IElementEditor[numRows][numCols];
-          }
+         boolean gridChanged = false;
+         if (oldNumRows != numRows || oldNumCols != numCols) {
+            gridChanged = true;
+            viewsGrid = new IElementEditor[numRows][numCols];
+         }
 
-          super.refreshList();
+         super.refreshList();
 
-          if (gridChanged) {
-              int ix = 0;
-              for (Object elem:repeatComponents) {
-                  IElementEditor fed = (IElementEditor) elem;
-                  updateCell(fed, ix);
-                  ix++;
-              }
-          }
+         if (gridChanged) {
+             int ix = 0;
+             for (Object elem:repeatComponents) {
+                IElementEditor fed = (IElementEditor) elem;
+                updateCell(fed, ix);
+                ix++;
+             }
+         }
 
-          lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
+         validateTree();
 
-          validateTree();
+         lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
       }
 
       public void validateTree() {
          int curIx = 0;
+         if (childViews == null)
+            System.out.println("***");
          for (Object elem:repeatComponents) {
             IElementEditor ed = (IElementEditor) elem;
 
@@ -150,30 +153,25 @@ FormEditor {
       instance = inst;
       // When the user explicitly chooses <type> we need to mark that they've chosen nothing for this type to keep the current object from coming back
       if (instance == null)
-         parentFormView.setDefaultCurrentObj(type, EditorContext.NO_CURRENT_OBJ_SENTINEL);
+         parentView.setDefaultCurrentObj(type, EditorContext.NO_CURRENT_OBJ_SENTINEL);
       else {
-         parentFormView.setDefaultCurrentObj(type, instance);
+         parentView.setDefaultCurrentObj(type, instance);
       }
 
-      for (int i = 0; i < childViews.size(); i++) {
-         IElementEditor view = childViews.get(i);
-         if (view instanceof FormEditor) {
-            FormEditor cview = (FormEditor) view;
-            if (cview.type instanceof BodyTypeDeclaration) {
-               BodyTypeDeclaration btd = (BodyTypeDeclaration) cview.type;
-               if (hasInnerTypeInstance(btd)) {
-                  Object childInst = instance == null ? null : DynUtil.getProperty(instance, btd.getTypeName());
-                  cview.setSelectedInstance(childInst);
+      if (childViews != null) {
+         for (int i = 0; i < childViews.size(); i++) {
+            IElementEditor view = childViews.get(i);
+            if (view instanceof FormEditor) {
+               FormEditor cview = (FormEditor) view;
+               if (cview.type instanceof BodyTypeDeclaration) {
+                  BodyTypeDeclaration btd = (BodyTypeDeclaration) cview.type;
+                  if (hasInnerTypeInstance(btd)) {
+                     Object childInst = instance == null ? null : DynUtil.getProperty(instance, btd.getTypeName());
+                     cview.setSelectedInstance(childInst);
+                  }
                }
             }
          }
       }
    }
-
-   void instanceChanged() {
-      if (removed)
-          return;
-      super.instanceChanged();
-   }
-
 }

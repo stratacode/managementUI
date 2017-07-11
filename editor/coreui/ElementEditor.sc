@@ -1,11 +1,12 @@
 import sc.lang.java.ModelUtil;
 import sc.lang.java.VariableDefinition;
 
+@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.FormEditor,Object,Object,Object")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    FormEditor formEditor;
    Object propC;
-   String propertyName := getPropertyNameString(propC);
    String propertySuffix = "";
+   String propertyName := getPropertyNameString(propC);
    EditorModel editorModel;
 
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
@@ -16,13 +17,20 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    Object oldListenerInstance = null;
    Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt);
    String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue); // WARNING: using currentValue.toString() does not work because data binding has a bug and won't listen for changes on 'currentValue' in that case
+   Object propType;
+
+   boolean instanceMode;
+   boolean editable := !instanceMode || !editorModel.isConstantProperty(propC);
 
    visible := getPropVisible(formEditor.instance, varInit);
 
-   ElementEditor(FormEditor formEditor, Object prop) {
+   ElementEditor(FormView parentView, FormEditor formEditor, Object prop, Object propType, Object propInst) {
+      instanceMode = formEditor.instanceMode;
       this.formEditor = formEditor;
       editorModel = parentView.editorModel;
       this.propC = prop;
+      this.currentValue = propInst;
+      this.propType = propType;
    }
 
    public BaseView getParentView() {
@@ -30,13 +38,16 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    String getPropertyNameString(Object prop) {
-      return prop == null ? "<null>" : EditorModel.getPropertyName(prop) + propertySuffix;
+      return prop == null ? "<null>" : EditorModel.getPropertyName(prop);
    }
 
    String getOperatorDisplayStr(Object instance, IVariableInitializer varInit) {
       return instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
 
+   void updateEditor(Object elem, Object prop, Object propType, Object inst) {
+      propC = elem;
+   }
 
    boolean getPropVisible(Object instance, IVariableInitializer varInit) {
       // Hide reverse only bindings when displaying instance since they are not settable
@@ -70,9 +81,13 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
             return val;
          }
          else
-            return "[]"; // TODO: maybe have a ListEditor for these?  
+            return null;
       }
-      return "<unknown property type>";
+      else if (prop instanceof String)
+         return DynUtil.getPropertyValue(instance, (String)prop);
+      else if (prop instanceof sc.type.IBeanMapper)
+         return DynUtil.getPropertyValue(instance, ((sc.type.IBeanMapper) prop).getPropertyName());
+      return null;
    }
 
    /** Part of the IStoppable implementation */
@@ -101,16 +116,11 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return simpleProp;
    }
 
-   boolean getInstanceMode() {
-      return formEditor.parentFormView.instanceMode;
-   }
-
    public void updateInstanceProperty() {
       if (formEditor.instance != null) {
          Object propType = ModelUtil.getPropertyType(propC);
          try {
-            Object newVal = sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), elementValue);
-            DynUtil.setPropertyValue(formEditor.instance, propertyName, newVal);
+            DynUtil.setPropertyValue(formEditor.instance, propertyName, elementValue);
          }
          catch (IllegalArgumentException exc) {
             errorText = exc.toString();
@@ -123,8 +133,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
          errorText = "No instance to update";
    }
 
-
-   abstract String getElementValue();
+   abstract Object getElementValue();
 
    void updateListeners() {
       String simpleProp = getSimplePropName();
@@ -159,4 +168,6 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    public String getIconAlt() {
       return icon == null ? "" : icon.desc;
    }
+
 }
+

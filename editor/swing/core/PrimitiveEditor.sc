@@ -4,4 +4,10 @@ PrimitiveEditor extends ComponentGroup {
 
    @Bindable
    int row, col;
+
+   @Bindable
+   Object repeatVar;
+
+   @Bindable
+   int repeatIndex;
 }
