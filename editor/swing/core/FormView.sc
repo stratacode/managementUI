@@ -35,8 +35,7 @@ FormView {
             else
                currentTextField = null;
 
-            editorModel.currentProperty = prop;
-            editorModel.currentInstance = inst;
+            editorModel.changeFocus(prop, inst);
          }
       }
       else if (!focus && editorModel.currentProperty == prop) {
@@ -144,7 +143,7 @@ FormView {
                   childViews.set(curIx, fed);
                   SwingUtil.addChild(parentComponent, fed);
                }
-               fed.updateListeners();
+               fed.updateListeners(true);
                curIx++;
             }
             while (curIx < childViews.size()) {

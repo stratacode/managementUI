@@ -22,7 +22,7 @@
           Object currentObj = getObjectForListElement(ix);
           if (oldTag instanceof FormEditor) {
              res = (FormEditor) oldTag;
-             res.setTypeAndInstance(type, currentObj);
+             res.setTypeAndInstance(null, type, currentObj);
           }
           else {
              res = new FormEditor(FormView.this, null, null, type, currentObj);
@@ -32,7 +32,7 @@
           return res;
         } %>
    </div>
-   <div id="formScroll" style="height: 100%; width: 100%; overflow: auto;">
+   <div id="formScroll" class="formScroll" >
       <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj" repeatWrapper="elementRepeatBuilder">
       </div>
    </div>

@@ -8,7 +8,7 @@ class ListEditor extends TypeEditor {
 
    @sc.obj.ManualGetSet
    void updateEditor(Object elem, Object prop, Object propType, Object inst) {
-      setTypeNoChange((BodyTypeDeclaration) elem);
+      setTypeNoChange(prop, (BodyTypeDeclaration) elem);
       this.instList = (List<Object>)inst;
       // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
       //Bind.sendInvalidate(this, "instList", inst);

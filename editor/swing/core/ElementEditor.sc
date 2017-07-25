@@ -37,7 +37,7 @@ ElementEditor {
       foreground := GlobalResources.errorTextColor;
    }
 
-   propertyName =: updateListeners();
+   propertyName =: updateListeners(true);
    JavaModel oldListenerModel = null;
 
    @Bindable
@@ -77,12 +77,12 @@ ElementEditor {
    public void setVisible(boolean vis) {}
 
    void removeListeners() {
-      updateListeners();
+      updateListeners(false);
 
       DynUtil.dispose(this);
    }
 
-   void updateListeners() {
+   void updateListeners(boolean add) {
       String propName = propertyName;
       String simpleProp;
       int ix = propName.indexOf("[");
@@ -100,12 +100,12 @@ ElementEditor {
             oldListenerInstance = null;
          }
          else if (oldListenerModel != null) {
-                 Bind.removeListener(oldListenerModel, null, valueEventListener, IListener.VALUE_CHANGED);
-                 oldListenerModel = null;
+            Bind.removeListener(oldListenerModel, null, valueEventListener, IListener.VALUE_CHANGED);
+            oldListenerModel = null;
          }
       }
 
-      if (propName != null && !propName.equals("<null>")) {
+      if (add && propName != null && !propName.equals("<null>")) {
          if (formEditor.instance != null) {
             Bind.addDynamicListener(formEditor.instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = formEditor.instance;

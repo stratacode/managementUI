@@ -34,15 +34,17 @@ abstract class TypeEditor extends CompositeEditor {
    TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst) {
       parentView = view;
       this.parentEditor = parentEditor;
-      this.parentProperty = parentProperty;
-      this.type = type;
+      this.setTypeNoChange(parentProperty, type);
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
    }
 
-   // TODO: workaround for the fact that the type property is set in the constructor, before the binding is registered.  We could possibly detect this case - a property set in the constructor - and fire the binding when the binding is defined.
    void init() {
+      // We set type in the constructor with no change event, so there's no event on init.  typeChanged() won't be called even in the sendChange event below because it's being changed to the same value.
+      // but some other bindings rely on this event - such as the one inside of instanceList which is created before the type has been set (because of a call to getBorder() inside of swing).
       typeChanged();
+      Bind.sendChange(this, "type", type);
+      Bind.sendChange(this, "parentProperty", parentProperty);
    }
 
    void typeChanged() {
@@ -135,7 +137,8 @@ abstract class TypeEditor extends CompositeEditor {
 
    // Sets the field without firing a change event
    @sc.obj.ManualGetSet
-   void setTypeNoChange(Object newType) {
+   void setTypeNoChange(Object parentProp, Object newType) {
+      parentProperty = parentProp;
       type = newType;
    }
 
@@ -146,10 +149,10 @@ abstract class TypeEditor extends CompositeEditor {
       }
    }
 
-   void updateListeners() {
+   void updateListeners(boolean add) {
       if (childViews != null) {
          for (IElementEditor view:childViews)
-            view.updateListeners();
+            view.updateListeners(add);
       }
    }
 
@@ -178,6 +181,9 @@ abstract class TypeEditor extends CompositeEditor {
    }
 
    boolean getInstanceMode() {
+      if (parentView == null) {
+         return true;
+      }
       return parentView.instanceMode;
    }
 
@@ -193,10 +199,10 @@ abstract class TypeEditor extends CompositeEditor {
       Object instType = propInst == null ? null : DynUtil.getType(propInst);
       String editorType = instType == null ? null : (String) ModelUtil.getAnnotationValue(instType, "sc.obj.EditorSettings", "editorType");
 
-      if (editorType == null)
+      if (editorType == null && propType != null)
           editorType = (String) ModelUtil.getAnnotationValue(propType, "sc.obj.EditorSettings", "editorType");
       if (editorType == null) {
-         if (prop != null) {
+         if (prop != null && propType != null) {
             if (ModelUtil.isEnumType(propType) || (instType != null && ModelUtil.isEnumType(instType))) {
                editorType = "choice";
             }
@@ -214,7 +220,7 @@ abstract class TypeEditor extends CompositeEditor {
             else if (propType == Boolean.class || propType == Boolean.TYPE) {
                editorType = "toggle";
             }
-            else if ((propInst == null || !DynUtil.isObject(propInst)) && !editorModel.isReferenceType(propType) && (instType == null || !editorModel.isReferenceType(instType))) {
+            else if ((propInst == null || !DynUtil.isObject(propInst)) && (!editorModel.isReferenceType(propType) || (instType == null || !editorModel.isReferenceType(instType)))) {
                editorType = "form";
             }
             else

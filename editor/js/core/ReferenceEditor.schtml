@@ -1,7 +1,7 @@
 <div id="ReferenceEditor" class="elementEditor">
    <span class="formFieldLabel" style="position: relative; left: -8px">
-      <img visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
+      <img class="elementIcon" visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
       <%= displayName %>
    </span>
-   <a class="textFieldValue" clickEvent="=: gotoReference()"><%= referenceId %></a>
+   <a class="textLink" disabled=":= !referenceable" clickEvent="=: gotoReference()"><%= referenceId %></a>
 </div>

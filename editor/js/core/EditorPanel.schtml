@@ -32,7 +32,7 @@
        width: 100%; 
        height: <%= menuStyle.editorViewHeight %>; 
        border: 1px solid <%= menuStyle.borderColor %>;
-       <%; 
+       <%;
 %>
    <div id="toolbar">
       <%! boolean isMerged :=: editorModel.mergeLayers;

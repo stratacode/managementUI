@@ -25,12 +25,12 @@
 
          if (instance != oldInstance) {
             updateChildren();
-            updateListeners();
+            updateListeners(true);
             oldInstance = instance;
          }
       }
 
-      void updateListeners() {
+      void updateListeners(boolean add) {
          Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
          if (children == null) {
             childViews = null;
@@ -45,7 +45,7 @@
                childViews.add((IElementEditor) child);
             }
          }
-         super.updateListeners();
+         super.updateListeners(add);
       }
 
       void updateChildren() {
@@ -84,11 +84,19 @@
       %>
     </div>
 
-   <img visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
+   <div id="formTitle" class="formTitle">
+      <img class="elementIcon" visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
       <%= operatorName %>
-    <span class="classLabel"><%= displayName %></span>
+      <a class="textLink" clickEvent="=: parentProperty == null ? editorModel.changeCurrentType(type, instance) : changeFocus(true)"><%= displayName %></a>
+      <%= extendsTypeLabel %>
+      <a class="textLink" clickEvent="=: gotoExtendsType()" ><%= extendsTypeName %></a>
 
-   <select id="selectInstance" class="selectInstance" optionDataSource=":= instancesOfType" selectedIndex="=: updateWrapper(selectedValue)" selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"/>
+      <select id="selectInstance" class="selectInstance"
+               optionDataSource=":= instancesOfType"
+               selectedIndex="=: updateWrapper(selectedValue)"
+               selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
+               visible=":= showInstanceSelect"/>
+   </div>
 
    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
 </div>

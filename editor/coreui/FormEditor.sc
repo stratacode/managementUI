@@ -6,6 +6,11 @@ class FormEditor extends InstanceEditor {
 
    List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
 
+   boolean showInstanceSelect := parentProperty == null && instanceMode && type != null && !ModelUtil.isObjectType(type);
+
+   String extendsTypeLabel := extTypeName == null ? "" : (parentProperty == null ? "extends" : "type");
+   String extendsTypeName := extTypeName == null ? "" : CTypeUtil.getClassName(extTypeName);
+
    FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance) {
       super(view, parentEditor, parentProperty, type, instance);
    }
@@ -52,7 +57,7 @@ class FormEditor extends InstanceEditor {
       // A property
       if (ModelUtil.isProperty(elem)) {
          prop = elem;
-         propType = ModelUtil.getPropertyType(elem);
+         propType = ModelUtil.getPropertyType(elem, editorModel.system);
          propInst = parentView.instanceMode ? ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0) : null;
       }
       // An inner type
@@ -81,4 +86,9 @@ class FormEditor extends InstanceEditor {
          return newEditor;
       }
    }
+
+   void gotoExtendsType() {
+      editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, extTypeName), null);
+   }
+
 }

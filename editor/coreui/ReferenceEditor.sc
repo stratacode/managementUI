@@ -4,22 +4,28 @@ class ReferenceEditor extends InstanceEditor {
       super(view, parentEditor, parentProperty, type, inst);
    }
 
+   String referenceId := DynUtil.getInstanceName(instance);
+
    // There are no children in the reference editor
    void refreshChildren() {
    }
 
-   boolean getHasReference() {
-      return instance != null;
-   }
-
-   public String getReferenceId() {
-      return DynUtil.getInstanceName(instance);
+   // Is this a valid reference we should allow to be a link or do we just display the instanceName.
+   boolean isReferenceable() {
+      return instance == null || ModelUtil.isObjectType(type) || !(type instanceof java.util.Collection);
    }
 
    public void gotoReference() {
       Object useType = type;
-      if (instance != null)
-         useType = DynUtil.getType(instance);
+      if (instance != null) {
+         if (DynUtil.isObject(instance)) {
+            String objName = DynUtil.getObjectName(instance);
+            Object instType = ModelUtil.findTypeDeclaration(editorModel.system, objName, null, false);
+            if (instType != null)
+               useType = instType;
+         }
+      }
+      useType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, useType);
       editorModel.changeCurrentType(useType, instance);
    }
 }

@@ -42,7 +42,7 @@ class GlobalResources {
    final static UIColor errorTextColor = new UIColor(0x88, 0x22, 0x33);
    final static UIColor normalTextColor = new UIColor(16, 16, 16);
    final static UIColor transparentTextColor = new UIColor(128, 128, 128);
-
+   final static UIColor highlightColor = new UIColor(0x20, 0x20, 0xc0);
 
    static UIIcon lookupUIIcon(Object type) {
       if (ModelUtil.isLayerType(type)) {

@@ -21,8 +21,9 @@ ReferenceEditor {
       location := SwingUtil.point(refLabel.location.x + refLabel.size.width + xpad, baseline);
       size := preferredSize;
       text := referenceId;
-      clickCount =: editorModel.changeCurrentType(type, instance);
+      clickCount =: gotoReference();
       foreground := transparentType ? GlobalResources.transparentTextColor : GlobalResources.normalTextColor;
+      enabled := referenceable;
    }
 
    height := (int) (refLabel.location.y + refLabel.size.height) + 2 * ypad;

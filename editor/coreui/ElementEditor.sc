@@ -29,7 +29,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       this.formEditor = formEditor;
       editorModel = parentView.editorModel;
       this.propC = prop;
-      this.currentValue = propInst;
+      if (instanceMode)
+          this.currentValue = propInst;
       this.propType = propType;
    }
 
@@ -135,7 +136,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    abstract Object getElementValue();
 
-   void updateListeners() {
+   void updateListeners(boolean add) {
       String simpleProp = getSimplePropName();
       String propName = getVariableName();
 
@@ -144,7 +145,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
       removeListeners();
 
-      if (propName != null && !propName.equals("<null>")) {
+      if (add && propName != null && !propName.equals("<null>")) {
          if (formEditor.instance != null) {
             Bind.addDynamicListener(formEditor.instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = formEditor.instance;

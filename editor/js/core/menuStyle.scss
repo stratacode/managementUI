@@ -54,7 +54,8 @@
    String treeHeight := treeHeightPer + "%"; 
  
    String borderColor = "#777";
-   String borderColorSelected = "#22F";
+   //String borderColorSelected = "#22F";
+   String borderColorSelected = "#3434c7";
    String textHighlightColor = "#F1FFAE";
    String dropShadow = %>
       border-style: solid;
@@ -406,7 +407,18 @@ a.tooltip:hover span {
    height: 100%;
 }
 
-.classLabel {
+.textLink {
+   text-decoration: none;
+   color: #5151b5;
+}
+
+.textLink:hover {
+   color: #1212d6;
+   text-decoration: underline;
+}
+
+.formTitle {
+   margin-bottom: 6px;
 }
 
 .formFieldLabel {
@@ -419,16 +431,31 @@ a.tooltip:hover span {
 }
 
 .formFieldValue {
-   width: <%= 100 - formLabelPer - 2 %>%;
+   width: <%= 100 - formLabelPer - 3 %>%;
+}
+
+.formScroll {
+   height: 100%;
+   width: 100%;
+   overflow: auto;
+   //padding-top: 12px;
 }
 
 .formEditor {
    clear: both;
-   margin-left: 15px;
+   margin-left: 17px;
+   margin-bottom: 15px;
+   margin-top: 5px;
+   margin-right: 20px;
+   border: 2px solid #fff;
+   border-style: groove;
+   padding: 8px 0px 8px 8px;
 }
 
 .elementEditor {
    clear: both;
+   padding-top: 2px;
+   padding-bottom: 6px;
 }
 
 #fieldValueEditor input {
@@ -465,6 +492,10 @@ a.tooltip:hover span {
 
 .codeView {
    height: <%= codeViewHeightPer %>%;
+}
+
+.elementIcon {
+   vertical-align: text-top;
 }
 
 .logoImage {

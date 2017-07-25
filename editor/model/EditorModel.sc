@@ -11,6 +11,7 @@ import sc.lang.java.ModelUtil;
    The main view model object for viewing and editing of the program model or instances.  It exposes
    the current selection and provides access to the currently selected property, types and layers. 
    */
+@sc.obj.Component
 class EditorModel implements sc.bind.IChangeable {
    /** Specifies the current list of types for the model */
    String[] typeNames = new String[0];
@@ -124,6 +125,10 @@ class EditorModel implements sc.bind.IChangeable {
 
    boolean triggeredByUndo; // When a type change occurs because of an undo operation we do not want to record that op in the redo list again.
 
+   void init() {
+      SyncManager.initStandardTypes();
+   }
+
    void changeCodeFunctions(EnumSet<CodeFunction> cfs) {
       codeFunctions = new ArrayList(cfs);
    }
@@ -160,7 +165,7 @@ class EditorModel implements sc.bind.IChangeable {
          return;
 
       String[] newTypeNames = new String[1];
-      String newTypeName = DynUtil.getTypeName(type, true);
+      String newTypeName = ModelUtil.getTypeName(type);
       newTypeNames[0] = newTypeName;
       typeNames = newTypeNames;
 
@@ -330,8 +335,13 @@ class EditorModel implements sc.bind.IChangeable {
    boolean isReferenceType(Object type) {
       if (ModelUtil.isObjectType(type))
          return true;
-      if (ModelUtil.isCompiledClass(type) || ModelUtil.hasAnnotation(type, "sc.obj.ValueObject"))
+      if (ModelUtil.hasAnnotation(type, "sc.obj.ValueObject"))
          return false;
       return true;
+   }
+
+   void changeFocus(Object newProp, Object newInst) {
+      this.currentProperty = newProp;
+      this.currentInstance = newInst;
    }
 }

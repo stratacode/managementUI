@@ -1,5 +1,5 @@
 interface IElementEditor {
-   void updateListeners();
+   void updateListeners(boolean add);
    void removeListeners();
 
    boolean isVisible();
