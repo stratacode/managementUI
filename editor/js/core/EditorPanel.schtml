@@ -23,9 +23,11 @@
    viewType =: validateViewType();
 
    void validateViewType() {
-      viewPanel.dataView.viewVisible = viewType == ViewType.DataViewType;
+      boolean isDataView = viewType == ViewType.DataViewType;
+      viewPanel.dataView.viewVisible = isDataView;
       viewPanel.formView.viewVisible = viewType == ViewType.FormViewType;
       viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
+      typeTreeModel.includeInstances = isDataView;
    }
 
    String editorViewStyle := %>

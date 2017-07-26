@@ -277,8 +277,15 @@ class EditorModel implements sc.bind.IChangeable {
 
    //abstract String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateInstances, boolean valueIsExpr);
 
-
    public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
+      if (instanceMode) {
+         if (p instanceof IVariableInitializer) {
+            IVariableInitializer varInit = (IVariableInitializer) p;
+            String opStr = varInit.getOperatorStr();
+            if (opStr != null && opStr.equals("=:"))
+               return true;
+         }
+      }
       return false;
    }
 

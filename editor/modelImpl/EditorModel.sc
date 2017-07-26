@@ -403,6 +403,9 @@ EditorModel {
    }
 
    public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
+      if (super.filteredProperty(type, p, perLayer, instanceMode))
+         return true;
+
       if (!instanceMode) {
          // For now, only StrataCode members
          if (p instanceof java.lang.reflect.Member)

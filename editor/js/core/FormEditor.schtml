@@ -4,8 +4,10 @@
       void refreshChildren() {
          // Skip the rendering if we are not valid since a render might be in-progress and this could
          // validate the child before the parent is attached to the DOM
-         if (propList_Repeat.bodyValid)
-            propList_Repeat.refreshRepeat();
+         if (!propList_Repeat.bodyValid)
+            System.out.println("***");
+         // Need to render resync before we send the type and instance events - otherwise, the children will not be in sync.
+         propList_Repeat.refreshRepeat();
       }
 
       void updateWrapper(InstanceWrapper newWrapper) {

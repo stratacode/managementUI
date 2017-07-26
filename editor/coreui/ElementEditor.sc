@@ -15,7 +15,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    String oldPropName;
    int changeCt = 0;
    Object oldListenerInstance = null;
-   Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt);
+   Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode);
    String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue); // WARNING: using currentValue.toString() does not work because data binding has a bug and won't listen for changes on 'currentValue' in that case
    Object propType;
 
@@ -43,7 +43,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    String getOperatorDisplayStr(Object instance, IVariableInitializer varInit) {
-      return instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
+      return !instanceMode && instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
 
    void updateEditor(Object elem, Object prop, Object propType, Object inst) {
@@ -67,14 +67,14 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    // Using these values as parameters so we get change events for them
-   static Object getPropertyValue(Object prop, Object instance, int changeCt) {
+   static Object getPropertyValue(Object prop, Object instance, int changeCt, boolean instanceMode) {
       if (prop == null)
          return null;
       if (prop instanceof IVariableInitializer) {
          IVariableInitializer varInit = (IVariableInitializer) prop;
 
          if (instance == null)
-            return varInit.initializerExprStr == null ? "" : varInit.initializerExprStr;
+            return !instanceMode ? varInit.initializerExprStr == null ? "" : varInit.initializerExprStr : null;
          else if (!isIndexedProperty(prop)) {
             Object val = DynUtil.getPropertyValue(instance, varInit.variableName);
             if (val == null)

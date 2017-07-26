@@ -58,7 +58,7 @@ class FormEditor extends InstanceEditor {
       if (ModelUtil.isProperty(elem)) {
          prop = elem;
          propType = ModelUtil.getPropertyType(elem, editorModel.system);
-         propInst = parentView.instanceMode ? ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0) : null;
+         propInst = ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0, instanceMode);
       }
       // An inner type
       else if (elem instanceof BodyTypeDeclaration) {
