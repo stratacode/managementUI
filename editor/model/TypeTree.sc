@@ -556,8 +556,12 @@ class TypeTree {
       }
 
       boolean updateSelected() {
-         if (type == EntType.Instance)
+         if (type == EntType.Instance) {
+            boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
+            if (newSel != selected)
+               selected = newSel;
             return false;
+         }
 
          boolean needsRefresh = false;
          if (typeName == null) {
@@ -654,7 +658,7 @@ class TypeTree {
                       }
                    }
                    if (childEnt == null) {
-                      childEnt = new TreeEnt(EntType.Instance, inst.toString(), typeTree, inst.typeName, null);
+                      childEnt = new TreeEnt(EntType.Instance, inst.getObjectId(), typeTree, inst.typeName, null);
                       childEnt.instance = inst;
                       if (childEnt.srcTypeName == null)
                          childEnt.srcTypeName = srcTypeName;
@@ -704,7 +708,7 @@ class TypeTree {
       public String getNodeId() {
          switch (type) {
             case Instance:
-               return instance.toString();
+               return CTypeUtil.getClassName(instance.toString());
             default:
                return value;
          }

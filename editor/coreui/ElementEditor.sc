@@ -9,6 +9,9 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    String propertyName := getPropertyNameString(propC);
    EditorModel editorModel;
 
+   @Bindable
+   int listIndex = -1;
+
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
    UIIcon icon := propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
    String errorText;

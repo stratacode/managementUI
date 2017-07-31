@@ -30,8 +30,6 @@ TypeTree {
          try {
             if (ent != null)
                ent.typeTree.rootTreeModel.removeNodeFromParent((TypeTree.TreeNode) parent.getChildAt(ix));
-            else
-               System.out.println("***");
          }
          finally {
             treeModel.ignoreSelectionEvents = false;

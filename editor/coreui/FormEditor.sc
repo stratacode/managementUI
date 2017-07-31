@@ -11,6 +11,10 @@ class FormEditor extends InstanceEditor {
    String extendsTypeLabel := extTypeName == null ? "" : (parentProperty == null ? "extends" : "type");
    String extendsTypeName := extTypeName == null ? "" : CTypeUtil.getClassName(extTypeName);
 
+   int refreshInstancesCt := editorModel.refreshInstancesCt;
+   // TODO: we really only need to refresh instancesOfType - add Bind.refreshBinding(obj, 'propname').
+   refreshInstancesCt =: Bind.refreshBindings(this);
+
    FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance) {
       super(view, parentEditor, parentProperty, type, instance);
    }
@@ -71,12 +75,15 @@ class FormEditor extends InstanceEditor {
          propType = null;
       }
 
-      String editorType = getEditorType(elem, prop, propType, propInst, instanceMode);
+      String editorType = getEditorType(prop, propType, propInst, instanceMode);
       Object editorClass = getEditorClass(editorType);
 
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
-         ((IElementEditor) oldTag).updateEditor(elem, prop, propType, propInst);
+         IElementEditor oldEditor = (IElementEditor) oldTag;
+         oldEditor.updateEditor(elem, prop, propType, propInst);
+         oldEditor.setRepeatVar(elem);
+         oldEditor.setRepeatIndex(ix);
          return oldTag;
       }
       else {

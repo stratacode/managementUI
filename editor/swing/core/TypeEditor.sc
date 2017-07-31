@@ -39,7 +39,7 @@ TypeEditor {
    Object repeatVar;
 
    @Bindable
-   int repeatIndex;
+   int repeatIndex; // If we are in a repeat list, the index in that list (which may be a filtered subset of the original list)
 
    public static Icon getSwingIcon(UIIcon icon) {
       return icon == null ? null : icon.icon;

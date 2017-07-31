@@ -86,8 +86,18 @@ class TypeTreeModel {
    createLayerMode =: selectionChanged();
    propertyMode =: refresh();
 
+   // Need to refresh when any new instances are created.  TODO performance: we could reduce the scope of the refresh if necessary here since this might happen a lot in some applications
+   int refreshInstancesCt := editorModel.refreshInstancesCt;
+   refreshInstancesCt =: refreshInstances();
+
    void selectionChanged() {
       editorModel.selectionChanged++;
+      refresh();
+   }
+
+   void refreshInstances() {
+      if (rebuildFirstTime || !valid)
+         return;
       refresh();
    }
 

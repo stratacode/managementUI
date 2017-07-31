@@ -12,7 +12,7 @@ import sc.lang.java.ModelUtil;
    the current selection and provides access to the currently selected property, types and layers. 
    */
 @sc.obj.Component
-class EditorModel implements sc.bind.IChangeable {
+class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Specifies the current list of types for the model */
    String[] typeNames = new String[0];
 
@@ -125,8 +125,14 @@ class EditorModel implements sc.bind.IChangeable {
 
    boolean triggeredByUndo; // When a type change occurs because of an undo operation we do not want to record that op in the redo list again.
 
+   @Sync(syncMode=SyncMode.Disabled)
+   int refreshInstancesCt = 0;
+   @Sync(syncMode=SyncMode.Disabled)
+   boolean refreshInstancesValid = true;
+
    void init() {
       SyncManager.initStandardTypes();
+      DynUtil.addDynListener(this);
    }
 
    void changeCodeFunctions(EnumSet<CodeFunction> cfs) {
@@ -161,20 +167,26 @@ class EditorModel implements sc.bind.IChangeable {
    }
 
    void changeCurrentType(Object type, Object inst) {
-      if (type == null || type == currentType)
+      if (type == currentType && inst == currentInstance)
          return;
 
-      String[] newTypeNames = new String[1];
-      String newTypeName = ModelUtil.getTypeName(type);
-      newTypeNames[0] = newTypeName;
-      typeNames = newTypeNames;
+      String newTypeName = null;
+      if (type != null) {
+         newTypeName = ModelUtil.getTypeName(type);
+         String[] newTypeNames = new String[1];
+         newTypeNames[0] = newTypeName;
+         typeNames = newTypeNames;
+      }
 
       currentType = type;
       currentInstance = inst;
-      List<InstanceWrapper> selInstances = new ArrayList<InstanceWrapper>(1);
-      selInstances.add(new InstanceWrapper(ctx, inst, newTypeName));
-      selectedInstances = selInstances;
-
+      if (type != null) {
+         List<InstanceWrapper> selInstances = new ArrayList<InstanceWrapper>(1);
+         selInstances.add(new InstanceWrapper(ctx, inst, newTypeName));
+         selectedInstances = selInstances;
+      }
+      else
+         selectedInstances = null;
       selectionChanged++;
    }
 
@@ -350,5 +362,25 @@ class EditorModel implements sc.bind.IChangeable {
    void changeFocus(Object newProp, Object newInst) {
       this.currentProperty = newProp;
       this.currentInstance = newInst;
+   }
+
+   void instanceAdded(Object inst) {
+      refreshInstances();
+   }
+   void instanceRemoved(Object inst) {
+      if (inst == currentInstance)
+         changeCurrentType(currentType, null);
+      refreshInstances();
+   }
+   void refreshInstances() {
+      if (refreshInstancesValid) {
+         refreshInstancesValid = false;
+         DynUtil.invokeLater(new Runnable() {
+            void run() {
+               refreshInstancesValid = true;
+               refreshInstancesCt++;
+            }
+         }, 0);
+      }
    }
 }

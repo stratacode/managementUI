@@ -1,2 +1,33 @@
-<div id="ListEditor">
+<div id="ListEditor" class="listEditor">
+   <%!
+       void refreshChildren() {
+          super.refreshChildren();
+          listScroll.listTags_Repeat.refreshRepeat();
+       }
+   %>
+   <div abstract="true" id="listRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
+   <%!
+      Element createElement(Object elem, int ix, Element oldTag) {
+         return (Element) ListEditor.this.createListElementEditor(elem, ix, (IElementEditor) oldTag);
+      }
+
+      void repeatTagsChanged() {
+         childViewsChanged();
+      }
+
+   %>
+   </div>
+   <div id="listTitle" class="formTitle">
+      <img class="elementIcon" visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
+      <%= operatorName %>
+      <a class="textLink" clickEvent="=: changeFocus(true)"><%= displayName %></a>
+      <span visible=":= componentTypeName != null">
+         type
+         <a class="textLink" clickEvent="=: gotoComponentType()" ><%= componentTypeName %></a>
+      </span>
+      [ <%= instList.size() %> ]
+   </div>
+   <div id="listScroll" class="listScroll">
+      <div id="listTags" repeat=":= visList" repeatVarName="listElem" repeatWrapper="listRepeatWrapper"/>
+   </div>
 </div>

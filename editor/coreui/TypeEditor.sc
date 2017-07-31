@@ -4,6 +4,7 @@ abstract class TypeEditor extends CompositeEditor {
    FormView parentView;  // The root view for this editor
    TypeEditor parentEditor; // The parent editor if this editor is parent of a hierarchy.
    Object parentProperty;  // If this editor is defined from a property in the parent editor - otherwise, it's null
+   ListEditor parentList; // If this editor is defined inside of a list
 
    UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
 
@@ -31,12 +32,22 @@ abstract class TypeEditor extends CompositeEditor {
 
    type =: typeChanged();
 
+   @Bindable
+   int listIndex = -1; // If we are in a list component, the original absolute index of our element
+
    TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst) {
       parentView = view;
       this.parentEditor = parentEditor;
+      if (parentEditor instanceof ListEditor)
+         this.parentList = (ListEditor) parentEditor;
       this.setTypeNoChange(parentProperty, type);
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
+      /* TODO: ideally would like to optimize the case where there's a common type for all elements in the list
+      if (parentList != null) {
+         this.properties = parentList.properties;
+      }
+      */
    }
 
    void init() {
@@ -47,23 +58,32 @@ abstract class TypeEditor extends CompositeEditor {
       Bind.sendChange(this, "parentProperty", parentProperty);
    }
 
+   abstract void refreshChildren();
+
+   String getFixedOperatorName() {
+      return null;
+   }
+
    void typeChanged() {
-      if (type == null)
-         operatorName = null;
-      else if (parentProperty != null)
-          operatorName = "property";
-      else if (ModelUtil.isEnumType(type))
-         operatorName = "enum";
-      else if (ModelUtil.isEnum(type))
-         operatorName = "enum constant";
-      else if (ModelUtil.isInterface(type))
-         operatorName = "interface";
-      else if (ModelUtil.isLayerType(type))
-         operatorName = "layer";
-      else if (ModelUtil.isObjectType(type))
-         operatorName = "object";
-      else
-         operatorName = "class";
+      operatorName = getFixedOperatorName();
+      if (operatorName == null) {
+         if (type == null)
+            operatorName = null;
+         else if (parentProperty != null)
+             operatorName = "property";
+         else if (ModelUtil.isEnumType(type))
+            operatorName = "enum";
+         else if (ModelUtil.isEnum(type))
+            operatorName = "enum constant";
+         else if (ModelUtil.isInterface(type))
+            operatorName = "interface";
+         else if (ModelUtil.isLayerType(type))
+            operatorName = "layer";
+         else if (ModelUtil.isObjectType(type))
+            operatorName = "object";
+         else
+            operatorName = "class";
+      }
 
       if (parentProperty != null)
          displayName = propertyName;
@@ -74,9 +94,6 @@ abstract class TypeEditor extends CompositeEditor {
 
       if (type != null) {
          extTypeName = parentProperty == null ? ModelUtil.getExtendsTypeName(type) : ModelUtil.getTypeName(type);
-         if (extTypeName != null && extTypeName.contains("Point"))
-            System.out.println("***");
-
          //title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
          Object[] newProps = editorModel.getPropertiesForType(type);
          Boolean includeStatic = (Boolean) ModelUtil.getAnnotationValue(type, "sc.obj.EditorSettings", "includeStatic");
@@ -187,7 +204,7 @@ abstract class TypeEditor extends CompositeEditor {
       return parentView.instanceMode;
    }
 
-   String getEditorType(Object elem, Object prop, Object propType, Object propInst, boolean instMode) {
+   String getEditorType(Object prop, Object propType, Object propInst, boolean instMode) {
       // When editing the type, things are simple - it's just forms for sub-types and text fields for properties for the init expr
       if (!instMode) {
          if (prop != null)
@@ -216,6 +233,9 @@ abstract class TypeEditor extends CompositeEditor {
                else {
                  editorType = "textArea";
                }
+            }
+            else if (DynUtil.isAssignableFrom(List.class, propType) || DynUtil.isArray(propType) || (propInst != null && (propInst instanceof List || propInst instanceof Object[]))) {
+               editorType = "list";
             }
             else if (propType == Boolean.class || propType == Boolean.TYPE) {
                editorType = "toggle";
@@ -246,6 +266,8 @@ abstract class TypeEditor extends CompositeEditor {
          return ChoiceEditor.class;
       else if (editorType.equals("form"))
          return FormEditor.class;
+      else if (editorType.equals("list"))
+         return ListEditor.class;
       System.err.println("*** Unrecognized editorType: " + editorType);
       return TextFieldEditor.class;
    }

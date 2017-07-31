@@ -36,8 +36,6 @@ EditorModel {
                   res.add(prop);
             }
          }
-         if (res.size() != props.size())
-            System.out.println("***");
          return res.toArray();
       }
       return null;

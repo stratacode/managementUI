@@ -34,8 +34,6 @@ abstract class InstanceEditor extends TypeEditor {
       setTypeAndInstance(prop, propType, inst);
    }
 
-   abstract void refreshChildren();
-
    void init() {
       super.init();
       instanceChanged();

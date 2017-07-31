@@ -1,5 +1,6 @@
 <div id="ReferenceEditor" class="elementEditor">
    <span class="formFieldLabel" style="position: relative; left: -8px">
+      <span visible=":= listIndex != -1">[ <%= listIndex %> ]</span>
       <img class="elementIcon" visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
       <%= displayName %>
    </span>

@@ -108,8 +108,6 @@ FormEditor {
 
       public void validateTree() {
          int curIx = 0;
-         if (childViews == null)
-            System.out.println("***");
          for (Object elem:repeatComponents) {
             IElementEditor ed = (IElementEditor) elem;
 

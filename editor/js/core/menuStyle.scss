@@ -441,7 +441,7 @@ a.tooltip:hover span {
    //padding-top: 12px;
 }
 
-.formEditor {
+.formEditor, .listEditor {
    clear: both;
    margin-left: 17px;
    margin-bottom: 15px;
@@ -450,6 +450,14 @@ a.tooltip:hover span {
    border: 2px solid #fff;
    border-style: groove;
    padding: 8px 0px 8px 8px;
+}
+
+.listScroll {
+   overflow-y: auto;
+   max-height: 130px;
+   margin-right: 8px;
+   background-color: #fff;
+   border: 1px solid #000;
 }
 
 .elementEditor {
