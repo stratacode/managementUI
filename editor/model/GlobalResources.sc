@@ -36,7 +36,7 @@ class GlobalResources {
    final static UIIcon booleanDynIcon = createIcon("images/booleanDyn.gif", "Dyn Boolean");
 
    // TODO: create an icon for instances - maybe a dot
-   final static UIIcon instanceIcon = createIcon("images/int.gif", "Instance");
+   final static UIIcon instanceIcon = createIcon("images/inst.gif", "Instance");
 
    final static UIColor needsSaveTextColor = new UIColor(0x1c, 0x88, 0x23);
    final static UIColor errorTextColor = new UIColor(0x88, 0x22, 0x33);

@@ -45,6 +45,12 @@ class ListEditor extends InstanceEditor {
       refreshVisibleList();
    }
 
+   // Instance change events where the instance itself has not changed might mean that the contents of the list have been changed
+   void instanceChanged() {
+      refreshVisibleList();
+      super.instanceChanged();
+   }
+
    void refreshVisibleList() {
       if (instList == null) {
          visList = new ArrayList();

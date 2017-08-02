@@ -164,11 +164,12 @@ class TypeTree {
       // For TreeEnts which represent instances, the wrapper for the instance
       InstanceWrapper instance;
 
-      @sc.obj.Sync(onDemand=true)
-      HashMap<String,TreeEnt> childEnts;
+      // Note: order-wise, we are putting childList in front of childEnts so that the initial on-demand sync'ing will choose the names in the order in which we want to display them.
       @sc.obj.Sync(onDemand=true)
       // Parallel to the childEnts map, but retains sort order for display
       ArrayList<TreeEnt> childList;
+      @sc.obj.Sync(onDemand=true)
+      HashMap<String,TreeEnt> childEnts;
       ArrayList<TreeEnt> removed = null;
 
       boolean imported;
@@ -189,6 +190,9 @@ class TypeTree {
          this.typeTree = typeTree;
          this.srcTypeName = srcTypeName;
          this.layer = layer;
+         // These get created on the client so it's best if we just set the icon up front rather than wait for the server to determine it
+         if (type == EntType.Instance)
+            icon = GlobalResources.instanceIcon;
       }
 
       ArrayList<CodeType> entCodeTypes; // Which types and functions is this ent visible?
@@ -218,6 +222,9 @@ class TypeTree {
 
       boolean createModeSelected = false;
 
+      // We change this on the client for instances as a shortcut.  Don't need to sync that change to the server since
+      // the server will set it to the thing anyway
+      @Sync(syncMode=SyncMode.ServerToClient)
       UIIcon icon;
 
       boolean hasVisibleChildren;
@@ -473,12 +480,12 @@ class TypeTree {
             return;
          }
 
-         TreeEnt old = childEnts.put(ent.nodeId, ent);
          if (childList == null)
             childList = new ArrayList<TreeEnt>();
+         childList.add(ent);
+         TreeEnt old = childEnts.put(ent.nodeId, ent);
          if (old != null)
             childList.remove(old);
-         childList.add(ent);
       }
 
       void removeChild(TreeEnt ent) {
