@@ -1,22 +1,27 @@
 
 @Component
-abstract class TypeEditor extends CompositeEditor {
+abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseListener {
    FormView parentView;  // The root view for this editor
    TypeEditor parentEditor; // The parent editor if this editor is parent of a hierarchy.
+   InstanceEditor formEditor; // If the parent is an instance editor
    Object parentProperty;  // If this editor is defined from a property in the parent editor - otherwise, it's null
+   Object parentPropertyType;
    ListEditor parentList; // If this editor is defined inside of a list
 
    UIIcon icon := type == null ? null : GlobalResources.lookupUIIcon(type);
 
    int numCols = 1;
+   int numRows = 1;
 
    boolean removed = false;
 
    Object type;
    ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
 
-   EditorModel editorModel = parentView.editorModel;
+   EditorModel editorModel;
    Layer classViewLayer = editorModel.currentLayer;  // Gets set to the current layer when we are created
+
+   Layer oldLayer = null; // layer the last time were updated
 
    Object[] properties;
 
@@ -30,24 +35,38 @@ abstract class TypeEditor extends CompositeEditor {
 
    int nestLevel = 0;
 
+   @Bindable
+   boolean cellMode = false;
+
    type =: typeChanged();
 
    @Bindable
-   int listIndex = -1; // If we are in a list component, the original absolute index of our element
+   int listIndex; // If we are in a list component, the original absolute index of our element
 
-   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst) {
+   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx) {
       parentView = view;
+      this.editorModel = parentView.editorModel;
       this.parentEditor = parentEditor;
       if (parentEditor instanceof ListEditor)
          this.parentList = (ListEditor) parentEditor;
+      if (parentEditor instanceof InstanceEditor)
+         this.formEditor = (InstanceEditor) parentEditor;
       this.setTypeNoChange(parentProperty, type);
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
+
+      this.listIndex = listIx;
       /* TODO: ideally would like to optimize the case where there's a common type for all elements in the list
       if (parentList != null) {
          this.properties = parentList.properties;
       }
       */
+   }
+
+   Object resolveSrcTypeDeclaration(Object type) {
+      if (!(type instanceof BodyTypeDeclaration) && type != null && editorModel != null)
+         type = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, type);
+      return type;
    }
 
    void init() {
@@ -59,6 +78,11 @@ abstract class TypeEditor extends CompositeEditor {
    }
 
    abstract void refreshChildren();
+
+   void rebuildChildren() {
+      clearChildren();
+      refreshChildren();
+   }
 
    String getFixedOperatorName() {
       return null;
@@ -100,6 +124,8 @@ abstract class TypeEditor extends CompositeEditor {
          if (includeStatic == null)
             includeStatic = false;
          ArrayList<Object> visProps = new ArrayList<Object>();
+         Layer currentLayer = editorModel.currentLayer;
+         addComputedProperties(visProps);
          if (newProps != null) {
             for (Object prop:newProps) {
                 // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
@@ -120,7 +146,7 @@ abstract class TypeEditor extends CompositeEditor {
                    // If this type is not already a property in this layer, and there is a current layer set and this object is not defined in that layer (or merged), skip it.
                    // If we get a def for a prop which is after the specified layer, see if there's a previous definition
                    // we should be using first.
-                   if (parentProperty == null && editorModel.currentLayer != null) {
+                   if (parentProperty == null && currentLayer != null) {
                       Layer propLayer = ModelUtil.getPropertyLayer(prop);
 
                       // If this property is not defined or modified in this layer or one which should be merged continue.
@@ -145,17 +171,31 @@ abstract class TypeEditor extends CompositeEditor {
             }
          }
          properties = visProps.toArray();
+         oldLayer = currentLayer;
       }
       else {
          extTypeName = null;
          properties = null;
+         oldLayer = null;
       }
+
+      // In case we were initialized with a compiled type on the client, check and see if there's a src type on the server.
+      // We should already have tried to call resolveSrcDeclaration before making the fetch call
+      if (!(type instanceof BodyTypeDeclaration)) {
+         editorModel.system.fetchRemoteTypeDeclaration(ModelUtil.getTypeName(type), this);
+      }
+   }
+
+   void addComputedProperties(List<Object> props) {
    }
 
    // Sets the field without firing a change event
    @sc.obj.ManualGetSet
    void setTypeNoChange(Object parentProp, Object newType) {
       parentProperty = parentProp;
+      if (parentProp != null)
+         parentPropertyType = EditorModel.getPropertyType(parentProp);
+      newType = resolveSrcTypeDeclaration(newType);
       type = newType;
    }
 
@@ -166,6 +206,12 @@ abstract class TypeEditor extends CompositeEditor {
       }
    }
 
+   void clearChildren() {
+      removeListeners();
+      if (childViews != null)
+          childViews.clear();
+   }
+
    void updateListeners(boolean add) {
       if (childViews != null) {
          for (IElementEditor view:childViews)
@@ -174,9 +220,7 @@ abstract class TypeEditor extends CompositeEditor {
    }
 
    void stop() {
-      removeListeners();
-      if (childViews != null)
-         childViews.clear();
+      clearChildren();
       setVisible(false);
    }
 
@@ -212,6 +256,9 @@ abstract class TypeEditor extends CompositeEditor {
          else
             return "form";
       }
+
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).editorType;
 
       Object instType = propInst == null ? null : DynUtil.getType(propInst);
       String editorType = instType == null ? null : (String) ModelUtil.getAnnotationValue(instType, "sc.obj.EditorSettings", "editorType");
@@ -253,7 +300,7 @@ abstract class TypeEditor extends CompositeEditor {
       return editorType;
    }
 
-   Object getEditorClass(String editorType) {
+   Object getEditorClass(String editorType, String displayMode) {
       if (editorType.equals("text"))
          return TextFieldEditor.class;
       else if (editorType.equals("textArea"))
@@ -261,9 +308,9 @@ abstract class TypeEditor extends CompositeEditor {
       else if (editorType.equals("ref"))
          return ReferenceEditor.class;
       else if (editorType.equals("toggle"))
-         return ToggleEditor.class;
+         return ToggleFieldEditor.class;
       else if (editorType.equals("choice"))
-         return ChoiceEditor.class;
+         return ChoiceFieldEditor.class;
       else if (editorType.equals("form"))
          return FormEditor.class;
       else if (editorType.equals("list"))
@@ -271,4 +318,45 @@ abstract class TypeEditor extends CompositeEditor {
       System.err.println("*** Unrecognized editorType: " + editorType);
       return TextFieldEditor.class;
    }
+
+   // If the layer has changed since this editor was last rebuilt, it might need to be rebuilt because the properties have changed
+   void invalidateEditor() {
+      if (childViews != null) {
+         for (IElementEditor child:childViews)
+            child.invalidateEditor();
+      }
+      if (oldLayer != null && editorModel != null && oldLayer != editorModel.currentLayer) {
+         clearChildren();
+         typeChanged();
+         refreshChildren();
+      }
+   }
+
+   // In response to fetchRemoteTypeDeclaration, we implement the IResponseListener interface
+   void response(Object resp) {
+      if (resp instanceof BodyTypeDeclaration) {
+         type = resp;
+      }
+      else
+         System.err.println("*** Unrecognized response to fetchRemoteTypeDeclaration");
+   }
+   void error(int code, Object error) {
+      System.err.println("*** Error response to fetchRemoteTypeDeclaration");
+   }
+
+   int getDefaultCellWidth(String editorType, Object prop) {
+      if (editorType.equals("text") || editorType.equals("textArea") || editorType.equals("list"))
+         return 400;
+      else if (editorType.equals("ref") || editorType.equals("form") || editorType.equals("choice"))
+         return 200;
+      else if (editorType.equals("toggle"))
+         return 200;
+      return 100;
+   }
+
+   int getDefaultCellHeight(String editorType, Object prop) {
+      return 30;
+   }
+
+   abstract String getEditorType();
 }

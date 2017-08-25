@@ -1,0 +1,18 @@
+<div id="RowEditor" class="rowEditor">
+   <%!
+      repeatWrapper = rowContainer.propList_Repeat;
+
+      class HeaderRepeatWrapper extends ElementRepeatWrapper {
+         displayMode = "header";
+      }
+   %>
+   <div id="rowHeader" class="rowHeader" visible=":= showHeader">
+      <!-- <span class="cellHeader indexCell rowStart">#</span> <span class="cellHeader idCell">Id</span> -->
+      <span id="headerList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="HeaderRepeatWrapper"/>
+   </div>
+   <div id="rowContainer" class="rowContainer">
+      <!-- <span class="cellEditor indexCell rowStart"><%= listIndex %></span>
+      <span class="cellEditor idCell"><a class="textLink" disabled=":= !referenceable" clickEvent="=: gotoReference()"><%= referenceId %></a></span> -->
+      <span id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="ElementRepeatWrapper"/>
+   </div>
+</div>

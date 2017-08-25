@@ -5,10 +5,14 @@ class ListEditor extends InstanceEditor {
    String componentTypeName;
    int startIx;
    int maxNum = 10;
+   boolean gridView = true;
+
+   gridView =: rebuildChildren(); // recreate the list in the new view mode
+
    // TODO: add sort-by and filter criteria
 
-   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts) {
-      super(view, parentEditor, parentProperty, type, insts);
+   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx) {
+      super(view, parentEditor, parentProperty, type, insts, listIx);
       instList = insts;
       componentType = ModelUtil.getArrayComponentType(type);
       updateComponentTypeName();
@@ -30,10 +34,11 @@ class ListEditor extends InstanceEditor {
 
       // Now we're ready to validate the bindings on the instance
       Bind.sendValidate(this, "instList", inst);
+
    }
 
    void updateComponentTypeName() {
-      if (type != null && componentType != java.lang.Object.class)
+      if (componentType != null && componentType != java.lang.Object.class)
          componentTypeName = ModelUtil.getTypeName(componentType);
    }
 
@@ -52,6 +57,7 @@ class ListEditor extends InstanceEditor {
    }
 
    void refreshVisibleList() {
+      oldLayer = editorModel == null ? null : editorModel.currentLayer;
       if (instList == null) {
          visList = new ArrayList();
       }
@@ -69,7 +75,7 @@ class ListEditor extends InstanceEditor {
       }
    }
 
-   IElementEditor createListElementEditor(Object listVal, int ix, IElementEditor oldTag) {
+   IElementEditor createElementEditor(Object listVal, int ix, IElementEditor oldTag, String displayMode) {
       Object propInst;
       Object propType;
       BodyTypeDeclaration innerType = null;
@@ -78,20 +84,20 @@ class ListEditor extends InstanceEditor {
       compType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, compType);
 
       String editorType = getEditorType(parentProperty, compType, listVal, true);
-      Object editorClass = getEditorClass(editorType);
+      Object editorClass = getEditorClass(editorType, displayMode);
 
+      int listIx = ix + startIx;
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
          oldEditor.updateEditor(compType, null, compType, listVal);
-         oldEditor.setListIndex(ix + startIx);
+         oldEditor.setListIndex(listIx);
          return oldTag;
       }
       else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal);
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx);
          newEditor.setRepeatVar(compType);
          newEditor.setRepeatIndex(ix);
-         newEditor.setListIndex(ix + startIx);
          return newEditor;
       }
    }
@@ -99,5 +105,17 @@ class ListEditor extends InstanceEditor {
    void gotoComponentType() {
       if (componentTypeName != null)
          editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, componentTypeName), null);
+   }
+
+   Object getEditorClass(String editorType, String displayMode) {
+      if (gridView) {
+         if (editorType.equals("ref") || editorType.equals("form"))
+            return RowEditor.class;
+      }
+      return super.getEditorClass(editorType, displayMode);
+   }
+
+   String getEditorType() {
+      return "list";
    }
 }

@@ -44,6 +44,8 @@ class GlobalResources {
    final static UIColor transparentTextColor = new UIColor(128, 128, 128);
    final static UIColor highlightColor = new UIColor(0x20, 0x20, 0xc0);
 
+   final static UIColor headerBkgColor = new UIColor(0xd0, 0xfc, 0xfc);
+
    static UIIcon lookupUIIcon(Object type) {
       if (ModelUtil.isLayerType(type)) {
          LayeredSystem sys = LayeredSystem.getCurrent();

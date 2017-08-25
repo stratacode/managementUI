@@ -1,4 +1,9 @@
 FormEditor {
+   numRows := (DynUtil.getArrayLength(properties) + numCols-1) / numCols;
+
+   // The cellWidth in our children does not update automatically when the window is resized
+   columnWidth =: Bind.refreshBindings(this);
+
    // A border around the contents of the group with the group name
    //border := BorderFactory.createCompoundBorder (BorderFactory.createEmptyBorder(borderSize, borderSize, borderSize, borderSize), BorderFactory.createTitledBorder(title));
    //border := BorderFactory.createTitledBorder(title);
@@ -52,99 +57,6 @@ FormEditor {
       userSelectedItem =: userSelectedInstance((InstanceWrapper) selectedItem);
    }
 
-   void validateTree() {
-      childList.refreshList();
-   }
-
-   void refreshChildren() {
-      childList.refreshList();
-   }
-
-   object childList extends RepeatComponent<IElementEditor> {
-      repeat := properties;
-
-      parentComponent = FormEditor.this;
-
-      int numRows := (DynUtil.getArrayLength(repeat) + numCols-1) / numCols;
-
-      int oldNumRows, oldNumCols;
-
-      IElementEditor[][] viewsGrid;
-
-      public IElementEditor createRepeatElement(Object prop, int ix, Object oldComp) {
-         IElementEditor res = null;
-
-         res = createElementEditor(prop, ix, (IElementEditor)oldComp);
-
-         updateCell(res, ix);
-
-         return res;
-      }
-
-      void refreshList() {
-         int size = DynUtil.getArrayLength(repeat);
-
-         boolean gridChanged = false;
-         if (oldNumRows != numRows || oldNumCols != numCols) {
-            gridChanged = true;
-            viewsGrid = new IElementEditor[numRows][numCols];
-         }
-
-         super.refreshList();
-
-         if (gridChanged) {
-             int ix = 0;
-             for (Object elem:repeatComponents) {
-                IElementEditor fed = (IElementEditor) elem;
-                updateCell(fed, ix);
-                ix++;
-             }
-         }
-
-         validateTree();
-
-         lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
-      }
-
-      public void validateTree() {
-         int curIx = 0;
-         for (Object elem:repeatComponents) {
-            IElementEditor ed = (IElementEditor) elem;
-
-            if (childViews.size() <= curIx) {
-               childViews.add(ed);
-               SwingUtil.addChild(parentComponent, ed);
-            }
-            else if (childViews.get(curIx) != ed) {
-               remove(curIx);
-               childViews.set(curIx, ed);
-               SwingUtil.addChild(parentComponent, ed);
-            }
-            ed.updateListeners(true);
-            if (ed instanceof TypeEditor)
-               ((TypeEditor) ed).validateTree();
-            curIx++;
-         }
-         while (curIx < childViews.size()) {
-             remove(curIx);
-             childViews.remove(curIx);
-         }
-      }
-
-      private void updateCell(IElementEditor ed, int ix) {
-         ed.row = ix / numCols;
-         ed.col = ix % numCols;
-         if (ed.row != 0)
-            ed.prev = viewsGrid[ed.row -1][ed.col];
-         else
-            ed.prev = null;
-
-         viewsGrid[ed.row][ed.col] = ed;
-      }
-   }
-
-   childViews = new ArrayList<IElementEditor>();
-
    void userSelectedInstance(InstanceWrapper wrapper) {
       setSelectedInstance(wrapper.instance);
    }
@@ -174,4 +86,16 @@ FormEditor {
          }
       }
    }
+
+   int getExplicitWidth(int colIx) {
+      return columnWidth - (parentView.nestWidth + 2*xpad) * nestLevel;
+   }
+
+
+   int getExplicitHeight(int colIx) {
+      if (colIx < childViews.size() && colIx != -1)
+         return childViews.get(colIx).height;
+      return -1;
+   }
+
 }

@@ -35,6 +35,8 @@ GlobalResources {
    static UIIcon lookupUIIcon(Object type, boolean isDyn) {
       if (type == null)
          return null;
+      if (type instanceof CustomProperty)
+         return ((CustomProperty) type).icon;
       if (DynUtil.isType(type) || type instanceof ClientTypeDeclaration) {
          String typeName = ModelUtil.getTypeName(type);
          if (ModelUtil.isPrimitive(type)) {

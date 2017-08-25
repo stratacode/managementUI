@@ -14,6 +14,11 @@
           }
           return res;
        }
+
+       void invalidateModel() {
+          for (IElementEditor child:childViews)
+             child.invalidateEditor();
+       }
    %>
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
       <%! Element createElement(Object value, int ix, Element oldTag) {
@@ -25,7 +30,7 @@
              res.setTypeAndInstance(null, type, currentObj);
           }
           else {
-             res = new FormEditor(FormView.this, null, null, type, currentObj);
+             res = new FormEditor(FormView.this, null, null, type, currentObj, ix);
           }
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);

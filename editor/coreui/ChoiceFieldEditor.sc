@@ -1,0 +1,2 @@
+class ChoiceFieldEditor extends ChoiceElementEditor {
+}

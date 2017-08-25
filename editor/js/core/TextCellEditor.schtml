@@ -1,0 +1,12 @@
+<span id="TextCellEditor" class="cellEditor">
+<%!
+   String getFieldId() {
+      return textField.id;
+   }
+
+   Object getElementValue() {
+      return textField.value;
+   }
+%>
+   <input id="textField" class="textCell" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue" disabled=":= !editable" keyUpEvent='=: keyUpEvent.key.equals("Enter") ? updateInstanceProperty() : null'/>
+</span>

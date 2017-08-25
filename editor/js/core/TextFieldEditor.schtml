@@ -1,4 +1,4 @@
-<div id="TextFieldEditor" extends="ElementEditor">
+<div id="TextFieldEditor">
 <%!
    String getFieldId() {
       return textFieldForm.textField.id;

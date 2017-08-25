@@ -304,7 +304,13 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    public boolean isConstantProperty(Object prop) {
       if (prop == null)
          return true;
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).isConstant();
       return ModelUtil.hasAnnotation(prop, "sc.obj.Constant") || ModelUtil.hasModifier(prop, "final");
+   }
+
+   public boolean isSettableFromString(Object prop) {
+      return !isConstantProperty(prop) && !(prop instanceof CustomProperty) && sc.type.RTypeUtil.canConvertTypeFromString(prop);
    }
 
    /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
@@ -331,6 +337,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    static String getPropertyName(Object prop) {
+      if (prop == null)
+         return ("*** null property");
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).name;
       String name = getDisplayNameAnnotation(prop);
       if (name != null)
          return name;
@@ -345,6 +355,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    boolean isVisible(Object prop) {
+      if (prop instanceof CustomProperty)
+         return true;
       Boolean vis = (Boolean) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "visible");
       if (vis != null && !vis)
          return false;
@@ -382,5 +394,22 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
             }
          }, 0);
       }
+   }
+
+   void refreshInstancesCheck(Object obj) {
+      if (refreshInstancesValid) // This makes sure we do not refresh the bindings unless the instances were valid when this editor was created
+         Bind.refreshBindings(obj); // TODO: only need to refresh instancesOfType here!  Add a new api: refreshBinding(obj, propName)
+   }
+
+   static Layer getLayerForMember(Object prop) {
+      if (prop == null || prop instanceof CustomProperty)
+         return null;
+      return ModelUtil.getLayerForMember(null, prop);
+   }
+
+   static Object getPropertyType(Object prop) {
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).propertyType;
+      return ModelUtil.getPropertyType(prop);
    }
 }

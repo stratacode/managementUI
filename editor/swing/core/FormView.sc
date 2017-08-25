@@ -63,6 +63,8 @@ FormView {
       size := SwingUtil.dimension(maxChildWidth, maxChildHeight);
 
       object childList extends RepeatComponent<FormEditor> {
+         manageChildren = false; // We call SwingUtil.addChild explicitly when synchronizing the childViews array
+
          repeat := editorModel.visibleTypes;
 
          parentComponent = contentPanel;
@@ -84,7 +86,7 @@ FormView {
                                                                       getDefaultCurrentObj(currentType);
 
              */
-            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj);
+            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj, ix);
             updateCell(editor, ix);
 
             return editor;

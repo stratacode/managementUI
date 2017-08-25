@@ -134,6 +134,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    boolean innerType := !StringUtil.equalStrings((String)objInnerChoice.selectedItem, "Top level") && viewMode != ViewMode.Layer;
 
    object inLabel extends JLabel {
+      override @sc.bind.NoBindWarn
       location := SwingUtil.point(preInComponent.location.x + preInComponent.size.width + xpad, ypad + baseline);
       size := preferredSize;
       text := String.valueOf(editorModel.currentPropertyType);
@@ -155,6 +156,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    }
 
    object inPackageLabel extends JLabel {
+      override @sc.bind.NoBindWarn
       location := SwingUtil.point(preInComponent.location.x + preInComponent.size.width + xpad, ypad + baseline);
       size := preferredSize;
       text := editorModel.currentPackage == null ? "Select a layer or type to choose where to store the type" : "Package: " + editorModel.currentPackage + (editorModel.currentLayer == null ? "" : ", Layer: " + editorModel.currentLayer.layerName);

@@ -380,6 +380,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       size := SwingUtil.dimension(editorWidth, buttonPanelHeight);
       object viewTabs extends JPanel {
          location := SwingUtil.point(0, 0);
+         override @sc.bind.NoBindWarn
          preferredSize := SwingUtil.dimension(lastComponent == null ? 300 : lastComponent.location.x + lastComponent.size.width + 2*xpad, buttonPanelHeight - 20);
 
          int centerY := (int) ((size.height - preferredSize.height) / 2);
@@ -391,6 +392,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             icon := layer.dynamic ? GlobalResources.layerDynIcon.icon : GlobalResources.layerIcon.icon;
 
             text := layer.layerName;
+            override @sc.bind.NoBindWarn
             location := SwingUtil.point((prev != null ? prev.location.x + prev.size.width : 0) + xpad, centerY);
 
             selected =: selected ? selectedLayer = layer : null;

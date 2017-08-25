@@ -16,13 +16,17 @@ TypeEditor {
    int tabSize := parentView.tabSize;
 
    IElementEditor lastView;
-   IElementEditor prev;
 
    @Bindable
+   /*
    int x := col * (xpad + columnWidth) + (parentView.nestWidth/2) + xpad,
        y := prev == null ? ypad + (parentEditor == null ? 0 : parentEditor.startY) : prev.y + prev.height + ypad,
        width := columnWidth - (nestLevel * (parentView.nestWidth + 2*xpad)),
        height := (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
+    */
+   int x := prevCell == null ? xpad : prevCell.x + prevCell.width + xpad,
+       y := prev == null ? ypad + formEditor.startY : prev.y + prev.height,
+       width := cellWidth, height := cellHeight;
 
    int row, col;
 
@@ -47,4 +51,25 @@ TypeEditor {
 
    void validateTree() {
    }
+
+   int getCellWidth() {
+      if (cellMode) {
+         int width = formEditor.getExplicitWidth(listIndex);
+         if (width != -1)
+            return width;
+         return formEditor.getDefaultCellWidth(editorType, null);
+      }
+      return columnWidth - (nestLevel * (parentView.nestWidth + 2*xpad));
+   }
+
+   int getCellHeight() {
+      if (cellMode) {
+         int width = formEditor.getExplicitHeight(listIndex);
+         if (width != -1)
+            return width;
+         return formEditor.getDefaultCellHeight(editorType, null);
+      }
+      return (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
+   }
+
 }

@@ -3,6 +3,9 @@ PrimitiveEditor extends ComponentGroup {
    IElementEditor prev;
 
    @Bindable
+   IElementEditor prevCell;
+
+   @Bindable
    int row, col;
 
    @Bindable

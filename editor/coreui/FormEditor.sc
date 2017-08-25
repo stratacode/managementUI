@@ -1,7 +1,4 @@
-import sc.lang.java.DeclarationType;
-
-class FormEditor extends InstanceEditor {
-
+class FormEditor extends InstanceFieldEditor {
    int instSelectedIndex = 0;
 
    List<InstanceWrapper> instancesOfType := parentView.editorModel.ctx.getInstancesOfType(type, 10, true);
@@ -12,11 +9,10 @@ class FormEditor extends InstanceEditor {
    String extendsTypeName := extTypeName == null ? "" : CTypeUtil.getClassName(extTypeName);
 
    int refreshInstancesCt := editorModel.refreshInstancesCt;
-   // TODO: we really only need to refresh instancesOfType - add Bind.refreshBinding(obj, 'propname').
-   refreshInstancesCt =: Bind.refreshBindings(this);
+   refreshInstancesCt =: editorModel.refreshInstancesCheck(this);
 
-   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance) {
-      super(view, parentEditor, parentProperty, type, instance);
+   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx) {
+      super(view, parentEditor, parentProperty, type, instance, listIx);
    }
 
    int getInstSelectedIndex(Object inst, List<InstanceWrapper> instsOfType) {
@@ -34,68 +30,11 @@ class FormEditor extends InstanceEditor {
       return -1;
    }
 
-   boolean hasInnerTypeInstance(BodyTypeDeclaration subType) {
-      if (FormEditor.this.instance != null && subType.getDeclarationType() == DeclarationType.OBJECT) {
-         String scopeName = DynUtil.getScopeNameForType(subType);
-         if (scopeName != null)
-            return false;
-         return true;
-      }
-      return false;
-   }
-
-   Object getInnerTypeInstance(BodyTypeDeclaration subType) {
-      Object subInst = null;
-      if (hasInnerTypeInstance(subType)) {
-         subInst = DynUtil.getProperty(FormEditor.this.instance, subType.typeName);
-      }
-      return subInst;
-   }
-
-   IElementEditor createElementEditor(Object elem, int ix, IElementEditor oldTag) {
-      Object propInst;
-      Object propType;
-      BodyTypeDeclaration innerType = null;
-
-      Object prop = null;
-      // A property
-      if (ModelUtil.isProperty(elem)) {
-         prop = elem;
-         propType = ModelUtil.getPropertyType(elem, editorModel.system);
-         propInst = ElementEditor.getPropertyValue(elem, FormEditor.this.instance, 0, instanceMode);
-      }
-      // An inner type
-      else if (elem instanceof BodyTypeDeclaration) {
-         innerType = (BodyTypeDeclaration) elem;
-         propInst = getInnerTypeInstance(innerType);
-         propType = innerType;
-      }
-      else {
-         propInst = null;
-         propType = null;
-      }
-
-      String editorType = getEditorType(prop, propType, propInst, instanceMode);
-      Object editorClass = getEditorClass(editorType);
-
-      Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
-      if (oldClass == editorClass) {
-         IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(elem, prop, propType, propInst);
-         oldEditor.setRepeatVar(elem);
-         oldEditor.setRepeatIndex(ix);
-         return oldTag;
-      }
-      else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, FormEditor.this, prop, propType, propInst);
-         newEditor.setRepeatVar(elem);
-         newEditor.setRepeatIndex(ix);
-         return newEditor;
-      }
-   }
-
    void gotoExtendsType() {
       editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, extTypeName), null);
    }
 
+   String getEditorType() {
+      return "form";
+   }
 }

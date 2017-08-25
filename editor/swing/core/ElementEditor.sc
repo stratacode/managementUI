@@ -1,21 +1,24 @@
 import sc.lang.java.JavaSemanticNode;
 
 ElementEditor {
-   Object propertyType := propC == null ? null : ModelUtil.getVariableTypeDeclaration(propC);
-   String propertyTypeName := propC == null ? "<no type>" : String.valueOf(propertyType);
+   // Pointer to either component which defines the 'field' or 'cell'
+   @Constant JComponent formComponent;
 
-   propertySuffix := (ModelUtil.isArray(propertyType) || propertyType instanceof List ? "[]" : "");
+   //Object propertyType := propC == null ? null : ModelUtil.getVariableTypeDeclaration(propC);
+   String propertyTypeName := propType == null ? "<no type>" : String.valueOf(propType);
+
+   propertySuffix := (ModelUtil.isArray(propType) || propType instanceof List ? "[]" : "");
 
    String propertyOperator := propertyOperator(formEditor.instance, propC);
 
-   boolean propertyInherited := propC != null && ModelUtil.getLayerForMember(null, propC) != formEditor.classViewLayer;
+   boolean propertyInherited := EditorModel.getLayerForMember(propC) != formEditor.classViewLayer;
 
    int tabSize := parentView.tabSize;
    int xpad := parentView.xpad;
    int ypad := parentView.ypad;
    int baseline := parentView.baseline;
 
-   object elementLabel extends JLabel {
+   class ElementLabel extends JLabel {
       int prefW := ((int) preferredSize.width);
       int labelExtra := prefW >= tabSize ? 0 : (tabSize - prefW % tabSize);
       int labelWidth := prefW + labelExtra;
@@ -32,6 +35,7 @@ ElementEditor {
    }
 
    object errorLabel extends JLabel {
+      override @sc.bind.NoBindWarn
       location := SwingUtil.point(formComponent.location.x, formComponent.location.y + formComponent.size.height + ypad);
       size := preferredSize;
       foreground := GlobalResources.errorTextColor;
@@ -41,16 +45,13 @@ ElementEditor {
    JavaModel oldListenerModel = null;
 
    @Bindable
-   int x := formEditor.columnWidth * col + xpad,
+   int x := prevCell == null ? xpad : prevCell.x + prevCell.width + xpad,
        y := prev == null ? ypad + formEditor.startY : prev.y + prev.height,
-       width := formEditor.columnWidth - (parentView.nestWidth + 2*xpad) * formEditor.nestLevel, height;
-
-   height := (int) (errorLabel.size.height + formComponent.size.height + ypad);
-
-   @Constant
-   JComponent formComponent;
+       width := cellWidth, height := cellHeight;
 
    void focusChanged(JComponent component, boolean newFocus) {
+      if (propC instanceof CustomProperty)
+         return;
       formEditor.parentView.focusChanged(component, propC, formEditor.instance, newFocus);
    }
 
@@ -83,6 +84,8 @@ ElementEditor {
    }
 
    void updateListeners(boolean add) {
+      if (propC instanceof CustomProperty)
+         return;
       String propName = propertyName;
       String simpleProp;
       int ix = propName.indexOf("[");
@@ -142,4 +145,21 @@ ElementEditor {
       finally {
       }
    }
+
+   int getCellWidth() {
+      int width = formEditor.getExplicitWidth(listIndex);
+      if (width != -1)
+         return width;
+      if (propC instanceof CustomProperty)
+         return ((CustomProperty) propC).defaultWidth;
+      return formEditor.getDefaultCellWidth(editorType, propC);
+   }
+
+   int getCellHeight() {
+      int width = formEditor.getExplicitHeight(listIndex);
+      if (width != -1)
+         return width;
+      return formEditor.getDefaultCellHeight(editorType, propC);
+   }
+
 }

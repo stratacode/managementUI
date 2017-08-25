@@ -1,0 +1,12 @@
+<span id="ToggleCellEditor" class="cellEditor">
+   <%!
+      String getFieldId() {
+         return checkbox.id;
+      }
+
+      Object getElementValue() {
+         return checkbox.checked;
+      }
+   %>
+   <input id="checkbox" class="toggleCell" type="checkbox" focusEvent="=: onFocusEvent()" checked=":=: checkedValue" checked="=: elementSubmitCount = elementSubmitCount + 1"/>
+</span>

@@ -1,0 +1,12 @@
+<div id="ChoiceCellEditor" class="cellEditor">
+<%!
+   String getFieldId() {
+      return selectControl.id;
+   }
+
+   String getElementValue() {
+      return String.valueOf(selectControl.selectedValue);
+   }
+%>
+   <select id="selectControl" class="choiceCell" focusEvent="=: onFocusEvent()" selectedIndex=":=: ChoiceCellEditor.this.selectedIndex"/>
+</div>

@@ -10,8 +10,15 @@ abstract class InstanceEditor extends TypeEditor {
 
    instance =: instanceChanged();
 
-   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst) {
-      super(view, parentEditor, parentProperty, type, inst);
+   String referenceId := DynUtil.getInstanceName(instance);
+
+   // Is this a valid reference we should allow to be a link or do we just display the instanceName.
+   boolean isReferenceable() {
+      return instance == null || ModelUtil.isObjectType(type) || !(type instanceof java.util.Collection);
+   }
+
+   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx) {
+      super(view, parentEditor, parentProperty, type, inst, listIx);
       instance = inst;
    }
 
@@ -58,27 +65,8 @@ abstract class InstanceEditor extends TypeEditor {
       updateParentPropListener(add);
    }
 
-   void parentInstanceChanged(Object parentInst) {
-      if (parentInst == null)
-         instance = null;
-      else {
-         String propName = parentProperty == null ? CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)) : ModelUtil.getPropertyName(parentProperty);
-         if (DynUtil.hasProperty(parentInst, propName))
-            instance = DynUtil.getProperty(parentInst, propName);
-         else
-            instance = null;
-      }
-   }
-
+   // When our instance changes, what do we need to do for the child views?
    void updateChildInsts() {
-      if (childViews != null) {
-         for (IElementEditor view:childViews) {
-            if (view instanceof TypeEditor) {
-               TypeEditor te = ((TypeEditor) view);
-               te.parentInstanceChanged(instance);
-            }
-         }
-      }
    }
 
    void updateParentPropListener(boolean add) {
@@ -89,7 +77,7 @@ abstract class InstanceEditor extends TypeEditor {
          Bind.removeDynamicListener(oldParentInst, ModelUtil.getPropertyName(oldParentProperty), parentPropListener, IListener.VALUE_CHANGED);
       }
 
-      if (!(parentEditor instanceof InstanceEditor))
+      if (!(parentEditor instanceof InstanceEditor) || parentProperty instanceof CustomProperty)
          return;
 
       Object parentInst = ((InstanceEditor)parentEditor).instance;
@@ -121,4 +109,27 @@ abstract class InstanceEditor extends TypeEditor {
    void changeFocus(boolean focus) {
       editorModel.changeFocus(parentProperty, instance);
    }
+
+   String getInstanceId() {
+      return instance == null ? "null" : DynUtil.getObjectId(instance, type, displayName);
+   }
+
+   IElementEditor createElementEditor(Object elem, int ix, IElementEditor oldTag, String displayMode) {
+      throw new UnsupportedOperationException();
+   }
+
+   void gotoReference() {
+      Object useType = type;
+      if (instance != null) {
+         if (DynUtil.isObject(instance)) {
+            String objName = DynUtil.getObjectName(instance);
+            Object instType = ModelUtil.findTypeDeclaration(editorModel.system, objName, null, false);
+            if (instType != null)
+               useType = instType;
+         }
+      }
+      useType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, useType);
+      editorModel.changeCurrentType(useType, instance);
+   }
+
 }

@@ -1,0 +1,9 @@
+<span id="HeaderCellEditor" class="cellHeader">
+   <%!
+      String getFieldId() {
+         return null;
+      }
+
+   %>
+   <%= propertyName %>
+</span>

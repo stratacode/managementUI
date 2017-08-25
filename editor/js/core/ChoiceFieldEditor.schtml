@@ -1,0 +1,16 @@
+<div id="ChoiceFieldEditor">
+<%!
+   String getFieldId() {
+      return selectForm.selectControl.id;
+   }
+
+   String getElementValue() {
+      return String.valueOf(selectForm.selectControl.selectedValue);
+   }
+%>
+   <form id="selectForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
+      <label extends="ElementLabel"/>
+      <select id="selectControl" focusEvent="=: onFocusEvent()" selectedIndex=":=: ChoiceFieldEditor.this.selectedIndex"/>
+      <div extends="ErrorText"/>
+   </form>
+</div>

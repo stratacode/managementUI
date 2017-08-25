@@ -1,4 +1,4 @@
-<div id="ElementEditor" class="elementEditor">
+<div id="ElementEditor" class="elementEditor" style=':= cellMode ? "width: " + cellWidth + "px" : ""'>
 <%!
    int elementSubmitCount;
    // The code to submit a change made directly to a form in this element editor.  This is done in a binding because setElementValue is a remote

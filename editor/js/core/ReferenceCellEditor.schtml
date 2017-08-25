@@ -1,0 +1,3 @@
+<div id="ReferenceCellEditor" class="elementEditor">
+   <a class="textLink cellBody" disabled=":= !referenceable" clickEvent="=: gotoReference()"><%= referenceId %></a>
+</div>

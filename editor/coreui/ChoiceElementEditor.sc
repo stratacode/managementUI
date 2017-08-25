@@ -1,4 +1,5 @@
-class ChoiceEditor extends ElementEditor {
+// This class holds the functionality shared for all choice controls (both cells and form fields)
+abstract class ChoiceElementEditor extends ElementEditor {
    Object[] choices := ModelUtil.getEnumConstants(propType);
 
    int selectedIndex := indexOf(choices, currentValue);

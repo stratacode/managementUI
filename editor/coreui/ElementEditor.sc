@@ -1,9 +1,9 @@
 import sc.lang.java.ModelUtil;
 import sc.lang.java.VariableDefinition;
 
-@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.FormEditor,Object,Object,Object")
+@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
-   FormEditor formEditor;
+   InstanceEditor formEditor;
    Object propC;
    String propertySuffix = "";
    String propertyName := getPropertyNameString(propC);
@@ -23,11 +23,15 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    Object propType;
 
    boolean instanceMode;
-   boolean editable := !instanceMode || !editorModel.isConstantProperty(propC);
+   boolean constantProperty = editorModel.isConstantProperty(propC);
+   boolean editable := !instanceMode || !constantProperty;
+
+   @Bindable
+   boolean cellMode = false;
 
    visible := getPropVisible(formEditor.instance, varInit);
 
-   ElementEditor(FormView parentView, FormEditor formEditor, Object prop, Object propType, Object propInst) {
+   ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx) {
       instanceMode = formEditor.instanceMode;
       this.formEditor = formEditor;
       editorModel = parentView.editorModel;
@@ -35,6 +39,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       if (instanceMode)
           this.currentValue = propInst;
       this.propType = propType;
+      this.listIndex = listIx;
    }
 
    public BaseView getParentView() {
@@ -73,6 +78,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    static Object getPropertyValue(Object prop, Object instance, int changeCt, boolean instanceMode) {
       if (prop == null)
          return null;
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).value;
       if (prop instanceof IVariableInitializer) {
          IVariableInitializer varInit = (IVariableInitializer) prop;
 
@@ -121,8 +128,11 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    public void updateInstanceProperty() {
+      if (propC instanceof CustomProperty) {
+         ((CustomProperty) propC).updateInstance(formEditor.instance, elementValue);
+         return;
+      }
       if (formEditor.instance != null) {
-         Object propType = ModelUtil.getPropertyType(propC);
          try {
             DynUtil.setPropertyValue(formEditor.instance, propertyName, elementValue);
          }
@@ -158,20 +168,40 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    void removeListeners() {
-      if (oldPropName != null && !oldPropName.equals("<null>")) {
+      if (oldPropName != null && !oldPropName.equals("<null>") && !(propC instanceof CustomProperty)) {
          if (oldListenerInstance != null) {
             Bind.removeDynamicListener(oldListenerInstance, formEditor.type, getSimplePropName(), valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = null;
          }
       }
    }
-   public String getIconPath() {
+
+   void invalidateEditor() {
+   }
+
+   String getIconPath() {
       return icon == null ? "" : icon.path;
    }
 
-   public String getIconAlt() {
+   String getIconAlt() {
       return icon == null ? "" : icon.desc;
    }
 
+   String getEditorType() {
+      return formEditor.getEditorType(propC, propType, currentValue, instanceMode);
+   }
+
+   String propertyValueString(Object instance, Object prop, int changeCt) {
+      if (prop instanceof CustomProperty)
+         return ((CustomProperty) prop).value.toString();
+
+      if (formEditor == null)
+         System.err.println("*** Error - no formEditor for propValue");
+      if (editorModel == null)
+         System.err.println("*** Error - no editor model for propvalue");
+      else if (editorModel.ctx == null)
+              System.err.println("*** Error - No context for prop value");
+      return editorModel.ctx.propertyValueString(formEditor.type, instance, prop);
+   }
 }
 

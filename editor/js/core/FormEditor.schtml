@@ -1,87 +1,7 @@
 <div id="FormEditor" class="formEditor">
    <%!
-
-      void refreshChildren() {
-         // Need to render resync before we send the type and instance events - otherwise, the children will not be in sync.
-         propList_Repeat.refreshRepeat();
-      }
-
-      void updateWrapper(InstanceWrapper newWrapper) {
-         Object inst;
-         if (newWrapper == null)
-            inst = null;
-         else
-            inst = newWrapper.instance;
-         updateInstance(inst);
-      }
-
-      void updateInstance(Object inst) {
-         if (inst == instance)
-            return;
-
-         instance = inst;
-
-         if (instance != oldInstance) {
-            updateChildren();
-            updateListeners(true);
-            oldInstance = instance;
-         }
-      }
-
-      void updateListeners(boolean add) {
-         Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
-         if (children == null) {
-            childViews = null;
-            return;
-         }
-         else {
-            childViews = new ArrayList<IElementEditor>(children.length);
-         }
-
-         for (Object child:children) {
-            if (child instanceof IElementEditor) {
-               childViews.add((IElementEditor) child);
-            }
-         }
-         super.updateListeners(add);
-      }
-
-      void updateChildren() {
-         Object[] children = DynUtil.getObjChildren(propList_Repeat, null, true);
-         if (children == null)
-            return;
-
-         for (Object child:children) {
-            if (child instanceof propList_Repeat.propList) {
-               propList_Repeat.propList pchild = (propList_Repeat.propList) child;
-
-               IElementEditor childView = (IElementEditor) pchild.repeatVar;
-
-               if (childView instanceof FormEditor) {
-                   FormEditor childCView = (FormEditor) childView;
-                   Object childType = childCView.type;
-                   if (childType != null && ModelUtil.isObjectType(childType) && !ModelUtil.hasModifier(childType, "static")) {
-                      Object childInst = instance == null ? null : DynUtil.getPropertyValue(instance, ModelUtil.getTypeName(childType));
-                      childCView.updateInstance(childInst);
-                   }
-               }
-            }
-         }
-      }
+       repeatWrapper = propList_Repeat;
    %>
-
-   <div abstract="true" id="elementRepeatWrapper" implements="sc.lang.html.IRepeatWrapper">
-      <%!
-         Element createElement(Object elem, int ix, Element oldTag) {
-            return (Element) FormEditor.this.createElementEditor(elem, ix, (IElementEditor) oldTag);
-         }
-
-         void repeatTagsChanged() {
-            childViewsChanged();
-         }
-      %>
-    </div>
-
    <div id="formTitle" class="formTitle">
       <img class="elementIcon" visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
       <%= operatorName %>
@@ -95,6 +15,5 @@
                selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
                visible=":= showInstanceSelect"/>
    </div>
-
-   <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="elementRepeatWrapper"/>
+   <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="ElementRepeatWrapper"/>
 </div>

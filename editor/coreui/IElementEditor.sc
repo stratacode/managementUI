@@ -2,6 +2,9 @@ interface IElementEditor {
    void updateListeners(boolean add);
    void removeListeners();
 
+   // Called to validate the editor after the model is updated
+   void invalidateEditor();
+
    boolean isVisible();
    void setVisible(boolean val);
 
@@ -13,4 +16,7 @@ interface IElementEditor {
 
    public void setListIndex(int ix);
    public int getListIndex();
+
+   public boolean getCellMode();
+   public void setCellMode(boolean b);
 }
