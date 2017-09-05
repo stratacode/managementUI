@@ -23,7 +23,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    Object propType;
 
    boolean instanceMode;
-   boolean constantProperty = editorModel.isConstantProperty(propC);
+   boolean constantProperty;
    boolean editable := !instanceMode || !constantProperty;
 
    @Bindable
@@ -38,6 +38,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       this.propC = prop;
       if (instanceMode)
           this.currentValue = propInst;
+      constantProperty = EditorModel.isConstantProperty(prop);
       this.propType = propType;
       this.listIndex = listIx;
    }
@@ -56,6 +57,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    void updateEditor(Object elem, Object prop, Object propType, Object inst) {
       propC = elem;
+      constantProperty = EditorModel.isConstantProperty(elem);
    }
 
    boolean getPropVisible(Object instance, IVariableInitializer varInit) {
@@ -191,17 +193,25 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return formEditor.getEditorType(propC, propType, currentValue, instanceMode);
    }
 
-   String propertyValueString(Object instance, Object prop, int changeCt) {
-      if (prop instanceof CustomProperty)
-         return ((CustomProperty) prop).value.toString();
-
+   int getCellWidth() {
       if (formEditor == null)
-         System.err.println("*** Error - no formEditor for propValue");
-      if (editorModel == null)
-         System.err.println("*** Error - no editor model for propvalue");
-      else if (editorModel.ctx == null)
-              System.err.println("*** Error - No context for prop value");
-      return editorModel.ctx.propertyValueString(formEditor.type, instance, prop);
+         return 0;
+      int width = formEditor.getExplicitWidth(listIndex);
+      if (width != -1)
+         return width;
+      if (propC instanceof CustomProperty)
+         return ((CustomProperty) propC).defaultWidth;
+      return formEditor.getDefaultCellWidth(editorType, propC);
    }
+
+   int getCellHeight() {
+      if (formEditor == null)
+         return 0;
+      int width = formEditor.getExplicitHeight(listIndex);
+      if (width != -1)
+         return width;
+      return formEditor.getDefaultCellHeight(editorType, propC);
+   }
+
 }
 

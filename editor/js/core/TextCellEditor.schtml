@@ -4,7 +4,7 @@
       return textField.id;
    }
 
-   Object getElementValue() {
+   String getElementStringValue() {
       return textField.value;
    }
 %>

@@ -301,7 +301,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       return false;
    }
 
-   public boolean isConstantProperty(Object prop) {
+   public static boolean isConstantProperty(Object prop) {
       if (prop == null)
          return true;
       if (prop instanceof CustomProperty)
@@ -309,7 +309,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       return ModelUtil.hasAnnotation(prop, "sc.obj.Constant") || ModelUtil.hasModifier(prop, "final");
    }
 
-   public boolean isSettableFromString(Object prop) {
+   public static boolean isSettableFromString(Object prop) {
       return !isConstantProperty(prop) && !(prop instanceof CustomProperty) && sc.type.RTypeUtil.canConvertTypeFromString(prop);
    }
 

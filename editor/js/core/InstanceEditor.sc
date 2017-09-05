@@ -17,6 +17,8 @@ InstanceEditor {
    }
 
    void updateListeners(boolean add) {
+      if (repeatWrapper == null)
+         return;
       Object[] children = DynUtil.getObjChildren(repeatWrapper, null, true);
       if (children == null) {
          childViews = null;

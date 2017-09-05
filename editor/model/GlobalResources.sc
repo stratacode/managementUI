@@ -76,6 +76,8 @@ class GlobalResources {
    static UIIcon lookupUIIcon(Object type, boolean isDyn) {
       if (type == null)
          return null;
+      if (type instanceof CustomProperty)
+         return ((CustomProperty) type).icon;
       if (type instanceof BodyTypeDeclaration) {
          return ModelUtil.isObjectType(type) ?
              (isDyn ? objectDynIcon : objectIcon) :

@@ -94,12 +94,4 @@ InstanceEditor {
       }
    }
 
-   int getExplicitWidth(int colIx) {
-      return -1;
-   }
-
-   int getExplicitHeight(int colIx) {
-      return -1;
-   }
-
 }
