@@ -13,24 +13,24 @@ InstanceEditor {
    }
 
    void refreshChildren() {
-      repeatWrapper.refreshRepeat();
+      repeatWrapper.refreshRepeat(true);
    }
 
    void updateListeners(boolean add) {
-      if (repeatWrapper == null)
-         return;
-      Object[] children = DynUtil.getObjChildren(repeatWrapper, null, true);
-      if (children == null) {
-         childViews = null;
-         return;
-      }
-      else {
-         childViews = new ArrayList<IElementEditor>(children.length);
-      }
+      if (repeatWrapper != null) {
+         Object[] children = DynUtil.getObjChildren(repeatWrapper, null, true);
+         if (children == null) {
+            childViews = null;
+            return;
+         }
+         else {
+            childViews = new ArrayList<IElementEditor>(children.length);
+         }
 
-      for (Object child:children) {
-         if (child instanceof IElementEditor) {
-            childViews.add((IElementEditor) child);
+         for (Object child:children) {
+            if (child instanceof IElementEditor) {
+               childViews.add((IElementEditor) child);
+            }
          }
       }
       super.updateListeners(add);

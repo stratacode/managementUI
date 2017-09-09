@@ -69,7 +69,7 @@ abstract class InstanceFieldEditor extends InstanceEditor {
       else {
          IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceFieldEditor.this, prop, propType, propInst, ix);
          newEditor.setRepeatVar(elem);
-         newEditor.setRepeatIndex(ix);
+         //newEditor.setRepeatIndex(ix);
          return newEditor;
       }
    }

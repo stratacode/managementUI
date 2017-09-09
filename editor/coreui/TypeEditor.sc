@@ -23,6 +23,8 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
    Layer oldLayer = null; // layer the last time were updated
 
+   // Updatable on client and server so no need to sync it explicitly
+   @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
    Object[] properties;
 
    String operatorName;
@@ -306,7 +308,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       else if (editorType.equals("textArea"))
          return MultiLineTextEditor.class;
       else if (editorType.equals("ref"))
-         return ReferenceEditor.class;
+         return ReferenceFieldEditor.class;
       else if (editorType.equals("toggle"))
          return ToggleFieldEditor.class;
       else if (editorType.equals("choice"))
@@ -321,10 +323,6 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
    // If the layer has changed since this editor was last rebuilt, it might need to be rebuilt because the properties have changed
    void invalidateEditor() {
-      if (childViews != null) {
-         for (IElementEditor child:childViews)
-            child.invalidateEditor();
-      }
       if (oldLayer != null && editorModel != null && oldLayer != editorModel.currentLayer) {
          clearChildren();
          typeChanged();

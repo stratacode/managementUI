@@ -1,3 +1,5 @@
+
+@sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
 class CustomProperty {
    String name;
    Object propertyType;

@@ -16,8 +16,8 @@
        }
 
        void invalidateModel() {
-          for (IElementEditor child:childViews)
-             child.invalidateEditor();
+          //for (IElementEditor child:childViews)
+          //   child.invalidateEditor();
        }
    %>
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">

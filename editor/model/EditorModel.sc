@@ -398,7 +398,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    void refreshInstancesCheck(Object obj) {
       if (refreshInstancesValid) // This makes sure we do not refresh the bindings unless the instances were valid when this editor was created
-         Bind.refreshBindings(obj); // TODO: only need to refresh instancesOfType here!  Add a new api: refreshBinding(obj, propName)
+         Bind.refreshBinding(obj, "instancesOfType");
    }
 
    static Layer getLayerForMember(Object prop) {

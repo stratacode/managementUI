@@ -4,7 +4,7 @@
 
        void refreshChildren() {
           super.refreshChildren();
-          listScroll.listTags_Repeat.refreshRepeat();
+          listScroll.listTags_Repeat.refreshRepeat(true);
        }
    %>
    <div id="listTitle" class="formTitle">

@@ -177,7 +177,10 @@ class TypeTree {
       boolean transparent; // Entry does not exist on the file system yet
       TypeTree typeTree; // Or the layer tree
       boolean prependPackage; // Is this a type in the type tree or a file like web.xml which does not use a type name
+
+      @Sync(syncMode=SyncMode.Disabled)
       boolean marked; // Temp flag used to mark in-use objects
+
       String objectId;
 
       // Stores the swing entity that corresponds to this treeEnt (or null if not associated with one)
