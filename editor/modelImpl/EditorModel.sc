@@ -245,8 +245,6 @@ EditorModel {
       if (currentCtxType != currentType)
          currentCtxType = currentType;
 
-      updateCurrentJavaModel();
-
       ArrayList newVisibleTypes = new ArrayList();
       if (types != null) {
          for (Object type:types) {
@@ -262,6 +260,8 @@ EditorModel {
       modelsValid = true;
 
       modelValidating = false;
+
+      updateCurrentJavaModel();
 
       // Send an event so people can listen on this value and update dependent data structures
       Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
@@ -465,7 +465,7 @@ EditorModel {
       return types;
    }
 
-   String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateInstances, boolean valueIsExpr) {
+   String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateType, boolean updateInstances, boolean valueIsExpr) {
       if (type instanceof ClientTypeDeclaration)
          type = ((ClientTypeDeclaration) type).getOriginal();
       // The first time they are changing the object in a transparent layer.  We need to create it in this case.
@@ -474,11 +474,11 @@ EditorModel {
          type = ctx.addTopLevelType(null, CTypeUtil.getPackageName(typeName), currentLayer, CTypeUtil.getClassName(typeName), null);
          invalidateModel();
       }
-      return ctx.setElementValue(type, inst, prop, expr, updateInstances, valueIsExpr);
+      return ctx.setElementValue(type, inst, prop, expr, updateType, updateInstances, valueIsExpr);
    }
 
-   String updateCurrentProperty(Object operator, String value) {
-      return setElementValue(currentPropertyType, null, currentProperty, operator + value, true, true);
+   String updateCurrentProperty(Object operator, String value, boolean instanceMode) {
+      return setElementValue(currentPropertyType, null, currentProperty, operator + value, !instanceMode, true, true);
    }
 
    void validateCurrentProperty() {

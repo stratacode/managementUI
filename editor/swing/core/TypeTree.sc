@@ -28,13 +28,14 @@ TypeTree {
          // showing null paths.  When swapping visibility of nodes, this is a PITA.
          treeModel.ignoreSelectionEvents = true;
          try {
-            if (ent != null)
-               ent.typeTree.rootTreeModel.removeNodeFromParent((TypeTree.TreeNode) parent.getChildAt(ix));
+            if (ent != null) {
+               TypeTree.TreeNode child = (TypeTree.TreeNode) getChildAt(ix);
+               ent.typeTree.rootTreeModel.removeNodeFromParent(child);
+            }
          }
          finally {
             treeModel.ignoreSelectionEvents = false;
          }
-         // parent.remove(ix);
       }
    }
 

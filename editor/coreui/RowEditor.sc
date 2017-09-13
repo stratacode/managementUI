@@ -6,7 +6,8 @@ class RowEditor extends InstanceFieldEditor {
 
    List<Object> rowColumns;
 
-   int rowHeight = 30;
+   int rowHeight = 34;
+   rowMode = true;
 
    RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx) {
       super(view, parentEditor, parentProperty, type, instance, listIx);
@@ -46,11 +47,23 @@ class RowEditor extends InstanceFieldEditor {
          props.add(new CustomProperty("#", Integer.class, "text", listIndex, 35, null));
       }
       if (showId) {
-         props.add(new CustomProperty("Id", Object.class, "ref", instance, 200, null));
+         props.add(new CustomProperty("Id", editorModel.fetchInstanceType(instance), "ref", instance, 200, null));
       }
    }
 
    String getEditorType() {
       return "row";
    }
+
+   int getExplicitWidth(int colIx) {
+      if (setWidths == null)
+         return -1;
+      Integer setWidth = setWidths.get(colIx);
+      return setWidth == null ? -1 : setWidth;
+   }
+
+   int getExplicitHeight(int colIx) {
+      return rowHeight;
+   }
+
 }

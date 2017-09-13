@@ -1,16 +1,22 @@
-<div id="ElementEditor" class="elementEditor" style=':= cellMode ? "width: " + cellWidth + "px" : ""'>
+<div id="ElementEditor" style=':= cellMode ? "width: " + cellWidth + "px" : ""' class=':= elemClass'>
 <%!
    int elementSubmitCount;
    // The code to submit a change made directly to a form in this element editor.  This is done in a binding because setElementValue is a remote
    // method - it will set errorText when the remote result is received.
    elementSubmitCount =: instanceMode ? updateInstanceProperty() :
-                                 errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), instanceMode, formEditor.instance == null);
-   propC := repeatVar;
+                                 errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !instanceMode, instanceMode, formEditor.instance == null);
+   String cssClass = "elementEditor";
+   String elemClass;
 
    abstract String getFieldId();
 
    void onFocusEvent() {
       parentView.editorModel.currentProperty = propC;
+   }
+
+   void updateComputedValues() {
+      super.updateComputedValues();
+      elemClass = cssClass + (rowStart ? " rowStart" : "");
    }
 
 %>

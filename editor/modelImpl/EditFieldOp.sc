@@ -2,7 +2,7 @@ EditFieldOp {
    updateTypeCount =: doEditField();
 
    void doEditField() {
-      String error = editorModel.updateCurrentProperty(opStr, valueStr);
+      String error = editorModel.updateCurrentProperty(opStr, valueStr, editorModel.currentInstance != null);
       if (error != null) {
          int ix = error.indexOf(" - "); // Strips off the File and other crap from a normal error
          if (ix != -1)

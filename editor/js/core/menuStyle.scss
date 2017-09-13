@@ -515,15 +515,6 @@ a.tooltip:hover span {
    display: flex;
 }
 
-.cellEditor, .cellHeader {
-   flex: none;
-}
-
-.cellEditor, .cellHeader {
-   flex: none;
-   //flex: 1 auto;
-}
-
 .cellHeader {
    background-color: #d0cfcf;
 }
@@ -537,11 +528,11 @@ a.tooltip:hover span {
 }
 
 .cellEditor, .cellHeader {
+   flex: none;
    border-right: 1px solid #000;
    border-bottom: 1px solid #000;
-}
-
-.cellEditor, .cellHeader {
+   overflow: hidden;
+   text-overflow: ellipsis;
    padding-left: 10px;
    padding-right: 5px;
    padding-top: 5px;

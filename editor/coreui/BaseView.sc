@@ -15,7 +15,8 @@ abstract class BaseView {
    @sc.obj.Sync
    boolean viewVisible;
 
-   editorModel =: invalidateModel();
+   // Seems redundant to updating when currentJavaModel changes
+   //editorModel =: invalidateModel();
    viewVisible =: invalidateModel();
 
    JavaModel currentJavaModel := editorModel.currentJavaModel;

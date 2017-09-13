@@ -10,6 +10,9 @@ ToggleCellEditor {
       userEnteredCount =: updateInstanceProperty();
 
       focus =: focusChanged(this, focus);
+
+      border = createCellBorder();
+      borderPainted = true;
    }
 
    Object getElementValue() {

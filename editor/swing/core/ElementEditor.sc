@@ -13,10 +13,10 @@ ElementEditor {
 
    boolean propertyInherited := EditorModel.getLayerForMember(propC) != formEditor.classViewLayer;
 
-   int tabSize := parentView.tabSize;
-   int xpad := parentView.xpad;
-   int ypad := parentView.ypad;
-   int baseline := parentView.baseline;
+   int tabSize;
+   int xpad;
+   int ypad;
+   int baseline;
 
    class ElementLabel extends JLabel {
       int prefW := ((int) preferredSize.width);
@@ -45,9 +45,23 @@ ElementEditor {
    JavaModel oldListenerModel = null;
 
    @Bindable
-   int x := prevCell == null ? xpad : prevCell.x + prevCell.width + xpad,
-       y := prev == null ? ypad + formEditor.startY : prev.y + prev.height,
+   int x := prevCell == null ? xpad : prevCell.x + prevCell.width,
+       y := prev == null ? formEditor.startY : prev.y + prev.height,
        width := cellWidth, height := cellHeight;
+
+
+   static Border createCellBorder() {
+      return new javax.swing.border.CompoundBorder(BorderFactory.createLineBorder(Color.black), new javax.swing.border.EmptyBorder(8, 8, 8, 8));
+   }
+
+   void updateComputedValues() {
+      super.updateComputedValues();
+
+      tabSize = parentView.tabSize;
+      xpad = parentView.xpad;
+      ypad = parentView.ypad;
+      baseline = parentView.baseline;
+   }
 
    void focusChanged(JComponent component, boolean newFocus) {
       if (propC instanceof CustomProperty)
@@ -130,7 +144,8 @@ ElementEditor {
 
          errorLabel.text = "";
          //disableFormRebuild = true;
-         String error = editorModel.setElementValue(type, inst, prop, text, formEditor.parentView.instanceMode, inst == null);
+         boolean instMode = formEditor.parentView.instanceMode;
+         String error = editorModel.setElementValue(type, inst, prop, text, !instMode, instMode, inst == null);
          // Refetch the member since we may have just defined one for this type
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(prop), JavaSemanticNode.MemberType.PropertyAnySet, null, null, null);
          // Update this manually since we change it when moving the operator into the label

@@ -1,7 +1,13 @@
-<span id="HeaderCellEditor" class="cellHeader">
+<span id="HeaderCellEditor">
    <%!
+      cssClass = "cellHeader";
+
       String getFieldId() {
          return null;
+      }
+
+      void updateComputedValues() {
+         super.updateComputedValues();
       }
 
    %>

@@ -13,6 +13,10 @@ class LinkButton extends JButton implements MouseListener {
       addMouseListener(this);
    }
 
+   void repaint() {
+      super.repaint();
+   }
+
    public void mouseClicked(MouseEvent e) {}
 
    public void mousePressed(MouseEvent e) {}

@@ -40,6 +40,8 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    @Bindable
    boolean cellMode = false;
 
+   boolean rowMode = false;
+
    type =: typeChanged();
 
    @Bindable
@@ -357,4 +359,24 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    }
 
    abstract String getEditorType();
+
+   int getCellWidth() {
+      if (cellMode) {
+         int width = formEditor.getExplicitWidth(listIndex);
+         if (width != -1)
+            return width;
+         return formEditor.getDefaultCellWidth(editorType, null);
+      }
+      return -1;
+   }
+
+   int getCellHeight() {
+      if (cellMode || rowMode) {
+         int height = formEditor.getExplicitHeight(listIndex);
+         if (height != -1)
+            return height;
+         return formEditor.getDefaultCellHeight(editorType, null);
+      }
+      return -1;
+   }
 }

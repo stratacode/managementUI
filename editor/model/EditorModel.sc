@@ -309,8 +309,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       return ModelUtil.hasAnnotation(prop, "sc.obj.Constant") || ModelUtil.hasModifier(prop, "final");
    }
 
-   public static boolean isSettableFromString(Object prop) {
-      return !isConstantProperty(prop) && !(prop instanceof CustomProperty) && sc.type.RTypeUtil.canConvertTypeFromString(prop);
+   public static boolean isSettableFromString(Object propC, Object propType) {
+      return !isConstantProperty(propC) && !(propC instanceof CustomProperty) && sc.type.RTypeUtil.canConvertTypeFromString(propType);
    }
 
    /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
@@ -411,5 +411,11 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       if (prop instanceof CustomProperty)
          return ((CustomProperty) prop).propertyType;
       return ModelUtil.getPropertyType(prop);
+   }
+
+   Object fetchInstanceType(Object inst) {
+      Object instType = DynUtil.getType(inst);
+      instType = ModelUtil.resolveSrcTypeDeclaration(system, instType);
+      return instType;
    }
 }

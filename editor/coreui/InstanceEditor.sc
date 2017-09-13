@@ -37,7 +37,8 @@ abstract class InstanceEditor extends TypeEditor {
       Bind.sendValidate(this, "instance", inst);
    }
 
-   void updateEditor(Object elem, Object prop, Object propType, Object inst) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
+      listIndex = ix;
       setTypeAndInstance(prop, propType, inst);
    }
 

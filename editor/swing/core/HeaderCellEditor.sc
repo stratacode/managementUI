@@ -4,6 +4,8 @@ HeaderCellEditor {
       location := SwingUtil.point(HeaderCellEditor.this.x, HeaderCellEditor.this.y - headerHeight);
       size := SwingUtil.dimension(HeaderCellEditor.this.width, headerHeight);
 
+      border = createCellBorder();
+
       foreground := GlobalResources.normalTextColor;
       background := GlobalResources.headerBkgColor;
 

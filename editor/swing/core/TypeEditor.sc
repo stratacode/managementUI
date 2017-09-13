@@ -1,11 +1,11 @@
 TypeEditor {
    int columnWidth := (int) ((parentView.size.width - scrollBorder - 2 * borderSize) / parentView.numCols - parentView.xpad);
-   int startY := parentView.ypad + borderTop;
+   int startY := borderTop;
 
    int scrollBorder = 25; // space for the scroll bar should it be needed
 
    int borderSize = 2;
-   int borderTop = 25;
+   int borderTop = 30;
    int borderBottom = 0;
 
    int xpad := parentView.xpad;
@@ -24,13 +24,11 @@ TypeEditor {
        width := columnWidth - (nestLevel * (parentView.nestWidth + 2*xpad)),
        height := (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
     */
-   int x := prevCell == null ? xpad : prevCell.x + prevCell.width + xpad,
-       y := prev == null ? ypad + formEditor.startY : prev.y + prev.height,
+   int x := prevCell == null ? xpad : prevCell.x + prevCell.width,
+       y := prev == null ? formEditor.startY : prev.y + prev.height,
        width := cellWidth, height := cellHeight;
 
    int row, col;
-
-   startY := ypad + borderTop;
 
    size := SwingUtil.dimension(width, height);
    location := SwingUtil.point(x, y);
@@ -49,25 +47,23 @@ TypeEditor {
       return icon == null ? null : icon.icon;
    }
 
-   void validateTree() {
+   void validateEditorTree() {
+   }
+
+   void paint(java.awt.Graphics g) {
+      super.paint(g);
    }
 
    int getCellWidth() {
       if (cellMode) {
-         int width = formEditor.getExplicitWidth(listIndex);
-         if (width != -1)
-            return width;
-         return formEditor.getDefaultCellWidth(editorType, null);
+         return super.getCellWidth();
       }
       return columnWidth - (nestLevel * (parentView.nestWidth + 2*xpad));
    }
 
    int getCellHeight() {
-      if (cellMode) {
-         int width = formEditor.getExplicitHeight(listIndex);
-         if (width != -1)
-            return width;
-         return formEditor.getDefaultCellHeight(editorType, null);
+      if (cellMode || rowMode) {
+         return super.getCellHeight();
       }
       return (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
    }

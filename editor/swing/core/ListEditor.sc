@@ -1,12 +1,18 @@
 ListEditor {
    numRows := (DynUtil.getArrayLength(visList) + numCols-1) / numCols;
 
-   void validateTree() {
-      childList.refreshList();
+   void validateEditorTree() {
+      if (childList.refreshList())
+         validateChildLists();
    }
 
    void refreshChildren() {
-      childList.refreshList();
+      if (childList.refreshList())
+         validateChildLists();
+   }
+
+   void validateChildLists() {
+      validateChildList(0, childList.repeatComponents, true);
    }
 
    object childList extends ChildList {

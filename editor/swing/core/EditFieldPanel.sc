@@ -72,7 +72,7 @@ class EditFieldPanel extends JPanel implements EditorPanelStyle {
       }
 
       void commitValue() {
-         String error = editorModel.updateCurrentProperty(opSelector.selectedItem, valueField.text);
+         String error = editorModel.updateCurrentProperty(opSelector.selectedItem, valueField.text, editorModel.currentInstance != null);
          if (error != null) {
             int ix = error.indexOf(" - "); // Strips off the File and other crap from a normal error
             if (ix != -1)

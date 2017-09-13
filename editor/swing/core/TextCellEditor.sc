@@ -8,12 +8,14 @@ TextCellEditor {
       location := SwingUtil.point(TextCellEditor.this.x, TextCellEditor.this.y);
       size := SwingUtil.dimension(TextCellEditor.this.width, TextCellEditor.this.height);
 
+      border = createCellBorder();
+
       completionProvider {
          ctx := editorModel.ctx;
       }
 
       // If we have a fromString converter registered, we can edit this guy in value mode
-      boolean settable := formEditor.instance == null || EditorModel.isSettableFromString(propType);
+      boolean settable := formEditor.instance == null || EditorModel.isSettableFromString(propC, propType);
       foreground := settable ? ComponentStyle.defaultForeground : SwingUtil.averageColors(ComponentStyle.defaultForeground, ComponentStyle.defaultBackground);
 
       // instance could be retrieved through type hierarchy but we need to update the binding when the instance changes

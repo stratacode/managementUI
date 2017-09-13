@@ -103,7 +103,7 @@ FormView {
             viewsGrid[fed.row][fed.col] = fed;
          }
 
-         public void refreshList() {
+         public boolean refreshList() {
              int size = DynUtil.getArrayLength(repeat);
 
              // Controls the number of columns used to display for the number of types we have selected
@@ -115,9 +115,9 @@ FormView {
                 viewsGrid = new FormEditor[numRows][numCols];
              }
 
-             super.refreshList();
+             boolean anyChanges = super.refreshList();
 
-             if (gridChanged) {
+             if (gridChanged || anyChanges) {
                  int ix = 0;
                  for (Object elem:repeatComponents) {
                      FormEditor fed = (FormEditor) elem;
@@ -125,7 +125,12 @@ FormView {
                      ix++;
                  }
              }
-             validateTree();
+
+             return anyChanges;
+         }
+
+         void listChanged() {
+            validateTree();
          }
 
          public void validateTree() {
@@ -154,7 +159,7 @@ FormView {
             }
             for (Object elem:repeatComponents) {
                 if (elem instanceof TypeEditor) {
-                   ((TypeEditor) elem).validateTree();
+                   ((TypeEditor) elem).validateEditorTree();
                 }
                 Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
                 int newW = (int) (bounds.x + bounds.width + xpad);

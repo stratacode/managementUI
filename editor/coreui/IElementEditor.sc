@@ -8,7 +8,7 @@ interface IElementEditor {
    boolean isVisible();
    void setVisible(boolean val);
 
-   void updateEditor(Object elem, Object prop, Object type, Object inst);
+   void updateEditor(Object elem, Object prop, Object type, Object inst, int ix);
 
    void setRepeatVar(Object val);
 

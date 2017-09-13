@@ -1,11 +1,17 @@
-<span id="TextCellEditor" class="cellEditor">
+<span id="TextCellEditor">
 <%!
+   cssClass = "cellEditor";
+
    String getFieldId() {
       return textField.id;
    }
 
    String getElementStringValue() {
       return textField.value;
+   }
+
+   void updateComputedValues() {
+      super.updateComputedValues();
    }
 %>
    <input id="textField" class="textCell" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue" disabled=":= !editable" keyUpEvent='=: keyUpEvent.key.equals("Enter") ? updateInstanceProperty() : null'/>

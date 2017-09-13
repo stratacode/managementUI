@@ -8,9 +8,20 @@ RowEditor {
       visible := showHeader;
    }
 
-   void validateTree() {
-      headerList.refreshList();
-      super.validateTree();
+   void validateEditorTree() {
+      boolean needsRefresh = headerList.refreshList();
+      if (childList.refreshList())
+         needsRefresh = true;
+      if (needsRefresh) {
+         validateChildLists();
+      }
+      /*
+      for (int i = 0; i < childViews.size(); i++) {
+         IElementEditor childView = childViews.get(i);
+         if (childView instanceof JComponent)
+            ((JComponent) childView).validate();
+      }
+      */
    }
 
    void refreshChildren() {
@@ -18,15 +29,12 @@ RowEditor {
       super.refreshChildren();
    }
 
-   int getExplicitWidth(int colIx) {
-      if (setWidths == null)
-         return -1;
-      Integer setWidth = setWidths.get(colIx);
-      return setWidth == null ? -1 : setWidth;
+   void validateChildLists() {
+      validateChildList(0, headerList.repeatComponents, false);
+      validateChildList(headerList.repeatComponents.size(), childList.repeatComponents, true);
    }
 
-   int getExplicitHeight(int colIx) {
-      return rowHeight;
+   int getCellHeight() {
+      return (showHeader ? headerHeight : 0) + rowHeight;
    }
-
 }

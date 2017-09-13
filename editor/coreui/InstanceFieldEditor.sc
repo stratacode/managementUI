@@ -61,9 +61,8 @@ abstract class InstanceFieldEditor extends InstanceEditor {
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(elem, prop, propType, propInst);
+         oldEditor.updateEditor(elem, prop, propType, propInst, ix);
          oldEditor.setRepeatVar(elem);
-         oldEditor.setRepeatIndex(ix);
          return oldTag;
       }
       else {

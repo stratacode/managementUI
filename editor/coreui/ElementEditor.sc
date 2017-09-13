@@ -1,6 +1,7 @@
 import sc.lang.java.ModelUtil;
 import sc.lang.java.VariableDefinition;
 
+@Component
 @CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    InstanceEditor formEditor;
@@ -10,10 +11,10 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    EditorModel editorModel;
 
    @Bindable
-   int listIndex = -1;
+   int listIndex;
 
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
-   UIIcon icon := propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
+   UIIcon icon;
    String errorText;
    String oldPropName;
    int changeCt = 0;
@@ -25,11 +26,10 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    boolean instanceMode;
    boolean constantProperty;
    boolean editable := !instanceMode || !constantProperty;
+   boolean rowStart;
 
    @Bindable
    boolean cellMode = false;
-
-   visible := getPropVisible(formEditor.instance, varInit);
 
    ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx) {
       instanceMode = formEditor.instanceMode;
@@ -38,9 +38,20 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       this.propC = prop;
       if (instanceMode)
           this.currentValue = propInst;
-      constantProperty = EditorModel.isConstantProperty(prop);
       this.propType = propType;
       this.listIndex = listIx;
+   }
+
+   void init() {
+      updateComputedValues();
+   }
+
+   void updateComputedValues() {
+      rowStart = listIndex == 0 && cellMode;
+      varInit = propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
+      visible = getPropVisible();
+      constantProperty = EditorModel.isConstantProperty(propC);
+      icon = propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
    }
 
    public BaseView getParentView() {
@@ -55,14 +66,17 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return !instanceMode && instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
 
-   void updateEditor(Object elem, Object prop, Object propType, Object inst) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
       propC = elem;
-      constantProperty = EditorModel.isConstantProperty(elem);
+      this.listIndex = ix;
+      updateComputedValues();
    }
 
-   boolean getPropVisible(Object instance, IVariableInitializer varInit) {
+   boolean getPropVisible() {
+      if (propC instanceof CustomProperty)
+         return true;
       // Hide reverse only bindings when displaying instance since they are not settable
-      return varInit != null && (instance == null || !DynUtil.equalObjects(varInit.operatorStr, "=:"));
+      return varInit != null && (formEditor.instance == null || !DynUtil.equalObjects(varInit.operatorStr, "=:"));
    }
 
    static boolean isIndexedProperty(Object prop) {

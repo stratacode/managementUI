@@ -20,11 +20,12 @@ class ListEditor extends InstanceEditor {
    }
 
    @sc.obj.ManualGetSet // NOTE: get/set conversion not performed when this annotation is used
-   void updateEditor(Object elem, Object prop, Object propType, Object inst) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
       Object compType = ModelUtil.getArrayComponentType(elem);
       setTypeNoChange(prop, compType);
       componentType = compType;
       updateComponentTypeName();
+      updateListIndex(ix);
       this.instList = (List<Object>)inst;
       // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
       Bind.sendInvalidate(this, "instList", inst);
@@ -34,7 +35,10 @@ class ListEditor extends InstanceEditor {
 
       // Now we're ready to validate the bindings on the instance
       Bind.sendValidate(this, "instList", inst);
+   }
 
+   void updateListIndex(int ix) {
+      listIndex = ix;
    }
 
    void updateComponentTypeName() {
@@ -90,7 +94,7 @@ class ListEditor extends InstanceEditor {
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(compType, null, compType, listVal);
+         oldEditor.updateEditor(compType, null, compType, listVal, listIx);
          oldEditor.setListIndex(listIx);
          return oldTag;
       }
