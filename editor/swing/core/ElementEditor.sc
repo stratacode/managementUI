@@ -93,8 +93,6 @@ ElementEditor {
 
    void removeListeners() {
       updateListeners(false);
-
-      DynUtil.dispose(this);
    }
 
    void updateListeners(boolean add) {

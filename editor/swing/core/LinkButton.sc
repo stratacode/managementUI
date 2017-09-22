@@ -13,10 +13,6 @@ class LinkButton extends JButton implements MouseListener {
       addMouseListener(this);
    }
 
-   void repaint() {
-      super.repaint();
-   }
-
    public void mouseClicked(MouseEvent e) {}
 
    public void mousePressed(MouseEvent e) {}
@@ -34,9 +30,5 @@ class LinkButton extends JButton implements MouseListener {
       if (defaultColor != null)
          foreground = defaultColor;
       mouseIn = false;
-   }
-
-   public void setForeground(Color col) {
-      super.setForeground(col);
    }
 }

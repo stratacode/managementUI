@@ -389,10 +389,11 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          refreshInstancesValid = false;
          DynUtil.invokeLater(new Runnable() {
             void run() {
-               refreshInstancesValid = true;
                refreshInstancesCt++;
+               // Doing this after even though we may miss a refresh because we don't want any instances created in the course of this callback to schedule another refresh call.
+               refreshInstancesValid = true;
             }
-         }, 0);
+         }, 300);
       }
    }
 

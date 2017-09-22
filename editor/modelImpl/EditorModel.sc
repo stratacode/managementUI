@@ -20,9 +20,9 @@ import sc.parser.ParseUtil;
 
 EditorModel {
    /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
-   Object currentCtxType :=: currentCtxType instanceof BodyTypeDeclaration ? ctx.currentType : null;
+   BodyTypeDeclaration currentCtxType := ctx.currentType;
 
-   currentCtxType =: changeCurrentType(currentCtxType, null);
+   currentCtxType =: changeCurrentType(currentCtxType, ctx.currentObject);
 
    currentProperty =: validateCurrentProperty();
 
@@ -242,8 +242,13 @@ EditorModel {
          currentTypeIsLayer = false;
       }
 
-      if (currentCtxType != currentType)
-         currentCtxType = currentType;
+      // This keeps the command line in sync
+      if (currentType instanceof BodyTypeDeclaration) {
+         if (currentInstance != null)
+            ctx.setDefaultCurrentObj((BodyTypeDeclaration) currentType, currentInstance);
+         else if (currentType != ctx.currentType)
+            ctx.currentType = (BodyTypeDeclaration) currentType;
+      }
 
       ArrayList newVisibleTypes = new ArrayList();
       if (types != null) {
@@ -553,8 +558,8 @@ EditorModel {
       super.changeCurrentType(type, inst);
 
       // Push this back if the change is coming from the editor model side
-      if (currentCtxType != type)
-         currentCtxType = type;
+      if (currentCtxType != type && type instanceof BodyTypeDeclaration)
+         currentCtxType = (BodyTypeDeclaration) type;
 
       updateCurrentJavaModel();
    }

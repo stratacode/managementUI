@@ -8,12 +8,7 @@ TypeEditor {
    int borderTop = 30;
    int borderBottom = 0;
 
-   int xpad := parentView.xpad;
-   int ypad := parentView.ypad;
-
-   int baseline := parentView.baseline;
-
-   int tabSize := parentView.tabSize;
+   int xpad, ypad, baseline, tabSize;
 
    IElementEditor lastView;
 
@@ -45,6 +40,13 @@ TypeEditor {
 
    public static Icon getSwingIcon(UIIcon icon) {
       return icon == null ? null : icon.icon;
+   }
+
+   void updateComputedValues() {
+      xpad = parentView.xpad;
+      ypad = parentView.ypad;
+      baseline = parentView.baseline;
+      tabSize = parentView.tabSize;
    }
 
    void validateEditorTree() {

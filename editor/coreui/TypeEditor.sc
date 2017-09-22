@@ -55,6 +55,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          this.parentList = (ListEditor) parentEditor;
       if (parentEditor instanceof InstanceEditor)
          this.formEditor = (InstanceEditor) parentEditor;
+      updateComputedValues();
       this.setTypeNoChange(parentProperty, type);
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
@@ -65,6 +66,9 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          this.properties = parentList.properties;
       }
       */
+   }
+
+   void updateComputedValues() {
    }
 
    Object resolveSrcTypeDeclaration(Object type) {
