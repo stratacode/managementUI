@@ -103,7 +103,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
    ArrayList<Object> visibleTypes = new ArrayList<Object>();     // The list of types used to create the form view - removes types filtered by the merge and inherited flags
 
-   class SelectedFile {
+   @Sync(onDemand=true)
+   static class SelectedFile {
       SrcEntry file;
       List<Object> types;
       JavaModel model;

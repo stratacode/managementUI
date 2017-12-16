@@ -20,8 +20,10 @@ import sc.parser.ParseUtil;
 
 EditorModel {
    /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
+   @Bindable(crossScope=true)
    BodyTypeDeclaration currentCtxType := ctx.currentType;
 
+   override @Bindable(crossScope=true)
    currentCtxType =: changeCurrentType(currentCtxType, ctx.currentObject);
 
    currentProperty =: validateCurrentProperty();
