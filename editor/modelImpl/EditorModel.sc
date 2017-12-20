@@ -60,7 +60,7 @@ EditorModel {
 
    void invalidateModel() {  // OVERRIDE in your framework to so rebuildModel is run in a doLater
       if (modelValidating) {
-          System.out.println("*** Triggered model invalidate when the model was in the midst of validating!");
+         return; // in rebuildModel, we change currentLayer which may call this when we are in the midst of updating the model so just ignore it
        }
 
       if (modelsValid) {
