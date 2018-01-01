@@ -27,6 +27,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    int windowState = 0; // 0 = iconfied, 1 = open, 2 = maximized
 
    /** Set to the current layer */
+   @Bindable(crossScope=true)
    Layer currentLayer :=: ctx.currentLayer;
 
    /** The current type */
