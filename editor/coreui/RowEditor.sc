@@ -9,14 +9,10 @@ class RowEditor extends InstanceFieldEditor {
    int rowHeight = 34;
    rowMode = true;
 
+   boolean showHeader := listIndex == 0;
+
    RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx) {
       super(view, parentEditor, parentProperty, type, instance, listIx);
-   }
-
-   boolean getShowHeader() {
-      // TODO: should we look for when the property set is different from the previous one and add a new header?  Or support a "headerRows" list of indexes?
-      // Or a way to enable a header row every <n> elements
-      return listIndex == 0;
    }
 
    Object getEditorClass(String editorType, String displayMode) {

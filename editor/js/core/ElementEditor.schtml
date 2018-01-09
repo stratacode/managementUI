@@ -8,6 +8,8 @@
    String cssClass = "elementEditor";
    String elemClass;
 
+   repeatIndex =: listIndex;
+
    abstract String getFieldId();
 
    void onFocusEvent() {

@@ -15,5 +15,6 @@
                selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
                visible=":= showInstanceSelect"/>
    </div>
+
    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="ElementRepeatWrapper"/>
 </div>

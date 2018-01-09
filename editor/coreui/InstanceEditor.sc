@@ -102,9 +102,11 @@ abstract class InstanceEditor extends TypeEditor {
 
    void parentPropValueChanged() {
       Object parentInst = ((InstanceEditor) parentEditor).instance;
-      String propName = ModelUtil.getPropertyName(parentProperty);
-      Object newInst = DynUtil.getPropertyValue(parentInst, propName);
-      instance = newInst;
+      if (parentInst != null) {
+         String propName = ModelUtil.getPropertyName(parentProperty);
+         Object newInst = DynUtil.getPropertyValue(parentInst, propName);
+         instance = newInst;
+      }
    }
 
    void changeFocus(boolean focus) {

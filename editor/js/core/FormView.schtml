@@ -37,7 +37,19 @@
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);
           return res;
-        } %>
+        }
+
+         void updateElementIndexes(int fromIx) {
+            Object[] children = DynUtil.getObjChildren(formScroll.formList_Repeat, null, false);
+            if (children != null) {
+               for (int i = fromIx; i < children.length; i++) {
+                  IElementEditor child = (IElementEditor) children[i];
+                  if (child != null && child.getListIndex() != i)
+                     child.setListIndex(i);
+               }
+            }
+         }
+      %>
    </div>
    <div id="formScroll" class="formScroll" >
       <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj" repeatWrapper="elementRepeatBuilder">
