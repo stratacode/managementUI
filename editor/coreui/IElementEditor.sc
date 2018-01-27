@@ -13,6 +13,7 @@ interface IElementEditor {
    void setRepeatVar(Object val);
 
    void setRepeatIndex(int ix);
+   int getRepeatIndex();
 
    public void setListIndex(int ix);
    public int getListIndex();
