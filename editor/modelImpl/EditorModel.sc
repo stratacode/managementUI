@@ -75,6 +75,7 @@ EditorModel {
 
    boolean modelValidating = false;
 
+   // TODO: rename to refreshModel?
    void rebuildModel() {
       if (modelsValid)
          return;
@@ -220,12 +221,31 @@ EditorModel {
             currentLayer = typeLayers.get(typeLayers.size()-1);
       }
 
-      if (filteredTypes.size() > 0)
-         currentType = filteredTypes.get(0);
-      else
-         currentType = null;
+      Object filteredType;
 
-      // Clear out any selected property.
+      if (filteredTypes.size() > 0)
+         filteredType = filteredTypes.get(0);
+      else
+         filteredType = null;
+
+      if (filteredType instanceof BodyTypeDeclaration) {
+         Object ctxCurrentType = ctx.currentType;
+         Layer layer = ctxCurrentType == null ? null : ModelUtil.getLayerForType(system, ctxCurrentType);
+         if (ctxCurrentType == null || layer == null || !newFilteredLayers.contains(layer)) {
+            if (currentInstance != null)
+               ctx.setDefaultCurrentObj((BodyTypeDeclaration) filteredType, currentInstance);
+            else if (!ModelUtil.isAssignableFrom(filteredType, ctx.currentType))
+               ctx.currentType = (BodyTypeDeclaration) filteredType;
+            else {
+               // there was a more specific type in the context so we'll use that here
+            }
+         }
+      }
+      // else - we are not updating ctx.currentType here - so these two are not in sync when it's a compiled class or the matched type is not in a visible layer.  TODO: not sure this is right.
+
+      currentType = filteredType;
+
+// Clear out any selected property.
       currentProperty = null;
       currentPropertyType = currentType;
       savedPropertyValue = currentPropertyValue = null;
@@ -242,14 +262,6 @@ EditorModel {
       else {
          currentPackage = "";
          currentTypeIsLayer = false;
-      }
-
-      // This keeps the command line in sync
-      if (currentType instanceof BodyTypeDeclaration) {
-         if (currentInstance != null)
-            ctx.setDefaultCurrentObj((BodyTypeDeclaration) currentType, currentInstance);
-         else if (currentType != ctx.currentType)
-            ctx.currentType = (BodyTypeDeclaration) currentType;
       }
 
       ArrayList newVisibleTypes = new ArrayList();
