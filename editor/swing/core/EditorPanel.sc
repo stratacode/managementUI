@@ -18,7 +18,6 @@ import sc.lang.java.ModelUtil;
 
 import sc.type.CTypeUtil;
 import sc.util.StringUtil;
-import sc.bind.BindingContext;
 import sc.dyn.DynUtil;
 
 EditorPanel extends JPanel implements EditorPanelStyle {
