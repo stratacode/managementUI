@@ -1,5 +1,5 @@
-<%@ @URL(resource=true)
-    @sc.obj.Scope(name="session") %>
+<%@ @URL(resource=true) // TODO: should we consolidate these?  Need to turn off defaultCmdContext for CurrentScopeContext at least.
+    @sc.obj.Scope(name="appSession") %>
 <%! 
    int windowState = 0; // 0 - iconified, 1 - open, 2 - maximized, 3 - full page
    boolean absolute := windowState == 0;
