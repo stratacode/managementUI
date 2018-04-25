@@ -54,7 +54,6 @@ EditorModel {
 
    currentProperty =: currentPropertyIcon = GlobalResources.lookupUIIcon(currentProperty);
 
-
    // When the currentTypeSearch field is changed, this will look for a type matching that pattern, and if found change the current type.  this gets pushed to the client.
    currentTypeSearch =: findCurrentType(currentTypeSearch);
 
@@ -234,7 +233,7 @@ EditorModel {
          if (ctxCurrentType == null || layer == null || !newFilteredLayers.contains(layer)) {
             if (currentInstance != null)
                ctx.setDefaultCurrentObj((BodyTypeDeclaration) filteredType, currentInstance);
-            else if (!ModelUtil.isAssignableFrom(filteredType, ctx.currentType))
+            else if (ctxCurrentType == null || !ModelUtil.isAssignableFrom(filteredType, ctxCurrentType))
                ctx.currentType = (BodyTypeDeclaration) filteredType;
             else {
                // there was a more specific type in the context so we'll use that here
