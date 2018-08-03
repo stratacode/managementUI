@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Set;
 
+import sc.layer.CodeType;
 
 import sc.layer.SrcEntry;
 import sc.layer.Layer;
