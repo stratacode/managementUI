@@ -11,8 +11,7 @@ import sc.type.PTypeUtil;
 public editor.coreui extends model, gui.util.core {
    // This is one of those layers which could go either way...
    //defaultSyncMode = sc.obj.SyncMode.Automatic;
-   codeType = sc.layer.CodeType.Application;
-   codeFunction = sc.layer.CodeFunction.UI;
+   codeType = CodeType.UI;
 
    liveDynamicTypes = layeredSystem.options.editEditor;
 }

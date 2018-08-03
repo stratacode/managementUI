@@ -60,12 +60,4 @@ class EditorFrame {
          UIUtil.showErrorDialog(this, "Select a type for the property before clicking 'Add'", "No type selected");
       }
    }
-
-   boolean isCodeFunction(ArrayList<CodeFunction> codeFunctions, CodeFunction func) {
-      return codeFunctions.size() == 1 && codeFunctions.contains(func);
-   }
-
-   void changeCodeFunction(CodeFunction func) {
-      editorModel.changeCodeFunctions(EnumSet.of(func));
-   }
 }

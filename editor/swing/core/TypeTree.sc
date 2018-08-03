@@ -67,7 +67,7 @@ TypeTree {
    }
 
    void refreshTree() {
-      if (treeModel.codeTypes == null || treeModel.codeFunctions == null)
+      if (treeModel.codeTypes == null)
          return;
 
       boolean needsOpenRoot = false;
@@ -96,7 +96,7 @@ TypeTree {
       }
       updatePackageContents(rootDirEnt, rootTreeNode, rootPathIndex, new TreePath(rootTreeNode));
       if (rootTreeNode.getChildCount() == 0) {
-         if (editorModel.codeFunctions.size() == CodeFunction.allSet.size() && editorModel.codeTypes.size() == CodeType.allSet.size())
+         if (editorModel.codeTypes.size() == CodeType.allSet.size())
             emptyCommentNode.value = "<No types>";
          else
             emptyCommentNode.value = "<No matching types>";

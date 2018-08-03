@@ -1,5 +1,4 @@
 import sc.layer.CodeType;
-import sc.layer.CodeFunction;
 import sc.bind.Bind;
 import sc.dyn.DynUtil;
 
@@ -70,51 +69,45 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
       }
       object viewMenu extends JMenu implements ComponentStyle {
          text = "View";
-         object allItem extends JRadioButtonMenuItem {
-            text = "Show All Types of Code";
-            selected = true;
-            selected =: selected ? editorModel.codeTypes = new ArrayList(CodeType.allSet) : null;
-         }
-         object applicationItem extends JRadioButtonMenuItem {
-            text = "Hide Framework Code";
-            selected =: selected ? editorModel.codeTypes = new ArrayList(EnumSet.of(CodeType.Application,CodeType.Declarative)) : null;
-         }
-         object declarativeItem extends JRadioButtonMenuItem {
-            text = "Show Declarative Only";
-            selected =: selected ? editorModel.codeTypes = new ArrayList(EnumSet.of(CodeType.Declarative)) : null;
-         }
-         object buttonGroup extends ButtonGroup {
-            buttons = {declarativeItem, applicationItem, allItem};
-         }
-         object sep extends JSeparator {
-         }
          object showAllItem extends JCheckBoxMenuItem {
-            text = "Show All Functions";
+            text = "Show All Code Types";
             selected = true;
-            selected =: selected ? editorModel.changeCodeFunctions(CodeFunction.allSet) : null;
+            selected =: selected ? editorModel.changeCodeTypes(CodeType.allSet) : null;
+         }
+         object modelItem extends JCheckBoxMenuItem {
+            text = "Domain Model";
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Model)) : null;
          }
          object programItem extends JCheckBoxMenuItem {
             text = "Application Code";
-            selected =: selected ? editorModel.changeCodeFunctions(EnumSet.of(CodeFunction.Program)) : null;
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Application)) : null;
          }
          object uiItem extends JCheckBoxMenuItem {
             text = "UI Code";
-            selected =: selected ? editorModel.changeCodeFunctions(EnumSet.of(CodeFunction.UI)) : null;
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.UI)) : null;
+         }
+         object persistItem extends JCheckBoxMenuItem {
+            text = "Persist Code";
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Persist)) : null;
          }
          object styleItem extends JCheckBoxMenuItem {
             text = "Style Settings";
-            selected =: selected ? editorModel.changeCodeFunctions(EnumSet.of(CodeFunction.Style)) : null;
-         }
-         object businessItem extends JCheckBoxMenuItem {
-            text = "Domain Model";
-            selected =: selected ? editorModel.changeCodeFunctions(EnumSet.of(CodeFunction.Model)) : null;
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Style)) : null;
          }
          object adminItem extends JCheckBoxMenuItem {
             text = "Admin Settings";
-            selected =: selected ? editorModel.changeCodeFunctions(EnumSet.of(CodeFunction.Admin)) : null;
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Admin)) : null;
+         }
+         object frameworkItem extends JCheckBoxMenuItem {
+            text = "Framework Code";
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Framework)) : null;
+         }
+         object deployItem extends JCheckBoxMenuItem {
+            text = "Admin Settings";
+            selected =: selected ? editorModel.changeCodeTypes(EnumSet.of(CodeType.Deploy)) : null;
          }
          object showAllGroup extends ButtonGroup {
-            buttons = {showAllItem, programItem, uiItem, styleItem, businessItem, adminItem};
+            buttons = {showAllItem, modelItem, programItem, uiItem, persistItem, styleItem, adminItem, frameworkItem, deployItem};
          }
          object sep2 extends JSeparator {
          }

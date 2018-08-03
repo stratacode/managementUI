@@ -39,7 +39,7 @@ TypeTree {
    }
 
    void refreshTree() {
-      if (treeModel.codeTypes == null || treeModel.codeFunctions == null)
+      if (treeModel.codeTypes == null)
          return;
 
       if (rootDirEnt == null) {
@@ -72,7 +72,7 @@ TypeTree {
       if (rootNode.children.size() == 0) {
       /*
        * The layer tree nodes get populated on the server
-         if (editorModel.codeFunctions.size() == CodeFunction.allSet.size() && editorModel.codeTypes.size() == CodeType.allSet.size())
+         if (editorModel.codeTypes.size() == CodeType.allSet.size())
             typeEmptyCommentNode.value = "<No types>";
          else
             typeEmptyCommentNode.value = "<No matching types>";

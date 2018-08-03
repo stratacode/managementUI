@@ -10,9 +10,6 @@ import sc.layer.SrcEntry;
 import sc.layer.Layer;
 import sc.layer.LayeredSystem;
 
-import sc.layer.CodeType;
-import sc.layer.CodeFunction;
-
 import sc.type.CTypeUtil;
 
 import sc.util.LinkedHashMap;
@@ -39,8 +36,7 @@ import sc.lang.EditorContext;
 @sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
 public editor.model extends util, gui.util.core, sys.layeredSystem {
    //defaultSyncMode = sc.obj.SyncMode.Automatic;
-   codeType = sc.layer.CodeType.Declarative;
-   codeFunction = sc.layer.CodeFunction.Model;
+   codeType = CodeType.Model;
 
    // This layer depends on both JS and Java but we do not want extending layers to pick up 
    // these dependencies

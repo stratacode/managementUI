@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 ByLayerTypeTree {
    void refreshTree() {
-      if (treeModel.codeTypes == null || treeModel.codeFunctions == null)
+      if (treeModel.codeTypes == null)
          return;
 
       boolean needsOpenRoot = false;
@@ -42,7 +42,7 @@ ByLayerTypeTree {
       updatePackageContents(rootDirEnt, rootTreeNode, rootPathIndex, new TreePath(rootTreeNode));
 
       if (rootTreeNode.childCount == 0) {
-         if (editorModel.codeFunctions.size()== CodeFunction.allSet.size() && editorModel.codeTypes.size()== CodeType.allSet.size())
+         if (editorModel.codeTypes.size()== CodeType.allSet.size())
             emptyCommentNode.value = "<No layers>";
          else
             emptyCommentNode.value = "<No matching layers>";

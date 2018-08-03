@@ -1,8 +1,7 @@
 package sc.editor;
 
 public editor.modelImpl extends model, sys.layeredSystem {
-   codeType = sc.layer.CodeType.Application;
-   codeFunction = sc.layer.CodeFunction.Program;
+   codeType = CodeType.Application;
 
    liveDynamicTypes = layeredSystem.options.editEditor;
 

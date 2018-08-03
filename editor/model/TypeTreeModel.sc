@@ -18,7 +18,6 @@ import sc.lang.java.ModelUtil;
 import sc.lang.InstanceWrapper;
 
 import sc.layer.CodeType;
-import sc.layer.CodeFunction;
 
 import sc.dyn.DynUtil;
 
@@ -30,7 +29,6 @@ class TypeTreeModel {
    LayeredSystem system;
 
    ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
-   ArrayList<CodeFunction> codeFunctions :=: editorModel.codeFunctions;
 
    // Adds to the set of layers you include in the index.  These will be in active layers.
    String[] specifiedLayerNames;
@@ -74,7 +72,6 @@ class TypeTreeModel {
 
    // Rules controlling when to refresh.  
    codeTypes =: refresh();
-   codeFunctions =: refresh();
 
    includeInstances =: refresh();
 

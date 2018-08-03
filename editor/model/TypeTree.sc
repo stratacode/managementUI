@@ -18,7 +18,6 @@ import sc.lang.java.ModelUtil;
 import sc.lang.InstanceWrapper;
 
 import sc.layer.CodeType;
-import sc.layer.CodeFunction;
 
 import sc.dyn.DynUtil;
 
@@ -199,7 +198,6 @@ class TypeTree {
       }
 
       ArrayList<CodeType> entCodeTypes; // Which types and functions is this ent visible?
-      ArrayList<CodeFunction> entCodeFunctions;
 
       // The value of getTypeDeclaration, once it's been fetched
       Object cachedTypeDeclaration;
@@ -327,7 +325,7 @@ class TypeTree {
              return true;
 
           // This is a per-layer type so only show it if the layer matches
-          if (layer != null && !layer.matchesFilter(treeModel.codeTypes, treeModel.codeFunctions))
+          if (layer != null && !layer.matchesFilter(treeModel.codeTypes))
              return false;
 
           if (srcTypeName != null) {
@@ -417,17 +415,6 @@ class TypeTree {
             boolean vis = false;
             for (int i = 0; i < entCodeTypes.size(); i++) {
                if (treeModel.codeTypes.contains(entCodeTypes.get(i))) {
-                  vis = true;
-                  break;
-               }
-            }
-            if (!vis)
-               return false;
-         }
-         if (entCodeFunctions != null && treeModel.codeFunctions != null) {
-            boolean vis = false;
-            for (int i = 0; i < entCodeFunctions.size(); i++) {
-               if (treeModel.codeFunctions.contains(entCodeFunctions.get(i))) {
                   vis = true;
                   break;
                }

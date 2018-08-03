@@ -1,5 +1,4 @@
 import sc.layer.CodeType;
-import sc.layer.CodeFunction;
 
 import sc.obj.Sync;
 import sc.obj.SyncMode;

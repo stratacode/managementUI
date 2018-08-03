@@ -40,7 +40,6 @@
          <ul id="viewMenu">
             <%! 
                 ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
-                ArrayList<CodeFunction> codeFunctions :=: editorModel.codeFunctions;
             %>
             <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""' 
                    clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
@@ -48,19 +47,6 @@
                    clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Application, CodeType.Declarative))">Hide Framework Code</a></li>
             <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""' 
                    clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Declarative))">Show Declarative Only</a></li>
-            <li><hr></li>
-            <li><a class=':= codeFunctions.size() != 1 ? "checkedMenuItem" : ""' 
-                   clickEvent="=: editorModel.changeCodeFunctions(CodeFunction.allSet)">Show All Functions</a></li>
-            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Program) ? "checkedMenuItem" : ""' 
-                   clickEvent="=: changeCodeFunction(CodeFunction.Program)">Application Code</a></li>
-            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.UI) ? "checkedMenuItem" : ""'
-                   clickEvent="=: changeCodeFunction(CodeFunction.UI)">UI Code</a></li>
-            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Style) ? "checkedMenuItem" : ""'
-                   clickEvent="=: changeCodeFunction(CodeFunction.Style)">Style Settings</a></li>
-            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Model) ? "checkedMenuItem" : ""'
-                   clickEvent="=: changeCodeFunction(CodeFunction.Model)">Domain Model</a></li>
-            <li><a class=':= isCodeFunction(codeFunctions, CodeFunction.Admin) ? "checkedMenuItem" : ""'
-                   clickEvent="=: changeCodeFunction(CodeFunction.Admin)">Admin Settings</a></li>
             <li><hr></li>
             <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
             <li><a class=':= editorModel.debugHTMLEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugHTMLEnabled()">Trace HTML</a></li>

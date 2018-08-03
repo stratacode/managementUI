@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 ByLayerTypeTree {
    void refreshTree() {
-      if (treeModel.codeTypes == null || treeModel.codeFunctions == null)
+      if (treeModel.codeTypes == null)
          return;
 
       if (rootDirEnt == null) {
@@ -29,7 +29,7 @@ ByLayerTypeTree {
 
       if (rootTreeNode.children.size() == 0) {
       /*
-         if (editorModel.codeFunctions.size()== CodeFunction.allSet.size() && editorModel.codeTypes.size()== CodeType.allSet.size())
+         if (editorModel.codeTypes.size()== CodeType.allSet.size())
             layerEmptyCommentNode.value = "<No layers>";
          else
             layerEmptyCommentNode.value = "<No matching layers>";

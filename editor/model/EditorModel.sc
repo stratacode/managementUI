@@ -7,13 +7,15 @@ import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.InstanceWrapper;
 import sc.lang.java.ModelUtil;
 
+import sc.layer.CodeType;
+
 /** 
    The main view model object for viewing and editing of the program model or instances.  It exposes
    the current selection and provides access to the currently selected property, types and layers. 
    */
 @sc.obj.Component
 class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
-   /** Specifies the current list of types for the model */
+   /** Specifies the current LIST of types for the model */
    String[] typeNames = new String[0];
 
    List<InstanceWrapper> selectedInstances = null;
@@ -121,8 +123,6 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    ArrayList<CodeType> codeTypes = new ArrayList(CodeType.allSet);
 
-   ArrayList<CodeFunction> codeFunctions = new ArrayList(EnumSet.allOf(CodeFunction.class));
-
    EditorContext ctx;
 
    boolean triggeredByUndo; // When a type change occurs because of an undo operation we do not want to record that op in the redo list again.
@@ -135,19 +135,6 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    void init() {
       SyncManager.initStandardTypes();
       DynUtil.addDynListener(this);
-   }
-
-   void changeCodeFunctions(EnumSet<CodeFunction> cfs) {
-      codeFunctions = new ArrayList(cfs);
-   }
-
-   void updateCodeFunction(CodeFunction cf, boolean add) {
-      if (add) {
-         if (!codeFunctions.contains(cf))
-            codeFunctions.add(cf);
-      }
-      else
-         codeFunctions.remove(cf);
    }
 
    boolean isTypeNameSelected(String typeName) {
@@ -420,5 +407,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       Object instType = DynUtil.getType(inst);
       instType = ModelUtil.resolveSrcTypeDeclaration(system, instType);
       return instType;
+   }
+
+   void changeCodeTypes(EnumSet<CodeType> newSet) {
+      codeTypes = new ArrayList<CodeType>(newSet);
    }
 }

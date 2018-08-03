@@ -35,8 +35,6 @@ EditorModel {
    mergeLayers =: invalidateModel();
    inherit =: invalidateModel();
 
-   codeFunctions =: invalidateModel();
-
    /** Set this to true so the command line interpreter and UI do not share the same current type, etc. */
    boolean separateContext = false;
 
@@ -134,7 +132,7 @@ EditorModel {
          }
 
          // Don't try to preserve the current layer when it goes from visible to invisible
-         if (currentLayer != null && !currentLayer.matchesFilter(codeTypes, codeFunctions))
+         if (currentLayer != null && !currentLayer.matchesFilter(codeTypes))
             currentLayer = null;
 
          // Pick the first visible layer in the type... if none are visible, then skip this type
@@ -142,7 +140,7 @@ EditorModel {
             if (type instanceof BodyTypeDeclaration) {
                BodyTypeDeclaration btd = (BodyTypeDeclaration) type;
                Layer typeLayer = btd.layer;
-               while (typeLayer != null && !typeLayer.matchesFilter(codeTypes, codeFunctions)) {
+               while (typeLayer != null && !typeLayer.matchesFilter(codeTypes)) {
                   btd = btd.getModifiedType();
                   if (btd == null)
                      break;
@@ -329,7 +327,7 @@ EditorModel {
       boolean isTypeLayer = true;
 
       // When we filter a layer, we remove it from the allLayers attribute as well as not showing any types from it.
-      if (layer != null && !layer.matchesFilter(codeTypes, codeFunctions))
+      if (layer != null && !layer.matchesFilter(codeTypes))
          return;
 
       // Don't show this layer if we have a currentLayer set and depending on the "mergeLayers" flag we should or not

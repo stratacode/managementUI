@@ -97,7 +97,6 @@ TypeTree {
                if (layer != null) {
                   // We already pull these out of the layer so no need to set them here.  They are used in TypeIsVisible which is not used for layers anyway.
                   //entCodeTypes = new ArrayList<CodeType>(Collections.singletonList(layer.codeType));
-                  //entCodeFunctions = new ArrayList<CodeFunction>(Collections.singletonList(layer.codeFunction));
                   newIcon = findIcon();
                   if (newIcon != null && newIcon != icon)
                      icon = newIcon;
@@ -137,14 +136,12 @@ TypeTree {
             // Only set these for nodes with types.
             if (entCodeTypes == null) {
                entCodeTypes = new ArrayList<CodeType>();
-               entCodeFunctions = new ArrayList<CodeFunction>();
                if (isTypeTree() || layer == null) {
-                   ModelUtil.getFiltersForType(typeDecl, entCodeTypes, entCodeFunctions, isTypeTree());
+                   ModelUtil.getFiltersForType(typeDecl, entCodeTypes, isTypeTree());
                }
                // For typeDir ents, we don't want the most specific layer of the type only the layer associated with the directory
                else {
                   entCodeTypes.add(layer.codeType);
-                  entCodeFunctions.add(layer.codeFunction);
                }
             }
          }
@@ -238,13 +235,11 @@ TypeTree {
 
          // Accumulate the entCodeTypes and Functions from all child nodes so that we know whether or not to
          // show a DirEnt even when it's subDirs and entries are not populated on the client.
-         if (entCodeTypes == null || entCodeFunctions == null) {
+         if (entCodeTypes == null) {
             if (childEnts != null) {
                entCodeTypes = new ArrayList<CodeType>();
-               entCodeFunctions = new ArrayList<CodeFunction>();
                for (TreeEnt childEnt:childEnts.values()) {
                   addCodeTypes(childEnt.entCodeTypes, entCodeTypes);
-                  addCodeFunctions(childEnt.entCodeFunctions, entCodeFunctions);
                }
             }
          }
@@ -257,16 +252,6 @@ TypeTree {
             CodeType ct = srcTypes.get(i);
             if (!dstTypes.contains(ct))
                dstTypes.add(ct);
-         }
-      }
-
-      private void addCodeFunctions(ArrayList<CodeFunction> src, ArrayList<CodeFunction> dst) {
-         if (src == null)
-            return;
-         for (int i = 0; i < src.size(); i++) {
-            CodeFunction s = src.get(i);
-            if (!dst.contains(s))
-               dst.add(s);
          }
       }
    }

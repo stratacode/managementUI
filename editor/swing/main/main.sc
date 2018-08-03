@@ -5,6 +5,5 @@ public editor.swing.main extends editor.swing.style, editor.swing.rtext {
    hidden = !layeredSystem.options.editEditor;  
    liveDynamicTypes = layeredSystem.options.editEditor; 
 
-   codeType = sc.layer.CodeType.Declarative;
-   codeFunction = sc.layer.CodeFunction.Program;
+   codeType = CodeType.Application;
 }
