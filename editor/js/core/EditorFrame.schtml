@@ -44,9 +44,9 @@
             <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""' 
                    clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
             <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""' 
-                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Application, CodeType.Declarative))">Hide Framework Code</a></li>
+                   clickEvent="=: codeTypes = new ArrayList(CodeType.nonFrameworkSet)">Hide Framework Code</a></li>
             <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""' 
-                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Declarative))">Show Declarative Only</a></li>
+                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Model))">Show Declarative Only</a></li>
             <li><hr></li>
             <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
             <li><a class=':= editorModel.debugHTMLEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugHTMLEnabled()">Trace HTML</a></li>
