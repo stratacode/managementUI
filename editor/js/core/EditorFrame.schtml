@@ -1,20 +1,20 @@
 <div class="editorFrame">
 
-   <%! 
-       int windowState :=: editorModel.windowState; 
-       windowState =: menuStyle.windowState;
-       // Once we know our actual width in pixels, tell the stylesheet so it can use it to tune up the styling
-       innerWidth =: menuStyle.editorFrameWidth;
-       int clearedErrorCount = 0;
-   %>
+<%!
+   int windowState :=: editorModel.windowState;
+   windowState =: menuStyle.windowState;
+   // Once we know our actual width in pixels, tell the stylesheet so it can use it to tune up the styling
+   innerWidth =: menuStyle.editorFrameWidth;
+   int clearedErrorCount = 0;
+%>
 
    <a clickEvent="=: clearedErrorCount = Window.window.errorCount">
-      <img class="logoImage" 
+      <img class="logoImage"
            style=':= sc.sync.SyncManager.defaultSyncManager.numSendsInProgress == 0 && sc.sync.SyncDestination.defaultDestination.sendingSync ? "opacity: 1;" : "opacity: 0.5;"'
            src=':= clearedErrorCount == Window.window.errorCount ? "/images/scLogo.png" : "/images/scLogoError.png"'/><img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/>
    </a>
    <ul id="navMenu" visible=":= windowState != 0">
-      <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0' 
+      <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0'
                 alt='Iconify editor' tipMinWidth="8em" size="= 12"/></li>
       <li><a class="level1Menu" href="#">File</a>
          <ul id="fileMenu">
@@ -38,14 +38,14 @@
 
       <li><a href="#" class="level1Menu">View</a>
          <ul id="viewMenu">
-            <%! 
-                ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
-            %>
-            <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""' 
+         <%!
+            ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
+         %>
+            <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""'
                    clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
-            <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""' 
+            <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""'
                    clickEvent="=: codeTypes = new ArrayList(CodeType.nonFrameworkSet)">Hide Framework Code</a></li>
-            <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""' 
+            <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""'
                    clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Model))">Show Declarative Only</a></li>
             <li><hr></li>
             <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
@@ -55,7 +55,7 @@
             <li><a clickEvent="=: sc.sync.SyncManager.printAllSyncInsts()">Print Sync</a></li>
          </ul>
       </li>
-      <li><span id="maximizeButton" extends="MenubarButton" icon=':= windowState == 2 ? "/images/minus.png" : "/images/add.png"' 
+      <li><span id="maximizeButton" extends="MenubarButton" icon=':= windowState == 2 ? "/images/minus.png" : "/images/add.png"'
                 clickEvent='=: windowState = windowState == 2 ? 1 : 2'
                 alt='Maximize or restore editor' tipMinWidth="10em"/></li>
    </ul>
