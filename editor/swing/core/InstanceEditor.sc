@@ -52,9 +52,6 @@ InstanceEditor {
       boolean refreshList() {
          int size = DynUtil.getArrayLength(repeat);
 
-         if ((numRows == 0 || numCols == 0) && size > 0)
-            System.out.println("***");
-
          boolean gridChanged = false;
          if (oldNumRows != numRows || oldNumCols != numCols) {
             gridChanged = true;
@@ -85,8 +82,6 @@ InstanceEditor {
       }
 
       private void updateCell(IElementEditor ed, int ix) {
-         if (numCols == 0)
-            System.out.println("***");
          ed.row = ix / numCols;
          ed.col = ix % numCols;
          if (ed.row != 0)
