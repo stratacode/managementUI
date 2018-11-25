@@ -12,7 +12,7 @@
 </head>
 
 <body>
-   <!-- Using orderValue="1.0" puts this tag after other tags in body (orderValue = 0 by default -->
+   <!-- Using orderValue="1.0" puts this tag after other tags in body (orderValue = 0 is the default) -->
    <div id="editorMixin" extends="sc.editor.EditorFrame" orderValue="1.0"/>
 </body>
 

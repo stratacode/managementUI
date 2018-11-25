@@ -3,7 +3,7 @@
 <%!
    int windowState :=: editorModel.windowState;
    windowState =: menuStyle.windowState;
-   // Once we know our actual width in pixels, tell the stylesheet so it can use it to tune up the styling
+   // Once we know the browser window's width in pixels, update the stylesheet's editorFrameWidth so it adjust the styling
    innerWidth =: menuStyle.editorFrameWidth;
    int clearedErrorCount = 0;
 %>
