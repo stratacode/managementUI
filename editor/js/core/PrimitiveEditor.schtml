@@ -1,1 +1,8 @@
-<div abstract="true"/>
+<div abstract="true"><%!
+   public void setElemToEdit(Object v) {
+      setRepeatVar(v);
+   }
+   public Object getElementToEdit() {
+      return getRepeatVar();
+   }
+%></div>

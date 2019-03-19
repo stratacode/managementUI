@@ -68,6 +68,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
       propC = elem;
+      // setElemToEdit(elem); TODO - do we need this call?
       this.listIndex = ix;
       updateComputedValues();
    }

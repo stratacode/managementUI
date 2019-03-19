@@ -10,11 +10,14 @@ interface IElementEditor {
 
    void updateEditor(Object elem, Object prop, Object type, Object inst, int ix);
 
-   void setRepeatVar(Object val);
+   /** This is the property, type, etc. for this editor to edit */
+   void setElemToEdit(Object elem);
 
+   /** It's position in the parent list */
    void setRepeatIndex(int ix);
    int getRepeatIndex();
 
+   /** If we are editing a list, the list index */
    public void setListIndex(int ix);
    public int getListIndex();
 

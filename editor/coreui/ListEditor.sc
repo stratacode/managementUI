@@ -102,7 +102,7 @@ class ListEditor extends InstanceEditor {
       }
       else {
          IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx);
-         newEditor.setRepeatVar(compType);
+         newEditor.setElemToEdit(compType);
          newEditor.setRepeatIndex(ix);
          return newEditor;
       }
