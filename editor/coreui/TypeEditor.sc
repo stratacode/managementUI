@@ -1,7 +1,10 @@
+import java.util.Arrays;
 
 @Component
 abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseListener {
+   @sc.obj.GetSet
    FormView parentView;  // The root view for this editor
+   @sc.obj.GetSet
    TypeEditor parentEditor; // The parent editor if this editor is parent of a hierarchy.
    InstanceEditor formEditor; // If the parent is an instance editor
    Object parentProperty;  // If this editor is defined from a property in the parent editor - otherwise, it's null
@@ -306,6 +309,12 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          }
       }
       return editorType;
+   }
+
+   Object convertEditorInst(Object inst) {
+      if (inst instanceof Object[])
+         return new ArrayList<Object>(Arrays.asList((Object[])inst));
+      return inst;
    }
 
    Object getEditorClass(String editorType, String displayMode) {

@@ -89,6 +89,8 @@ class ListEditor extends InstanceEditor {
       Object compType = DynUtil.getType(listVal);
       compType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, compType);
 
+      listVal = convertEditorInst(listVal);
+
       String editorType = getEditorType(parentProperty, compType, listVal, true);
       Object editorClass = getEditorClass(editorType, displayMode);
 
@@ -96,7 +98,7 @@ class ListEditor extends InstanceEditor {
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(compType, null, compType, listVal, listIx);
+         oldEditor.updateEditor(null, null, compType, listVal, listIx);
          oldEditor.setListIndex(listIx);
          return oldTag;
       }

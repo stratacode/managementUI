@@ -1,0 +1,16 @@
+<div id="TypeEditor">
+   <%!
+      void setParentView(FormView fv) {
+         this.parentView = fv;
+         if (this.parentNode == null)
+            setParentNode(fv);
+      }
+
+      void setParentEditor(TypeEditor te) {
+         this.parentEditor = te;
+         if (te != null)
+            setParentNode(te);
+      }
+       // fields, methods, inner classes etc defined in this tag object
+   %>
+</div>

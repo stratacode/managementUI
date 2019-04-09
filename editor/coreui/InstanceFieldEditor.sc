@@ -55,6 +55,8 @@ abstract class InstanceFieldEditor extends InstanceEditor {
          propType = null;
       }
 
+      propInst = convertEditorInst(propInst);
+
       String editorType = getEditorType(prop, propType, propInst, instanceMode);
       Object editorClass = getEditorClass(editorType, displayMode);
 
