@@ -226,7 +226,7 @@ TypeTree {
       void processEntry() {
          processTypeInfo();
 
-         if (childEnts != null) {
+        if (childEnts != null) {
             Collections.sort(childList);
             for (TreeEnt childEnt:childEnts.values()) {
                childEnt.processEntry();

@@ -9,7 +9,7 @@ PrimitiveEditor extends ComponentGroup {
    int row, col;
 
    @Bindable
-   IElementEditor elemToEdit;
+   Object elemToEdit;
 
    @Bindable
    int repeatIndex;

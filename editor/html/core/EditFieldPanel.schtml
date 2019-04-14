@@ -12,7 +12,7 @@
        <input id="inputField"/>
    </span>
 
-   <img visible=":= currentIcon != null" src=":= currentIcon.path" style="align-self: baseline"/>
+   <img visible=":= currentIcon != null" src=":= currentIcon.path" style="align-self: baseline; padding-right: 2px"/>
    <span visible=":= editorModel.currentProperty != null" style="flex-shrink: 0">
        <%= currentProperty == null ? "<no property selected>" : editorModel.importedPropertyType + " " + ModelUtil.getPropertyName(currentProperty) %>
    </span>

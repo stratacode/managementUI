@@ -79,8 +79,11 @@ EditorModel {
 
       modelValidating = true;
 
+      //System.out.println("*** in refreshModel: " + StringUtil.arrayToString(oldTypeNames) + " -> " + StringUtil.arrayToString(typeNames) + " on: " + sc.type.PTypeUtil.getThreadName());
+
       if (!triggeredByUndo) {
          boolean typesChanged = !StringUtil.arraysEqual(oldTypeNames,typeNames);
+
 
          if (oldTypeNames != null && typesChanged) {
             ctx.addOp(new IUndoOp() {
@@ -270,7 +273,7 @@ EditorModel {
             }
          }
       }
-      visibleTypes = newVisibleTypes;
+      setVisibleTypesNoEvent(newVisibleTypes);
 
       // Do this at the end in case any of our changes trigger the model
       modelsValid = true;
@@ -279,8 +282,19 @@ EditorModel {
 
       updateCurrentJavaModel();
 
-      // Send an event so people can listen on this value and update dependent data structures
+      //System.out.println("*** finished in - refreshModel: " + StringUtil.arrayToString(oldTypeNames) + " -> " + StringUtil.arrayToString(typeNames) + " currentType: " + currentType + " thread: " + sc.type.PTypeUtil.getThreadName());
+
+      // Send an event so people can listen on this value and update dependent data structures, but wait until we've
+      // updated the model
+      Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, "visibleTypes");
       Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
+
+      //System.out.println("*** finished sending events in - refreshModel: " + StringUtil.arrayToString(oldTypeNames) + " -> " + StringUtil.arrayToString(typeNames) + " currentType: " + currentType + " thread: " + sc.type.PTypeUtil.getThreadName());
+   }
+
+   @sc.obj.ManualGetSet
+   private void setVisibleTypesNoEvent(ArrayList<Object> visTypes) {
+      visibleTypes = visTypes;
    }
 
    private void addInterfaceLayerTypes(BodyTypeDeclaration rootTD, ArrayList<Layer> newFilteredLayers, ArrayList<Layer> newTypeLayers, List<Object> inheritedTypes) {

@@ -80,7 +80,7 @@ body {
 
 #navMenu {
    padding-left: <%= leftPad %>px;
-   padding-left: 44px;
+   padding-left: 38px;
    padding-bottom: 0px;
    padding-top: 3px;
    list-style: none;
@@ -508,7 +508,7 @@ a.tooltip:hover span {
 
 .logoImage {
    position: absolute;
-   <%= windowState == 0 ? "padding-left: 5px; top: 6px;" : "padding-left: 1px; top: auto;" %>
+   <%= windowState == 0 ? "padding-left: 12px; top: 7px;" : "padding-left: 8px; top: auto;" %>
 }
 
 .rowContainer, .rowHeader {

@@ -1,3 +1,5 @@
+<%@ import sc.sync.SyncManager;
+    import sc.sync.SyncDestination; %>
 <div class="editorFrame">
 
 <%!
@@ -6,12 +8,14 @@
    // Once we know the browser window's width in pixels, update the stylesheet's editorFrameWidth so it adjust the styling
    innerWidth =: menuStyle.editorFrameWidth;
    int clearedErrorCount = 0;
+   SyncDestination syncDest = SyncManager.defaultSyncManager.syncDestination;
 %>
 
    <a clickEvent="=: clearedErrorCount = Window.window.errorCount">
       <img class="logoImage"
-           style=':= sc.sync.SyncManager.defaultSyncManager.numSendsInProgress == 0 && sc.sync.SyncDestination.defaultDestination.sendingSync ? "opacity: 1;" : "opacity: 0.5;"'
-           src=':= clearedErrorCount == Window.window.errorCount ? "/images/scLogo.png" : "/images/scLogoError.png"'/><img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/>
+           style=':= SyncManager.defaultSyncManager.numSendsInProgress == 0 ? "opacity: 1;" : "opacity: 0.5;"'
+           src=':= syncDest.client ? clearedErrorCount == Window.window.errorCount ? syncDest.connected ? "/images/scLogo.png" : "/images/scLogoInactive.png" : "/images/scLogoError.png" : "/images/scLogo.png"'/>
+      <img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/><img src="/images/scLogoInactive.png" width="1" height="1" style="position:absolute"/>
    </a>
    <ul id="navMenu" visible=":= windowState != 0">
       <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0'

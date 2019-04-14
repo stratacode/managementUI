@@ -309,7 +309,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          lastSelectedTypeNames = selectedTypeNames;
          lastCreateMode = typeTreeModel.createMode;
          lastPackageNode = currentPackageNode;
-         lastSelectedInstances = new ArrayList<InstanceWrapper>(selectedInstances);
+         lastSelectedInstances = selectedInstances == null ? null : new ArrayList<InstanceWrapper>(selectedInstances);
 
          List<TreePath> paths = new ArrayList<TreePath>(selectedTypeNames.length);
 
