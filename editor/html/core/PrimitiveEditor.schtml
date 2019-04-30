@@ -2,7 +2,7 @@
    public void setElemToEdit(Object v) {
       setRepeatVar(v);
    }
-   public Object getElementToEdit() {
+   public Object getElemToEdit() {
       return getRepeatVar();
    }
 %></div>

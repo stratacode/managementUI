@@ -15,12 +15,6 @@
           return res;
        }
 
-       void invalidateModel() {
-          if (childViews != null) {
-             for (IElementEditor child:childViews)
-                child.invalidateEditor();
-          }
-       }
    %>
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
       <%! Element createElement(Object value, int ix, Element oldTag) {

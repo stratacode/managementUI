@@ -12,6 +12,7 @@ interface IElementEditor {
 
    /** This is the property, type, etc. for this editor to edit */
    void setElemToEdit(Object elem);
+   Object getElemToEdit();
 
    /** It's position in the parent list */
    void setRepeatIndex(int ix);

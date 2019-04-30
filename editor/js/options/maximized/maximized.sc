@@ -1,3 +1,3 @@
-public editor.js.options.maximized extends editor.js.core {
+public editor.js.options.maximized extends editor.html.core {
 
 }

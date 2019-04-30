@@ -71,7 +71,7 @@
       </ul>
 
       <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: topTreePercent = splitPercent" 
-           maxPercent=":= menuStyle.treePanePer * 2"/>
+           maxPercent=":= menuStyle.treePanePer * 2" parentHeight=":= trees.offsetHeight" prevWindowHeight=":= typeList.offsetHeight"/>
 
       <ul id="layerList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
          <li id="layerTree" extends="BaseTypeTree" byLayer="true" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'

@@ -25,6 +25,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    Layer classViewLayer = editorModel.currentLayer;  // Gets set to the current layer when we are created
 
    Layer oldLayer = null; // layer the last time were updated
+   boolean oldMergeLayers, oldInherit;
 
    // Updatable on client and server so no need to sync it explicitly
    @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
@@ -183,6 +184,8 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          }
          properties = visProps.toArray();
          oldLayer = currentLayer;
+         oldMergeLayers = editorModel.mergeLayers;
+         oldInherit = editorModel.inherit;
       }
       else {
          extTypeName = null;
@@ -338,7 +341,10 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
    // If the layer has changed since this editor was last rebuilt, it might need to be rebuilt because the properties have changed
    void invalidateEditor() {
-      if (oldLayer != null && editorModel != null && oldLayer != editorModel.currentLayer) {
+      if (editorModel != null &&
+          (oldLayer != null && oldLayer != editorModel.currentLayer) ||
+          (oldMergeLayers != editorModel.mergeLayers) ||
+          (oldInherit != editorModel.inherit)) {
          clearChildren();
          typeChanged();
          refreshChildren();

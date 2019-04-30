@@ -57,6 +57,10 @@ FormView {
       return childViews;
    }
 
+   void invalidateModel() {
+      super.invalidateModel();
+   }
+
    contentPanel {
       int maxChildWidth, maxChildHeight;
       preferredSize := SwingUtil.dimension(maxChildWidth, maxChildHeight);
@@ -90,6 +94,13 @@ FormView {
             updateCell(editor, ix);
 
             return editor;
+         }
+         
+         public Object getRepeatVar(FormEditor component) {
+            return component.getElemToEdit();
+         }
+
+         public void setRepeatIndex(FormEditor component, int ix) {
          }
 
          private void updateCell(FormEditor fed, int ix) {

@@ -1,6 +1,15 @@
 InstanceEditor {
    void validateChildLists() {}
 
+   void clearChildren() {
+      if (childViews == null)
+         return;
+      for (int i = childViews.size() - 1; i >= 0; i--) {
+         SwingUtil.removeChild(this, childViews.get(i));
+      }
+      super.clearChildren();
+   }
+
    public void validateChildList(int startIx, List<IElementEditor> repeatComponents, boolean removeEnd) {
       int curIx = startIx;
       for (int i = 0; i < repeatComponents.size(); i++) {
@@ -47,6 +56,13 @@ InstanceEditor {
          updateCell(res, ix);
 
          return res;
+      }
+
+      public Object getRepeatVar(IElementEditor component) {
+         return component.getElemToEdit();
+      }
+
+      public void setRepeatIndex(IElementEditor component, int ix) {
       }
 
       boolean refreshList() {

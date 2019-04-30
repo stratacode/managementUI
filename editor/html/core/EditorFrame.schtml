@@ -6,7 +6,7 @@
    int windowState :=: editorModel.windowState;
    windowState =: menuStyle.windowState;
    // Once we know the browser window's width in pixels, update the stylesheet's editorFrameWidth so it adjust the styling
-   innerWidth =: menuStyle.editorFrameWidth;
+   clientWidth =: menuStyle.editorFrameWidth;
    int clearedErrorCount = 0;
    SyncDestination syncDest = SyncManager.defaultSyncManager.syncDestination;
 %>

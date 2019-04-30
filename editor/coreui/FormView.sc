@@ -46,4 +46,11 @@ class FormView extends BaseView {
          }
       }
    }
+
+   void invalidateModel() {
+      if (childViews != null) {
+         for (IElementEditor child:childViews)
+            child.invalidateEditor();
+      }
+   }
 }

@@ -15,8 +15,11 @@ abstract class BaseView {
    @sc.obj.Sync
    boolean viewVisible;
 
-   // Seems redundant to updating when currentJavaModel changes
-   //editorModel =: invalidateModel();
+   // Although this is somewhat redundant with currentJavaModel, if the merge/inherit flags are
+   // changed we need some way to trigger the refresh of the property list. Right now it goes through
+   // the model but it might be faster to have a separate way to just invalidate the property lists of
+   // the current type in that case.
+   editorModel =: invalidateModel();
    viewVisible =: invalidateModel();
 
    JavaModel currentJavaModel := editorModel.currentJavaModel;
