@@ -22,23 +22,19 @@ TypeTree {
          return (TreeNode) getChildAt(ix);
       }
 
-
       void removeChildAt(int ix) {
          // For some reason removing a selected node, even when there are multiple selections causes a change event
          // showing null paths.  When swapping visibility of nodes, this is a PITA.
          treeModel.ignoreSelectionEvents = true;
          try {
-            if (ent != null) {
-               TypeTree.TreeNode child = (TypeTree.TreeNode) getChildAt(ix);
-               ent.typeTree.rootTreeModel.removeNodeFromParent(child);
-            }
+            TypeTree.TreeNode child = (TypeTree.TreeNode) getChildAt(ix);
+            rootTreeModel.removeNodeFromParent(child);
          }
          finally {
             treeModel.ignoreSelectionEvents = false;
          }
       }
    }
-
 
    TreeEnt {
        // The path for this node in the tree
@@ -54,7 +50,7 @@ TypeTree {
        }
 
        void refreshChildren() {
-           updatePackageContents(this, treeNode, rootPathIndex, path);
+           updatePackageContents(this, treeNode, path);
        }
    }
 
@@ -94,7 +90,7 @@ TypeTree {
          rootTreeNode.removeChildNode(emptyCommentNode);
          needsOpenRoot = true;
       }
-      updatePackageContents(rootDirEnt, rootTreeNode, rootPathIndex, new TreePath(rootTreeNode));
+      updatePackageContents(rootDirEnt, rootTreeNode, new TreePath(rootTreeNode));
       if (rootTreeNode.getChildCount() == 0) {
          if (editorModel.codeTypes.size() == CodeType.allSet.size())
             emptyCommentNode.value = "<No types>";
@@ -114,7 +110,11 @@ TypeTree {
 
    // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name
    // to TreePath for the selection.
-   TreePath addToIndex(TreeEnt childEnt, TreeNode treeNode, Map<String,List<TreePath>> index, TreePath parent) {
+   TreePath addToPathIndex(TreeEnt childEnt, TreeNode treeNode, TreePath parent) {
+      // The type index that's part of the model layer
+      addToIndex(childEnt, treeNode);
+
+      // This is the similar swing TreePath index we maintain in parallel
       Object[] parentPaths = parent.getPath();
       int pl = parentPaths.length;
       Object[] paths = new Object[pl + 1];
@@ -125,17 +125,17 @@ TypeTree {
       String childKey = childEnt.type == EntType.Instance ? childEnt.typeName + ":" + childEnt.instance.toString() : childEnt.typeName;
 
       if (childEnt.isSelectable()) {
-         List<TreePath> l = index.get(childKey);
+         List<TreePath> l = rootPathIndex.get(childKey);
          if (l == null) {
             l = new ArrayList<TreePath>();
 
             // For Instances, use a key which is unique to that instance so when we select the instance
             // in one view, it will show up in the others
             if (childEnt.type != EntType.LayerDir)
-               index.put(childKey, l);
+               rootPathIndex.put(childKey, l);
 
             if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
-               index.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
+               rootPathIndex.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
          }
          l.add(tp);
       }
@@ -143,16 +143,15 @@ TypeTree {
       return tp;
    }
 
-   void updatePackageContents(TreeEnt ents, TreeNode treeNode,
-                              Map<String, List<TreePath>> index, TreePath parent) {
-
+   void updatePackageContents(TreeEnt ents, TreeNode treeNode, TreePath parent) {
       ents.treeNode = treeNode;
       ents.path = parent;
-      ArrayList<TreeEnt> subDirs = ents.childList;
       int pos = 0;
       int rix;
 
       ents.updateInstances();
+
+      ArrayList<TreeEnt> subDirs = ents.childList;
 
       if (subDirs != null) {
          for (TreeEnt childEnt:subDirs) {
@@ -172,8 +171,8 @@ TypeTree {
 
                ents.typeTree.rootTreeModel.insertNodeInto(childTree, treeNode, pos);
             }
-            TreePath path = addToIndex(childEnt, childTree, index, parent);
-            updatePackageContents(childEnt, childTree, index, path);
+            TreePath path = addToPathIndex(childEnt, childTree, parent);
+            updatePackageContents(childEnt, childTree, path);
             pos++;
          }
       }

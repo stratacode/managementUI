@@ -36,6 +36,8 @@ class TypeTreeModel {
    boolean createMode = false;
    boolean propertyMode = false; // when create mode is true, are we creating properties or types?
 
+   CreateMode currentCreateMode;
+   EditorPanel.ViewType viewType;
    boolean addLayerMode = false;  // Exclusive with the other two
    boolean createLayerMode = false; // When layerMode is true, are we including or creating?
    boolean layerMode := createLayerMode || addLayerMode;
@@ -49,6 +51,10 @@ class TypeTreeModel {
 
    transient boolean uiBuilt = false;
 
+   transient boolean needsUpdateSelection = false;
+
+   public final static String PKG_INDEX_PREFIX = "<pkg>:";
+
    @Constant
    ArrayList<String> includePackages;
    @Constant
@@ -57,9 +63,12 @@ class TypeTreeModel {
    //TypeTree typeTree = new TypeTree(this);
    //ByLayerTypeTree byLayerTypeTree = new ByLayerTypeTree(this);
 
+   @sc.obj.Component
    object typeTree extends TypeTree {
       treeModel = TypeTreeModel.this;
    }
+
+   @sc.obj.Component
    object byLayerTypeTree extends ByLayerTypeTree {
       treeModel = TypeTreeModel.this;
    }
@@ -78,17 +87,25 @@ class TypeTreeModel {
    // When the current type in the model changes, if we're in create mode we need to refresh to reflect the newly visible/highlighted elements.
    editorModel =: createMode || layerMode ? refresh() : null;
 
-   createMode =: selectionChanged();
-   addLayerMode =: selectionChanged();
-   createLayerMode =: selectionChanged();
-   propertyMode =: refresh();
+   createMode =: onSelectionChanged();
+   addLayerMode =: onSelectionChanged();
+   createLayerMode =: onSelectionChanged();
+   currentCreateMode =: onSelectionChanged();
 
    // Need to refresh when any new instances are created.  TODO performance: we could reduce the scope of the refresh if necessary here since this might happen a lot in some applications
    int refreshInstancesCt := editorModel.refreshInstancesCt;
    refreshInstancesCt =: refreshInstances();
 
-   void selectionChanged() {
+   void onSelectionChanged() {
       editorModel.selectionChanged++;
+      markSelectionChanged();
+   }
+
+   int selectionChanged := editorModel.selectionChanged;
+   selectionChanged =: markSelectionChanged();
+
+   void markSelectionChanged() {
+      needsUpdateSelection = true;
       refresh();
    }
 
@@ -99,11 +116,13 @@ class TypeTreeModel {
    }
 
    void refresh() {
+      if (refreshInProgress)
+         return;
       // IF we have an empty tree during initialization it resets the "open" state for the startup node
       if (rebuildFirstTime) {
          valid = false;
-         rebuild();
          rebuildFirstTime = false;
+         rebuild();
          return;
       }
       if (valid) {
@@ -127,12 +146,20 @@ class TypeTreeModel {
       if (refreshInProgress || valid)
          return;
 
+      includeInstances = !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == EditorPanel.ViewType.DataViewType;
+
       refreshInProgress = true;
       valid = true;
 
       try {
          for (TypeTree typeTree:typeTrees) {
             typeTree.refreshTree();
+         }
+
+         if (needsUpdateSelection) {
+            for (TypeTree typeTree:typeTrees) {
+               typeTree.selectionListener.updateListSelection();
+            }
          }
       }
       catch (RuntimeException exc) {
@@ -151,5 +178,9 @@ class TypeTreeModel {
 
    boolean rebuildLayerDirEnts() {
       return false;
+   }
+
+   boolean nodeExists(String typeName) {
+      return typeTree.rootTreeIndex.get(typeName) != null;
    }
 }

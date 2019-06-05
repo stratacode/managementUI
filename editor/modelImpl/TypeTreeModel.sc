@@ -50,6 +50,13 @@ TypeTreeModel {
          }
          void runtimeAdded(LayeredSystem sys) {
          }
+         /*
+         void instancedAdded(ITypeDeclaration td, Object inst) {
+            addNewInstance(td, inst);
+         }
+         void instancedRemoved(ITypeDeclaration td, Object inst) {
+         }
+         */
       });
    }
 
@@ -186,8 +193,6 @@ TypeTreeModel {
          }
       }
    }
-
-   abstract boolean nodeExists(String typeName);
 
    void removeModel(ILanguageModel m) {
       if (!uiBuilt)
@@ -356,6 +361,31 @@ TypeTreeModel {
       refresh();
    }
 
+
+   /*
+   void addNewInstance(ITypeDeclaration itd, Object inst) {
+      if (!uiBuilt || !(itd instanceof BodyTypeDeclaration))
+         return;
+
+      BodyTypeDeclaration td = (BodyTypeDeclaration) itd;
+
+      boolean needsRefresh = false;
+      if (td != null) {
+         String typeName = td.fullTypeName;
+         for (TypeTree typeTree:typeTrees) {
+            List<TypeTree.TreeNode> typeEnts = typeTree.rootTreeIndex.get(typeName);
+            if (typeEnts != null) {
+               for (TypeTree.TreeNode node:typeEnts)
+                  if (node.ent.updateInstances())
+                     needsRefresh = true;
+            }
+         }
+      }
+
+      if (needsRefresh)
+         refresh();
+   }
+   */
 
    void stop() {
       if (listener != null) {

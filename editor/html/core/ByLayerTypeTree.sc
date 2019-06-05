@@ -25,7 +25,7 @@ ByLayerTypeTree {
       if (defaultNode != null) {
          rootTreeNode.removeChildNode(emptyCommentNode);
       }
-      updatePackageContents(rootDirEnt, rootTreeNode, rootTreeIndex, true);
+      updatePackageContents(rootDirEnt, rootTreeNode, true);
 
       if (rootTreeNode.children.size() == 0) {
       /*

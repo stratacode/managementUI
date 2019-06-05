@@ -85,12 +85,13 @@ FormView {
          public FormEditor createRepeatElement(Object listElem, int ix, Object oldComp) {
             BodyTypeDeclaration currentType = (BodyTypeDeclaration) listElem;
             Object currentObj = getObjectForListElement(ix);
+            InstanceWrapper wrapper = getWrapperForListElement(ix);
             /*
             Object currentObj = ModelUtil.isObjectType(currentType) ? editorModel.system.resolveName(currentType.getFullTypeName(), false) :
                                                                       getDefaultCurrentObj(currentType);
 
              */
-            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj, ix);
+            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj, ix, wrapper);
             updateCell(editor, ix);
 
             return editor;
@@ -145,8 +146,8 @@ FormView {
          }
 
          public void validateTree() {
-            int newMaxChildWidth = 0;
-            int newMaxChildHeight = 0;
+            int newMaxChildX = 0;
+            int newMaxChildY = 0;
 
             int curIx = 0;
             for (Object elem:repeatComponents) {
@@ -173,17 +174,17 @@ FormView {
                    ((TypeEditor) elem).validateEditorTree();
                 }
                 Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
-                int newW = (int) (bounds.x + bounds.width + xpad);
-                int newH = (int) (bounds.y + bounds.height + ypad);
-                if (newW > newMaxChildWidth)
-                   newMaxChildWidth = newW;
-                if (newH > newMaxChildHeight)
-                   newMaxChildHeight = newH;
+                int newX = (int) (bounds.x + bounds.width + xpad);
+                int newY = (int) (bounds.y + bounds.height + ypad);
+                if (newX > newMaxChildX)
+                   newMaxChildX = newX;
+                if (newY > newMaxChildY)
+                   newMaxChildY = newY;
             }
-            if (maxChildWidth != newMaxChildWidth)
-               maxChildWidth = newMaxChildWidth;
-            if (maxChildHeight != newMaxChildHeight)
-               maxChildHeight = newMaxChildHeight;
+            if (maxChildWidth != newMaxChildX)
+               maxChildWidth = newMaxChildX;
+            if (maxChildHeight != newMaxChildY)
+               maxChildHeight = newMaxChildY;
 
             invalidate();
             FormView.this.invalidate();

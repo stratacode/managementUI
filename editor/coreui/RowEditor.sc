@@ -11,8 +11,8 @@ class RowEditor extends InstanceFieldEditor {
 
    boolean showHeader := listIndex == 0;
 
-   RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx) {
-      super(view, parentEditor, parentProperty, type, instance, listIx);
+   RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
+      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
    }
 
    Object getEditorClass(String editorType, String displayMode) {
@@ -38,7 +38,7 @@ class RowEditor extends InstanceFieldEditor {
       return TextCellEditor.class;
    }
 
-   void addComputedProperties(List<Object> props) {
+   void addComputedProperties(List<Object> props, Object[] allProps) {
       if (showIndex) {
          props.add(new CustomProperty("#", Integer.class, "text", listIndex, 35, null));
       }

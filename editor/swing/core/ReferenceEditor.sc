@@ -1,3 +1,3 @@
 ReferenceEditor {
-   boolean propertyInherited := EditorModel.getLayerForMember(parentProperty) != editorModel.currentLayer;
+   boolean propertyInherited := editorModel.getPropertyInherited(parentProperty,  editorModel.currentLayer);
 }

@@ -2,41 +2,43 @@ import sc.lang.java.ModelUtil;
 import sc.lang.JavaLanguage;
 import sc.util.StringUtil;
 import sc.layer.Layer;
+import java.util.Arrays;
 
 class CreatePanel extends JPanel implements EditorPanelStyle {
    EditorModel editorModel;
 
-   enum ViewMode {
-      Property, Type, Layer
-   }
-
-   ViewMode viewMode = ViewMode.Property;
-
    // Incremented each time an operation finishes
    int opComplete = 0;
 
+   CreateMode currentCreateMode :=: editorModel.currentCreateMode;
+   boolean createMode := editorModel.createMode;
+
+   createMode =: onModeChange();
+   currentCreateMode =: onModeChange();
+
    object createLabel extends JLabel {
-      text = "Add";
+      text := editorModel.pendingCreate ? (instanceEnabled ? "Create instance" : "Provide required fields for instance") :  "Add";
       location := SwingUtil.point(xpad, ypad + baseline);
       size := preferredSize;
    }
    object createTypeChoice extends JComboBox {
-      items := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null ? new String[] {"Object", "Class"/*, "Enum"*/, "Layer"} : new String[] {"Property", "Object", "Class" /*, "Array", "Enum" */, "Layer"});
+      items := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null ?
+                                       CreateMode.getNoCurrentTypeNames() : CreateMode.getAllNames());
       location := SwingUtil.point(createLabel.location.x + createLabel.size.width + xpad, ypad);
       size := preferredSize;
-      selectedItem =: (selectedItem.equals("Property") ? viewMode = ViewMode.Property : (selectedItem.equals("Layer") ? viewMode = ViewMode.Layer : viewMode = ViewMode.Type));
+      selectedItem =: currentCreateMode = CreateMode.valueOf(selectedItem);
       selectedItem =: clearErrors();
+      visible := !editorModel.pendingCreate;
    }
 
-   int beforeOfTypeWidth := (int) (createTypeChoice.location.x + createTypeChoice.size.width + xpad);
-   int afterOfTypeWidth := (int) (inLabel.size.width + beforeAfter.size.width + beforeAfterLabel.size.width);
+   JComponent preOfTypeComponent := editorModel.pendingCreate ? createLabel : createTypeChoice;
 
    // Property mode only-----------------------
    object propertyOfTypeLabel extends JLabel {
       text = "of type";
-      location := SwingUtil.point(createTypeChoice.location.x + createTypeChoice.size.width + xpad, ypad + baseline);
+      location := SwingUtil.point(preOfTypeComponent.location.x + preOfTypeComponent.size.width + xpad, ypad + baseline);
       size := preferredSize;
-      visible := viewMode == ViewMode.Property;
+      visible := currentCreateMode == CreateMode.Property || instMode;
    }
 
    int propertyStart := (int) (propertyOfTypeLabel.location.x + propertyOfTypeLabel.size.width + xpad);
@@ -45,26 +47,39 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    object propertyTypeField extends CompletionTextField {
       location := SwingUtil.point(propertyStart, ypad);
       size := SwingUtil.dimension(propertyFieldRatio * (CreatePanel.this.size.width - propertyStart - xpad), preferredSize.height);
-      visible := viewMode == ViewMode.Property;
+      visible := currentCreateMode == CreateMode.Property || instMode;
 
       text =: validateType();
 
+      userEnteredCount =: doCreate(); // Maybe only for instMode?
+
       completionProvider {
          ctx := editorModel.ctx;
+         completionType := instMode ? CompletionTypes.CreateInstanceType : CompletionTypes.ApplicationType;
       }
 
       void validateType() {
-         if (text.trim().length() == 0) {
+         String typeName = text.trim();
+         if (typeName.length() == 0) {
             clearError();
             return;
          }
          String err = ModelUtil.validateElement(JavaLanguage.getJavaLanguage().type, text, false);
          if (err != null) {
-            row1DialogError.errorField = this;
+            row1DialogError.errorComponent = this;
             row1DialogError.errorText = err;
          }
-         else
+         else {
+            if (instMode) {
+               if (!editorModel.ctx.isCreateInstType(typeName)) {
+                  row1DialogError.errorText = "No type named: " + typeName;
+                  row1DialogError.errorComponent = this;
+               }
+            }
+
+
             clearError();
+         }
       }
 
       void clearError() {
@@ -76,7 +91,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    // Obj mode only-----------------------
    object objInnerChoice extends JComboBox {
       items := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Inside", "Top level"});
-      visible := viewMode == ViewMode.Type;
+      visible := typeMode;
       location := SwingUtil.point(createTypeChoice.location.x + createTypeChoice.size.width + xpad, ypad);
       size := preferredSize;
    }
@@ -85,7 +100,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    // Layer mode only-----
    object layerModeChoice extends JComboBox {
       items := {"Include", "Create"};
-      visible := viewMode == ViewMode.Layer;
+      visible := currentCreateMode == CreateMode.Layer;
       location := SwingUtil.point(createTypeChoice.location.x + createTypeChoice.size.width + xpad, ypad);
       size := preferredSize;
    }
@@ -94,7 +109,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       text = "Dynamic";
       location := SwingUtil.point(layerModeChoice.location.x + layerModeChoice.size.width + xpad, ypad);
       size := preferredSize;
-      visible := viewMode == ViewMode.Layer;
+      visible := currentCreateMode == CreateMode.Layer;
       selected = true;
    }
 
@@ -102,7 +117,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       text = "Public";
       location := SwingUtil.point(dynamicCheck.location.x + dynamicCheck.size.width + xpad, ypad);
       size := preferredSize;
-      visible := viewMode == ViewMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
+      visible := currentCreateMode == CreateMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
       selected = true;
    }
 
@@ -110,7 +125,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       text = "Transparent";
       location := SwingUtil.point(publicCheck.location.x + publicCheck.size.width + xpad, ypad);
       size := preferredSize;
-      visible := viewMode == ViewMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
+      visible := currentCreateMode == CreateMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
       selected = false;
    }
 
@@ -129,9 +144,9 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
    // end layer mode only-----
 
-   JComponent preInComponent := viewMode == ViewMode.Property ? propertyTypeField : objInnerChoice;
+   JComponent preInComponent := currentCreateMode == CreateMode.Property ? propertyTypeField : objInnerChoice;
 
-   boolean innerType := !StringUtil.equalStrings((String)objInnerChoice.selectedItem, "Top level") && viewMode != ViewMode.Layer;
+   boolean innerType := !StringUtil.equalStrings((String)objInnerChoice.selectedItem, "Top level") && currentCreateMode != CreateMode.Layer;
 
    object inLabel extends JLabel {
       override @sc.bind.NoBindWarn
@@ -159,17 +174,18 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       override @sc.bind.NoBindWarn
       location := SwingUtil.point(preInComponent.location.x + preInComponent.size.width + xpad, ypad + baseline);
       size := preferredSize;
-      text := editorModel.currentPackage == null ? "Select a layer or type to choose where to store the type" : "Package: " + editorModel.currentPackage + (editorModel.currentLayer == null ? "" : ", Layer: " + editorModel.currentLayer.layerName);
-      visible := !innerType && viewMode != ViewMode.Layer;
+      text := editorModel.currentPackage == null ? "Select a layer or type to choose where to store the new type" : "Package: " + editorModel.currentPackage + (editorModel.currentLayer == null ? "" : ", Layer: " + editorModel.currentLayer.layerName);
+      visible := !innerType && currentCreateMode != CreateMode.Layer && currentCreateMode != CreateMode.Instance;
    }
 
    int row2y := (int)(2*ypad + beforeAfter.size.height + (row1DialogError.visible ? row1DialogError.size.height + ypad : 0));
 
    double nameFieldRatio = 0.3;
 
-   boolean addLayerMode := visible && viewMode == ViewMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Include");
-   boolean createLayerMode := visible && viewMode == ViewMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
+   boolean addLayerMode := visible && currentCreateMode == CreateMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Include");
+   boolean createLayerMode := visible && currentCreateMode == CreateMode.Layer && StringUtil.equalStrings((String) layerModeChoice.selectedItem, "Create");
    boolean layerMode := addLayerMode || createLayerMode;
+   boolean instMode := currentCreateMode == CreateMode.Instance;
 
    object row1DialogError extends ErrorLabel {
       String errorText;
@@ -188,6 +204,8 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       text := layerMode ? "Layer Name" : "Name";
       location := SwingUtil.point(xpad, row2y + baseline);
       size := preferredSize;
+
+      visible := editorModel.currentCreateMode != CreateMode.Instance;
    }
    object nameField extends JTextField {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
@@ -195,9 +213,9 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
       text =: validateName();
 
-      userEnteredCount =: viewMode == ViewMode.Property ? createProperty() : createLayerOrObject();
+      userEnteredCount =: doCreate();
 
-      visible := !layerMode;
+      visible := !layerMode && !instMode;
 
       void validateName() {
          if (text.trim().length() == 0) {
@@ -207,7 +225,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          JavaLanguage lang = JavaLanguage.getJavaLanguage();
          String err = ModelUtil.validateElement(lang.identifier, text, false);
          if (err != null) {
-             row2DialogError.errorField = this;
+             row2DialogError.errorComponent = this;
              row2DialogError.errorText = err;
          }
          else
@@ -219,11 +237,31 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       }
    }
 
+   /*
+   object instTypeChoice extends JComboBox {
+      visible := instMode && !editorModel.pendingCreate;
+      location := nameField.location;
+      size := preferredSize;
+      items := editorModel == null ? Arrays.asList(new String[] {"<no types>"}) : editorModel.ctx.createInstTypeNames;
+   }
+   */
+
    void clearErrors() {
       row1DialogError.errorText = "";
-      row1DialogError.errorField = null;
+      row1DialogError.errorComponent = null;
       row2DialogError.errorText = "";
-      row2DialogError.errorField = null;
+      row2DialogError.errorComponent = null;
+   }
+
+   void onModeChange() {
+      switch (currentCreateMode) {
+         case Property:
+         case Instance:
+            if (editorModel.currentType == null) {
+               displayCreateError("Select a type for the new " + currentCreateMode.toString().toLowerCase());
+            }
+            break;
+      }
    }
 
    int layerNameWidth := addLayerMode ? 0 : (int) (objExtendsTypeField.size.width + 3*xpad + objExtendsLabel.size.width);
@@ -235,7 +273,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
       text =: validateName();
 
-      userEnteredCount =: createLayerOrObject();
+      userEnteredCount =: doCreate();
 
       completionProvider {
          ctx := editorModel.ctx;
@@ -250,7 +288,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          JavaLanguage lang = JavaLanguage.getJavaLanguage();
          String err = ModelUtil.validateElement(lang.qualifiedIdentifier, text, false);
          if (err != null) {
-             row2DialogError.errorField = this;
+             row2DialogError.errorComponent = this;
              row2DialogError.errorText = err;
          }
          else
@@ -260,7 +298,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
    // Property mode only-----------------------
    object propertyFieldValueEditor extends FieldValueEditor {
-      visible := viewMode == ViewMode.Property;
+      visible := currentCreateMode == CreateMode.Property;
       location := SwingUtil.point((int)(nameField.location.x + nameField.size.width + xpad),  row2y);
       size := SwingUtil.dimension((int)(CreatePanel.this.size.width - (nameField.location.x + nameField.size.width + 2*xpad)), valueField.preferredSize.height);
 
@@ -282,22 +320,22 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    // End property mode only-----------------------
 
 
-   // Obj mode only-----------------------
+   // Obj/create layer modes -----------------------
    object objExtendsLabel extends JLabel {
       text = "extends";
-      visible := viewMode == ViewMode.Type || createLayerMode;
+      visible := typeMode || createLayerMode;
       location := SwingUtil.point(nameField.location.x + nameField.size.width + xpad, row2y + baseline);
       size := preferredSize;
    }
   
    object objExtendsTypeField extends CompletionTextField {
-      visible := viewMode == ViewMode.Type || createLayerMode;
+      visible := typeMode || createLayerMode;
       location := SwingUtil.point(objExtendsLabel.location.x + objExtendsLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(CreatePanel.this.size.width - (objExtendsLabel.location.x + objExtendsLabel.size.width + 2*xpad + confirmButtons.width), preferredSize.height);
 
       text =: validateType();
 
-      userEnteredCount =: createLayerOrObject();
+      userEnteredCount =: doCreate();
 
       completionProvider {
          ctx := editorModel.ctx;
@@ -310,7 +348,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          }
          String err = ModelUtil.validateElement(JavaLanguage.getJavaLanguage().type, text, false);
          if (err != null) {
-             row2DialogError.errorField = this;
+             row2DialogError.errorComponent = this;
              row2DialogError.errorText = err;
          }
          else
@@ -329,6 +367,13 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       packageTextField.text = "";
       addLayerField.text = "";
 
+      if (editorModel.pendingCreate) {
+         editorModel.cancelCreate();
+      }
+
+      row1DialogError.errorText = "";
+      row2DialogError.errorText = "";
+
       opComplete++;
    }
 
@@ -343,7 +388,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          String propTypeField = propertyTypeField.text;
          String err = editorModel.ctx.addProperty(editorModel.currentPropertyType, propTypeField, name, (String) propertyFieldValueEditor.opSelector.selectedItem, propertyFieldValueEditor.valueField.text);
          if (err != null) {
-            row2DialogError.errorField = nameField;
+            row2DialogError.errorComponent = nameField;
             row2DialogError.errorText = err;
          }
          else
@@ -356,11 +401,22 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       nameField.requestFocus();
    }
 
-   void createLayerOrObject() {
-      if (viewMode == ViewMode.Layer)
-         createLayer();
-      else
-         createObject();
+   void doCreate() {
+      switch (currentCreateMode) {
+         case Layer:
+            createLayer();
+            break;
+         case Class:
+         case Object:
+            createObject();
+            break;
+         case Instance:
+            createInstance();
+            break;
+         case Property:
+            createProperty();
+            break;
+      }
    }
 
    void createObject() {
@@ -380,7 +436,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
             err = editorModel.addTopLevelType(mode, editorModel.currentPackage, editorModel.currentLayer, name, objExtendsTypeField.text);
 
          if (err instanceof String) {
-            row2DialogError.errorField = nameField;
+            row2DialogError.errorComponent = nameField;
             row2DialogError.errorText = err;
          }
          else
@@ -388,6 +444,36 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       }
       else {
          System.out.println("*** mode not implemented");
+      }
+   }
+
+   void displayCreateError(String err) {
+      row1DialogError.errorComponent = createLabel;
+      row1DialogError.errorText = err;
+   }
+
+   void createInstance() {
+      if (!editorModel.pendingCreate) {
+         String err = editorModel.createInstance(propertyTypeField.text);
+         if (err instanceof String) {
+            displayCreateError(err);
+         }
+         else {
+            displayCreateError(pendingCreateError);
+            if (pendingCreateError == null)
+               clearForm();
+         }
+      }
+      else {
+         String err = editorModel.completeCreateInstance(true);
+         if (err != null) {
+            displayCreateError(err);
+         }
+         else {
+            clearForm();
+            editorModel.createMode = false; // Set this back to non-create state
+            editorModel.invalidateModel(); // Rebuild it so it says instance instead of new
+         }
       }
    }
 
@@ -411,7 +497,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          clearForm();
       }
       catch (IllegalArgumentException exc) {
-         row2DialogError.errorField = nameField;
+         row2DialogError.errorComponent = nameField;
          row2DialogError.errorText = exc.toString();
       }
    }
@@ -439,7 +525,7 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
             clearForm();
          }
          catch (IllegalArgumentException exc) {
-            row2DialogError.errorField = addLayerField;
+            row2DialogError.errorComponent = addLayerField;
             row2DialogError.errorText = exc.toString();
          }
       }
@@ -447,17 +533,25 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
    boolean objEnabled := editorModel.currentPackage != null && !StringUtil.isEmpty(nameField.text);
    boolean layerEnabled := !StringUtil.isEmpty(addLayerField.text);
+   boolean typeMode := currentCreateMode == CreateMode.Class || currentCreateMode == CreateMode.Object;
+
+   String pendingCreateError := editorModel.pendingCreateError;
+   pendingCreateError =: displayCreateError(pendingCreateError);
+   boolean instanceEnabled := pendingCreateError == null;
 
    object confirmButtons extends ConfirmButtons {
-      visible := viewMode == ViewMode.Type || viewMode == ViewMode.Layer;
-      enabled := ((viewMode == ViewMode.Type && objEnabled) || (viewMode == ViewMode.Layer && layerEnabled)) && StringUtil.isEmpty(row2DialogError.errorText) && StringUtil.isEmpty(row1DialogError.errorText);
+      visible := typeMode || currentCreateMode == CreateMode.Layer || currentCreateMode == CreateMode.Instance;
+      enabled := ((typeMode && objEnabled) ||
+                  (currentCreateMode == CreateMode.Layer && layerEnabled) ||
+                  (currentCreateMode == CreateMode.Instance && instanceEnabled)) &&
+                  StringUtil.isEmpty(row2DialogError.errorText) && StringUtil.isEmpty(row1DialogError.errorText);
       x := (int)(objExtendsTypeField.location.x + objExtendsTypeField.size.width + xpad);
       y := row2y - 3;
       cancelButton {
          clickCount =: clearForm();
       }
       okButton {
-         clickCount =: createLayerOrObject();
+         clickCount =: doCreate();
       }
    }
    // End obj mode only-----------------------

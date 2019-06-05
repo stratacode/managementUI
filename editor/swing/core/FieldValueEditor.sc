@@ -13,7 +13,7 @@ class FieldValueEditor extends JPanel implements EditorPanelStyle {
    int valueFieldStart := (int) (opSelector.location.x + opSelector.size.width + xpad);
 
    object valueFieldError extends ErrorLabel {
-      errorField = valueField;
+      errorComponent = valueField;
       visible := !StringUtil.isEmpty(text);
    }
 

@@ -34,7 +34,7 @@ TypeTree {
       }
 
       void refreshChildren() {
-          updatePackageContents(this, treeNode, rootTreeIndex, !isTypeTree());
+          updatePackageContents(this, treeNode, !isTypeTree());
       }
    }
 
@@ -68,7 +68,7 @@ TypeTree {
       if (defaultNode != null) {
          rootNode.removeChildNode(emptyCommentNode);
       }
-      updatePackageContents(rootDirEnt, rootNode, rootTreeIndex, false);
+      updatePackageContents(rootDirEnt, rootNode, false);
       if (rootNode.children.size() == 0) {
       /*
        * The layer tree nodes get populated on the server
@@ -88,7 +88,7 @@ TypeTree {
          rootTreeNode = rootNode;
    }
 
-   void updatePackageContents(TreeEnt ents, TreeNode treeNode, Map<String, List<TreeNode>> index, boolean byLayer) {
+   void updatePackageContents(TreeEnt ents, TreeNode treeNode, boolean byLayer) {
        ents.treeNode = treeNode;
        ArrayList<TreeEnt> subList = ents.childList;
        int pos = 0;
@@ -119,8 +119,8 @@ TypeTree {
                 changed = true;
              }
              childTree.marked = true;
-             addToIndex(childEnt, childTree, index);
-             updatePackageContents(childEnt, (TreeNode) childTree, index, byLayer);
+             addToIndex(childEnt, childTree);
+             updatePackageContents(childEnt, (TreeNode) childTree, byLayer);
              pos++;
           }
        }
@@ -148,29 +148,12 @@ TypeTree {
               ents.needsType = true;
           }
           if (ents.cachedTypeDeclaration != null) {
-             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false);
+             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false, null, false);
           }
        }
        ents.updateInstances(insts);
        // Now called in refreshChildren
-       //updatePackageContents(ents, treeNode, rootTreeIndex, !isTypeTree());
+       //updatePackageContents(ents, treeNode, !isTypeTree());
    }
 
-   // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name
-   // to list of visible tree nodes that refer to it.
-   void addToIndex(TreeEnt childEnt, TreeNode treeNode, Map<String,List<TreeNode>> index) {
-      if (childEnt.isSelectable()) {
-         List<TreeNode> l = index.get(childEnt.typeName);
-         if (l == null) {
-            l = new ArrayList<TreeNode>();
-
-            if (childEnt.type != EntType.LayerDir)
-               index.put(childEnt.typeName, l);
-
-            if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
-               index.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
-         }
-         l.add(treeNode);
-      }
-   }
 }

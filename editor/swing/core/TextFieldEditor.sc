@@ -10,6 +10,8 @@ TextFieldEditor {
       location := SwingUtil.point(elementLabel.location.x + elementLabel.size.width + xpad, TextFieldEditor.this.y);
       size := SwingUtil.dimension(TextFieldEditor.this.width - elementLabel.size.width - elementLabel.location.x - 2*xpad-formEditor.borderSize, preferredSize.height);
 
+      commitOnFocusLoss = true;
+
       completionProvider {
          ctx := editorModel.ctx;
       }
@@ -29,15 +31,16 @@ TextFieldEditor {
       focus =: focusChanged(this, focus);
    }
 
-   void setElementValue(Object type, Object inst, Object val, String text) {
-      if (type == null || val == null)
+   // TODO: prop is the same as propC here - can we remove that arg.  It's not an event trigger for sure.
+   void setElementValue(Object type, Object inst, Object prop, String text) {
+      if (type == null || prop == null)
          return;
       try {
          if (type instanceof ClientTypeDeclaration)
             type = ((ClientTypeDeclaration) type).getOriginal();
 
-         super.setElementValue(type, inst, val, text);
-         textField.enteredText = propertyValueString(formEditor.instance, propC, changeCt);
+         super.setElementValue(type, inst, prop, text);
+         textField.enteredText = propertyValueString(formEditor.instance, prop, changeCt);
       }
       catch (RuntimeException exc) {
          displayFormError(exc.getMessage());

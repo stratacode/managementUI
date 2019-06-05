@@ -2,4 +2,6 @@ interface TypeTreeSelectionListener {
    void selectTreeEnt(TypeTree.TreeEnt treeEnt, boolean append);
 
    void treeTypeAvailable(TypeTree.TreeEnt treeEnt);
+
+   void updateListSelection();
 }

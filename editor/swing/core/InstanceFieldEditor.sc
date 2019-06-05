@@ -3,6 +3,9 @@ InstanceFieldEditor {
    void validateEditorTree() {
       if (childList.refreshList())
          validateChildLists();
+      else {
+         validateSize();
+      }
    }
 
    void refreshChildren() {
@@ -16,7 +19,7 @@ InstanceFieldEditor {
 
    void validateChildLists() {
       validateChildList(0, childList.repeatComponents, true);
-      height = cellHeight;
+      validateSize();
    }
 
    childViews = new ArrayList<IElementEditor>();

@@ -14,5 +14,7 @@
       super.updateComputedValues();
    }
 %>
-   <input id="textField" class="textCell" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue" disabled=":= !editable" keyUpEvent='=: keyUpEvent.key.equals("Enter") ? updateInstanceProperty() : null'/>
+   <input id="textField" class="textCell" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue"
+       disabled=":= !editable"
+       keyUpEvent='=: keyUpEvent.key.equals("Enter") ? errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue) : null'/>
 </span>

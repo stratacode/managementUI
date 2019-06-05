@@ -228,7 +228,7 @@ ByLayerTypeTree {
       return ent;
    }
 
-   void addLayerType(String layerType, Layer srcLayer, Layer fileLayer, boolean transparentLayer, TreeEnt layerDirEnt, boolean prependPackage, boolean imported, boolean addInnerTypes) {
+   void addLayerType(String layerType, EntType parentType, Layer srcLayer, Layer fileLayer, boolean transparentLayer, TreeEnt layerDirEnt, boolean prependPackage, boolean imported, boolean addInnerTypes) {
        String fileDir = CTypeUtil.getPackageName(layerType);
        String fileTail = CTypeUtil.getClassName(layerType);
 
@@ -237,7 +237,7 @@ ByLayerTypeTree {
           layerParent = layerDirEnt;
        }
        else {
-          layerParent = lookupPackage(layerDirEnt, fileDir, EntType.Type, fileLayer.packagePrefix, fileLayer, true, false);
+          layerParent = lookupPackage(layerDirEnt, fileDir, parentType, fileLayer.packagePrefix, fileLayer, true, false);
        }
 
        if (transparentLayer) {
@@ -280,6 +280,7 @@ ByLayerTypeTree {
              ent.hasSrc = true; // TODO: can't we compute this without parsing the type!
           }
 
+          ent.initChildLists();
           layerParent.addChild(ent);
 
           if (treeModel.loadInnerTypesAtStartup && addInnerTypes) {
@@ -288,7 +289,7 @@ ByLayerTypeTree {
                 Set<String> innerTypes = srcLayer.getInnerTypeNames(layerType, typeDecl, true);
                 if (innerTypes != null) {
                    for (String innerType:innerTypes) {
-                      addLayerType(innerType, srcLayer, fileLayer, transparentLayer, layerDirEnt, true, false, false);
+                      addLayerType(innerType, EntType.Type, srcLayer, fileLayer, transparentLayer, layerDirEnt, true, false, false);
                    }
                 }
              }
@@ -364,10 +365,10 @@ ByLayerTypeTree {
       Set<SrcEntry> layerSrcEntries = srcLayer.getSrcEntries();
       for (SrcEntry srcEnt:layerSrcEntries) {
          String layerType = srcEnt.relTypeName;
-         addLayerType(layerType, srcLayer, fileLayer, transparentLayer, layerDirEnt, srcEnt.prependPackage, false, true);
+         addLayerType(layerType, EntType.Package, srcLayer, fileLayer, transparentLayer, layerDirEnt, srcEnt.prependPackage, false, true);
       }
       // Add the layer file itself
-      addLayerType(layerFile, srcLayer, fileLayer, false, layerDirEnt, true, false, true);
+      addLayerType(layerFile, EntType.LayerDir, srcLayer, fileLayer, false, layerDirEnt, true, false, true);
 
       //Set<String> layerImported = srcLayer.getImportedTypeNames();
       //for (String importedType:layerImported) {
@@ -387,6 +388,8 @@ ByLayerTypeTree {
          // Adding imported names.  If the layer prefix matches, keep the file organization.  If not, add these types
          // to the top level.  If they are imported, their names must not conflict.  Layers can then reorganize types
          // in different packages.
+         /*
+           Not sure why this was here but it was putting types in the wrong layer directory.
          for (String layerFullType:fileLayer.getImportedTypeNames()) {
             String layerType;
             if (layerFullType.startsWith(fileLayer.packagePrefix)) {
@@ -394,6 +397,7 @@ ByLayerTypeTree {
                layerType = pplen == 0 ? layerFullType : layerFullType.substring(pplen+1);
             }
             else {
+               // TODO: this is not right - we should not include types not defined in the layer here
                layerType = CTypeUtil.getClassName(layerFullType);
             }
             String fileDir = CTypeUtil.getPackageName(layerType);
@@ -413,6 +417,7 @@ ByLayerTypeTree {
                layerParent.addChild(ent);
             }
          }
+         */
       }
 
       return layerDirEnt;

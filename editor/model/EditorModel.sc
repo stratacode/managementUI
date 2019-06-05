@@ -6,6 +6,8 @@ import sc.lang.html.Element;
 import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.InstanceWrapper;
 import sc.lang.java.ModelUtil;
+import sc.lang.java.AbstractMethodDefinition;
+import sc.lang.java.Parameter;
 
 import sc.layer.CodeType;
 
@@ -55,8 +57,13 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** If there's a selected instance, the instance */
    Object currentInstance;
 
+   /** Stores info about the currentInstance - used in particular in the 'pendingCreate' mode - before the instance has been created */
+   InstanceWrapper currentWrapper;
+
    /** When the add/minus button is pressed, this gets toggled */
    boolean createMode = false;
+
+   CreateMode currentCreateMode = CreateMode.Instance;
 
    String currentPropertyOperator;
 
@@ -80,6 +87,15 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Set to true for an object or class to show properties from its extends class */
    boolean inherit = false;
 
+   /** Set to true after the user has started a createInstance but not yet completed the create */
+   boolean pendingCreate = false;
+
+   /** Set to the list of ConstructorProperties or regular properties when pendingCreate = true if there are required params to build the new instance */
+   List<ConstructorProperty> constructorProps = null;
+
+   /** Set to an error string to display when pendingCreate = true and missing required values are present */
+   String pendingCreateError = null;
+
    /** Incremented each time the selection changes so we can update any one who depends on the selection from a central event. */
    int selectionChanged = 0;
 
@@ -91,6 +107,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    /** True when we the current property is an editable one. */
    boolean editSelectionEnabled = false;
+
+   /** List of type names that can be created from the 'Add' panel. */
+   String[] currentInstTypeNames;
 
    /** Generated values, kept in sync when you change typeNames and currentLayer */
    ArrayList<Object> types;                 // The current list of just the selected types
@@ -155,7 +174,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       return createModeTypeName.equals(typeName);
    }
 
-   void changeCurrentType(Object type, Object inst) {
+   void changeCurrentType(Object type, Object inst, InstanceWrapper wrapper) {
       if (type == currentType && inst == currentInstance)
          return;
 
@@ -166,23 +185,39 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          newTypeNames[0] = newTypeName;
          typeNames = newTypeNames;
       }
+      else
+         typeNames = new String[0];
 
       currentType = type;
       currentInstance = inst;
+      // Previously used to pop/push current type here
       if (type != null) {
          List<InstanceWrapper> selInstances = new ArrayList<InstanceWrapper>(1);
-         selInstances.add(new InstanceWrapper(ctx, inst, newTypeName));
+         if (wrapper == null)
+            wrapper = new InstanceWrapper(ctx, inst, newTypeName, null, false);
+         selInstances.add(wrapper);
          selectedInstances = selInstances;
+         currentWrapper = wrapper;
       }
-      else
+      else {
          selectedInstances = null;
+         currentWrapper = null;
+         selectedInstances = null;
+      }
       selectionChanged++;
+      if (currentWrapper == null)
+         pendingCreate = false;
+      else
+         pendingCreate = currentWrapper.pendingCreate;
    }
 
    void clearCurrentType() {
       typeNames = new String[0];
       currentType = null;
       currentInstance = null;
+      currentWrapper = null;
+      pendingCreate = false;
+      pendingCreateError = null;
    }
 
    void changeCurrentTypeName(String typeName) {
@@ -299,7 +334,12 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    public static boolean isSettableFromString(Object propC, Object propType) {
-      return !isConstantProperty(propC) && !(propC instanceof CustomProperty) && sc.type.RTypeUtil.canConvertTypeFromString(propType);
+      if (!isConstantProperty(propC)) {
+         if (propC instanceof CustomProperty)
+            return ((CustomProperty) propC).isSettableFromString(propType);
+         return sc.type.RTypeUtil.canConvertTypeFromString(propType);
+      }
+      return false;
    }
 
    /** When merging layers we use extendsLayer so that we do not pick up independent layers which which just happen to sit lower in the stack, below the selected layer */
@@ -370,7 +410,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
    void instanceRemoved(Object inst) {
       if (inst == currentInstance)
-         changeCurrentType(currentType, null);
+         changeCurrentType(currentType, null, null);
       refreshInstances();
    }
    void refreshInstances() {
@@ -378,9 +418,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          refreshInstancesValid = false;
          DynUtil.invokeLater(new Runnable() {
             void run() {
-               refreshInstancesCt++;
-               // Doing this after even though we may miss a refresh because we don't want any instances created in the course of this callback to schedule another refresh call.
                refreshInstancesValid = true;
+               refreshInstancesCt++;
             }
          }, 300);
       }
@@ -395,6 +434,12 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       if (prop == null || prop instanceof CustomProperty)
          return null;
       return ModelUtil.getLayerForMember(null, prop);
+   }
+
+   boolean getPropertyInherited(Object prop, Layer layer) {
+      if (prop instanceof CustomProperty)
+         return false;
+      return ModelUtil.getLayerForMember(null, prop) != layer;
    }
 
    static Object getPropertyType(Object prop) {
@@ -412,4 +457,33 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    void changeCodeTypes(EnumSet<CodeType> newSet) {
       codeTypes = new ArrayList<CodeType>(newSet);
    }
+
+   List<ConstructorProperty> getConstructorProperties(InstanceWrapper wrapper, TypeDeclaration typeDecl) {
+      AbstractMethodDefinition createMeth = typeDecl.getEditorCreateMethod();
+      ArrayList<ConstructorProperty> props = new ArrayList<ConstructorProperty>();
+      if (createMeth != null) {
+         List<Parameter> paramList = createMeth.getParameterList();
+         String constrParamStr = typeDecl.getConstructorParamNames();
+         String[] constrParamNames = constrParamStr != null ? StringUtil.split(constrParamStr, ',') : null;
+         if (paramList != null) {
+            int nps = paramList.size();
+            if (constrParamNames != null && constrParamNames.length != nps) {
+               System.err.println("*** Ignoring EditorCreate.constructorParamNames for createMethod: mismatching parameters");
+               constrParamNames = null;
+            }
+            for (int pix = 0; pix < nps; pix++) {
+               Parameter param = paramList.get(pix);
+               String paramName = constrParamNames != null ? constrParamNames[pix].trim() : param.variableName;
+               Object paramType = DynUtil.findType(param.parameterTypeName);
+               if (paramType == null) {
+                  System.err.println("*** Unable to find parameter type: " + param.parameterTypeName);
+               }
+               props.add(new ConstructorProperty(paramName, paramType, null, wrapper));
+            }
+         }
+         return props;
+      }
+      return null;
+   }
+
 }

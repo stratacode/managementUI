@@ -21,12 +21,13 @@
           FormEditor res;
           BodyTypeDeclaration type = (BodyTypeDeclaration) value;
           Object currentObj = getObjectForListElement(ix);
+          InstanceWrapper wrapper = getWrapperForListElement(ix);
           if (oldTag instanceof FormEditor) {
              res = (FormEditor) oldTag;
-             res.setTypeAndInstance(null, type, currentObj);
+             res.setTypeAndInstance(null, type, currentObj, wrapper);
           }
           else {
-             res = new FormEditor(FormView.this, null, null, type, currentObj, ix);
+             res = new FormEditor(FormView.this, null, null, type, currentObj, ix, wrapper);
           }
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);

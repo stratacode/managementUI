@@ -5,7 +5,7 @@
    <div id="formTitle" class="formTitle">
       <img class="elementIcon" visible=":= icon != null && type != null" src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc'/><img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
       <%= operatorName %>
-      <a class="textLink" clickEvent="=: parentProperty == null ? editorModel.changeCurrentType(type, instance) : changeFocus(true)"><%= displayName %></a>
+      <a class="textLink" clickEvent="=: parentProperty == null ? editorModel.changeCurrentType(type, instance, null) : changeFocus(true)"><%= displayName %></a>
       <%= extendsTypeLabel %>
       <a class="textLink" clickEvent="=: gotoExtendsType()" ><%= extendsTypeName %></a>
 

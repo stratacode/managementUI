@@ -43,6 +43,8 @@ class EditorPanel {
       // When a package is selected, stores the name of that package
       String currentPackageNode;
 
+      TypeTree myTypeTree;
+
       boolean byLayer = false;
 
       String[] selectedTypeNames :=: editorModel.typeNames;
@@ -59,11 +61,23 @@ class EditorPanel {
          }
       }
 
-      int selectionChanged := editorModel.selectionChanged;
-      selectionChanged =: updateListSelection();
-
       int updateSelectionCount = 0;
       int lastUpdateSelectionCount = 0;
+
+      boolean updateListSelectionScheduled = false;
+
+      // The updateListSelection needs to run after includeInstances has been set and the tree has been rebuilt or
+      // else we won't find the newly added instance in the selection.
+      void scheduleUpdateListSelection() {
+         if (updateListSelectionScheduled)
+            return;
+         DynUtil.invokeLater(new Runnable() {
+            public void run() {
+               updateListSelectionScheduled = false;
+               updateListSelection();
+            }
+         }, 0);
+      }
 
       public void treeTypeAvailable(TypeTree.TreeEnt treeEnt) {
          if (staleSelection) {

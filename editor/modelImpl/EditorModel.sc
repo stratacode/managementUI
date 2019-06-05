@@ -2,6 +2,7 @@ import java.lang.reflect.Field;
 
 import sc.type.IBeanMapper;
 import java.util.TreeSet;
+import java.util.TreeMap;
 
 import sc.layer.LayeredSystem;
 
@@ -11,10 +12,12 @@ import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.java.DeclarationType;
 import sc.lang.java.InterfaceDeclaration;
 import sc.lang.java.VariableDefinition;
+import sc.lang.java.ConstructorDefinition;
 import sc.lang.java.ModelUtil;
 import sc.lang.sc.PropertyAssignment;
 
 import sc.lang.IUndoOp;
+import sc.type.Type;
 
 import sc.parser.ParseUtil;
 
@@ -24,7 +27,7 @@ EditorModel {
    BodyTypeDeclaration currentCtxType := ctx.currentType;
 
    override @Bindable(crossScope=true)
-   currentCtxType =: changeCurrentType(currentCtxType, ctx.currentObject);
+   currentCtxType =: changeCurrentType(currentCtxType, ctx.currentObject, null);
 
    currentProperty =: validateCurrentProperty();
 
@@ -158,13 +161,71 @@ EditorModel {
 
          Layer typeLayer = type instanceof BodyTypeDeclaration ? ((BodyTypeDeclaration) type).getLayer() : null;
 
-         addLayerType(type, typeLayer, newFilteredLayers, newTypeLayers);
+         // Going to walk the type hierarchy twice - the first time to gather the set of layers in the type
+         // the second time to compute the visible set of types once we've decided whether or not to reset
+         // the current layer.
+         addNewTypeLayer(typeLayer, newTypeLayers);
+         if (typeLayer != null) {
+            List<Layer> transLayers = typeLayer.getTransparentLayers();
+            if (transLayers != null) {
+               for (int i = 0; i < transLayers.size(); i++) {
+                  addNewTypeLayer(transLayers.get(i), newTypeLayers);
+               }
+            }
+         }
+
+         if (type instanceof TypeDeclaration) {
+            TypeDeclaration rootTD = (TypeDeclaration) type;
+            BodyTypeDeclaration modType = rootTD.getModifiedType();
+            while (modType != null) {
+               addNewTypeLayer(modType.getLayer(), newTypeLayers);
+               modType = modType.getModifiedType();
+            }
+            if (inherit) {
+               Object extType = rootTD.getExtendsTypeDeclaration();
+               while (extType != null && extType instanceof BodyTypeDeclaration) {
+                  BodyTypeDeclaration eTD = (BodyTypeDeclaration) extType;
+                  // Use this method to just add the layer to the layer indexes.  When type is null, no type is added.
+                  addNewTypeLayer(eTD.getLayer(), newTypeLayers);
+
+                  BodyTypeDeclaration eTDRoot = eTD.getModifiedByRoot();
+
+                  BodyTypeDeclaration extModType;
+                  BodyTypeDeclaration mtype = eTD;
+                  while ((extModType = mtype.getModifiedType()) != null) {
+                     addNewTypeLayer(extModType.getLayer(), newTypeLayers);
+                     mtype = extModType;
+                  }
+                  extType = eTD.getExtendsTypeDeclaration();
+               }
+
+               addInterfaceNewTypeLayers(rootTD, newTypeLayers);
+            }
+         }
+
+         // Now that we have the newTypeLayers, we need to determine if we are going to reset the
+         // currentLayer or not. If this type does not overlap with the current layer, we'll do the
+         // reset. Once we do that, we are ready to call addLayerType which computes the filteredTypes
+         // used to set the currentType.
+         boolean resetCurrentLayer = true;
+         if (newTypeLayers != null) {
+            if (currentLayer != null) {
+               if (newTypeLayers.contains(currentLayer))
+                  resetCurrentLayer = false;
+            }
+            if (resetCurrentLayer && newTypeLayers.size() > 0)
+               currentLayer = newTypeLayers.get(newTypeLayers.size()-1);
+         }
+
+         /** --- */
+
+         addLayerType(type, typeLayer, newFilteredLayers);
 
          if (typeLayer != null) {
             List<Layer> transLayers = typeLayer.getTransparentLayers();
             if (transLayers != null) {
                for (int i = 0; i < transLayers.size(); i++) {
-                  addLayerType(type, transLayers.get(i), newFilteredLayers, newTypeLayers);
+                  addLayerType(type, transLayers.get(i), newFilteredLayers);
                }
             }
          }
@@ -177,7 +238,7 @@ EditorModel {
             TypeDeclaration rootTD = (TypeDeclaration) type;
             BodyTypeDeclaration modType = rootTD.getModifiedType();
             while (modType != null) {
-               addLayerType(modType, modType.getLayer(), newFilteredLayers, newTypeLayers);
+               addLayerType(modType, modType.getLayer(), newFilteredLayers);
                modType = modType.getModifiedType();
             }
             if (inherit) {
@@ -185,7 +246,7 @@ EditorModel {
                while (extType != null && extType instanceof BodyTypeDeclaration) {
                   BodyTypeDeclaration eTD = (BodyTypeDeclaration) extType;
                   // Use this method to just add the layer to the layer indexes.  When type is null, no type is added.
-                  addLayerType(eTD, eTD.getLayer(), newFilteredLayers, newTypeLayers);
+                  addLayerType(eTD, eTD.getLayer(), newFilteredLayers);
 
                   BodyTypeDeclaration eTDRoot = eTD.getModifiedByRoot();
 
@@ -195,13 +256,13 @@ EditorModel {
                   BodyTypeDeclaration extModType;
                   BodyTypeDeclaration mtype = eTD;
                   while ((extModType = mtype.getModifiedType()) != null) {
-                     addLayerType(extModType, extModType.getLayer(), newFilteredLayers, newTypeLayers);
+                     addLayerType(extModType, extModType.getLayer(), newFilteredLayers);
                      mtype = extModType;
                   }
                   extType = eTD.getExtendsTypeDeclaration();
                }
 
-               addInterfaceLayerTypes(rootTD, newFilteredLayers, newTypeLayers, inheritedTypes);
+               addInterfaceLayerTypes(rootTD, newFilteredLayers, inheritedTypes);
             }
          }
       }
@@ -210,16 +271,6 @@ EditorModel {
       // Make sure this does not change when just currentLayer changes...
       if (typeLayers == null || !typeLayers.equals(newTypeLayers))
          typeLayers = newTypeLayers;
-
-      boolean resetCurrentLayer = true;
-      if (typeLayers != null) {
-         if (currentLayer != null) {
-            if (typeLayers.contains(currentLayer))
-               resetCurrentLayer = false;
-         }
-         if (resetCurrentLayer && typeLayers.size() > 0)
-            currentLayer = typeLayers.get(typeLayers.size()-1);
-      }
 
       Object filteredType;
 
@@ -250,7 +301,6 @@ EditorModel {
       currentPropertyType = currentType;
       savedPropertyValue = currentPropertyValue = null;
       savedPropertyOperator = currentPropertyOperator = null;
-      currentInstance = null;
 
       if (currentType != null) {
          currentTypeIsLayer = ModelUtil.isLayerType(currentType);
@@ -258,10 +308,13 @@ EditorModel {
             currentPackage = currentLayer.packagePrefix;
          else
             currentPackage = ModelUtil.getPackageName(currentType);
+         if (currentInstance != null && !ModelUtil.isInstance(currentType, currentInstance))
+            currentInstance = null;
       }
       else {
          currentPackage = "";
          currentTypeIsLayer = false;
+         currentInstance = null;
       }
 
       ArrayList newVisibleTypes = new ArrayList();
@@ -297,14 +350,14 @@ EditorModel {
       visibleTypes = visTypes;
    }
 
-   private void addInterfaceLayerTypes(BodyTypeDeclaration rootTD, ArrayList<Layer> newFilteredLayers, ArrayList<Layer> newTypeLayers, List<Object> inheritedTypes) {
+   private void addInterfaceLayerTypes(BodyTypeDeclaration rootTD, ArrayList<Layer> newFilteredLayers, List<Object> inheritedTypes) {
       Object[] implTypes = rootTD.getImplementsTypeDeclarations();
       if (implTypes != null) {
          for (Object implTypeObj:implTypes) {
             if (implTypeObj instanceof TypeDeclaration) {
                TypeDeclaration implType = (TypeDeclaration) implTypeObj;
 
-               addLayerType(implType, implType.getLayer(), newFilteredLayers, newTypeLayers);
+               addLayerType(implType, implType.getLayer(), newFilteredLayers);
 
                BodyTypeDeclaration iTDRoot = implType.getModifiedByRoot();
 
@@ -314,17 +367,17 @@ EditorModel {
                BodyTypeDeclaration extModType;
                BodyTypeDeclaration mtype = implType;
                while ((extModType = mtype.getModifiedType()) != null) {
-                  addLayerType(extModType, extModType.getLayer(), newFilteredLayers, newTypeLayers);
+                  addLayerType(extModType, extModType.getLayer(), newFilteredLayers);
                   mtype = extModType;
                }
 
-               addInterfaceLayerTypes(implType, newFilteredLayers, newTypeLayers, inheritedTypes);
+               addInterfaceLayerTypes(implType, newFilteredLayers, inheritedTypes);
             }
          }
       }
    }
 
-   private void addLayerType(Object type, Layer layer, ArrayList<Layer> newFilteredLayers, ArrayList<Layer> newTypeLayers) {
+   private void addLayerType(Object type, Layer layer, ArrayList<Layer> newFilteredLayers) {
       Layer prevLayer;
       if (type instanceof TypeDeclaration) {
          TypeDeclaration td = (TypeDeclaration) type;
@@ -394,6 +447,10 @@ EditorModel {
                BodyTypeDeclaration btd = (BodyTypeDeclaration) type;
                JavaModel javaModel = btd.getJavaModel();
                SrcEntry ent = javaModel.getSrcFile();
+
+               // We want to record instances for this type by default since we are manipulating it from the management UI
+               btd.liveDynType = true;
+
                if (ent != null) {
                   SelectedFile f = selectedFileIndex.get(ent.absFileName);
                   if (f == null) {
@@ -411,6 +468,33 @@ EditorModel {
             }
          }
       } 
+   }
+
+   private void addInterfaceNewTypeLayers(BodyTypeDeclaration rootTD, ArrayList<Layer> newTypeLayers) {
+      Object[] implTypes = rootTD.getImplementsTypeDeclarations();
+      if (implTypes != null) {
+         for (Object implTypeObj:implTypes) {
+            if (implTypeObj instanceof TypeDeclaration) {
+               TypeDeclaration implType = (TypeDeclaration) implTypeObj;
+
+               addNewTypeLayer(implType.getLayer(), newTypeLayers);
+
+               BodyTypeDeclaration iTDRoot = implType.getModifiedByRoot();
+
+               BodyTypeDeclaration extModType;
+               BodyTypeDeclaration mtype = implType;
+               while ((extModType = mtype.getModifiedType()) != null) {
+                  addNewTypeLayer(extModType.getLayer(), newTypeLayers);
+                  mtype = extModType;
+               }
+
+               addInterfaceNewTypeLayers(implType, newTypeLayers);
+            }
+         }
+      }
+   }
+
+   private static void addNewTypeLayer(Layer layer, List<Layer> newTypeLayers) {
       int allIx = newTypeLayers.indexOf(layer);
       if (allIx == -1) {
          int i;
@@ -498,6 +582,33 @@ EditorModel {
    String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateType, boolean updateInstances, boolean valueIsExpr) {
       if (type instanceof ClientTypeDeclaration)
          type = ((ClientTypeDeclaration) type).getOriginal();
+
+      Object elemValue = expr;
+      if (pendingCreate || !updateType) {
+         if (prop != null) {
+            Object propertyType = ModelUtil.getPropertyType(prop);
+            if (propertyType instanceof Class) {
+               Type t = Type.get((Class) propertyType);
+               if (t != null) {
+                  try {
+                     elemValue = t.stringToValue(expr);
+                  }
+                  catch (RuntimeException exc) {
+                     return "Invalid value for: " + prop + ": " + expr + ": " + exc.toString();
+                  }
+               }
+            }
+         }
+      }
+
+      if (prop instanceof CustomProperty) {
+         String error = updateCustomProperty((CustomProperty) prop, inst, elemValue);
+         return error;
+      }
+      else if (pendingCreate) {
+         return updatePendingProperty(ModelUtil.getPropertyName(prop), elemValue);
+      }
+
       // The first time they are changing the object in a transparent layer.  We need to create it in this case.
       if (currentLayer != null && currentLayer.transparent && ModelUtil.getLayerForType(null, type) != currentLayer) {
          String typeName = ModelUtil.getTypeName(type);
@@ -579,12 +690,24 @@ EditorModel {
       }
    }
 
-   void changeCurrentType(Object type, Object inst) {
-      super.changeCurrentType(type, inst);
+   void changeCurrentType(Object type, Object inst, InstanceWrapper wrapper) {
+      super.changeCurrentType(type, inst, wrapper);
+
+      BodyTypeDeclaration ctxType = ctx.getCurrentType(false);
+      if (ctxType != type) {
+         if (ctxType != null)
+            ctx.popCurrentType();
+         if (type instanceof BodyTypeDeclaration)
+            ctx.pushCurrentType((BodyTypeDeclaration) type, inst);
+      }
+
+      if (inst != ctx.currentObject)
+         ctx.setDefaultCurrentObj(type, inst);
 
       // Push this back if the change is coming from the editor model side
-      if (currentCtxType != type && type instanceof BodyTypeDeclaration)
+      if (currentCtxType != type && type instanceof BodyTypeDeclaration) {
          currentCtxType = (BodyTypeDeclaration) type;
+      }
 
       updateCurrentJavaModel();
    }
@@ -682,7 +805,7 @@ EditorModel {
          }
          theType = types.get(0);
       }
-      changeCurrentType(theType, null);
+      changeCurrentType(theType, null, null);
       return null;
    }
 
@@ -737,9 +860,188 @@ EditorModel {
       if (res instanceof String)
          return (String) res;
 
-      changeCurrentType(res, null);
+      changeCurrentType(res, null, null);
 
       return null;
+   }
+
+   public String createInstance(String typeName) {
+      Object typeObj = DynUtil.findType(typeName);
+      if (typeObj == null) {
+         // Implements the rule where you can just type in the class name
+         String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
+         if (fullTypeName != null) {
+            typeName = fullTypeName;
+            typeObj = DynUtil.findType(fullTypeName);
+         }
+         if (typeObj == null) {
+            if (currentPackage != null) {
+               fullTypeName = CTypeUtil.prefixPath(currentPackage, typeName);
+               typeObj = DynUtil.findType(fullTypeName);
+               if (typeObj != null)
+                  typeName = fullTypeName;
+            }
+            if (typeObj == null) {
+               return "No type: " + typeName + (currentPackage != null ? " with current package: " + currentPackage : "");
+            }
+         }
+
+         if (!ctx.isCreateInstType(typeName)) {
+            return "Type: " + typeName + " not able to create types missing @EditorCreate";
+         }
+      }
+      if (!(typeObj instanceof BodyTypeDeclaration)) {
+         typeObj = ModelUtil.resolveSrcTypeDeclaration(system, typeObj);
+      }
+      if (typeObj instanceof TypeDeclaration) {
+         TypeDeclaration typeDecl = (TypeDeclaration) typeObj;
+         InstanceWrapper instWrap = new InstanceWrapper(ctx, null, typeName, "<unset>", false);
+         instWrap.pendingValues = new TreeMap<String,Object>();
+         instWrap.pendingCreate = true;
+         constructorProps = getConstructorProperties(instWrap, typeDecl);
+         currentLayer = null; // If this type is not in the current layer, it gets removed from the list of visible types
+         changeCurrentType(typeDecl, null, instWrap);
+
+         pendingCreateError = completeCreateInstance(false);
+      }
+      else
+         return "Unable to create instance of type: " + typeName + " - no type metadata found";
+      return null;
+    }
+
+   public void cancelCreate() {
+      changeCurrentType(null, null, null);
+      pendingCreate = false;
+      pendingCreateError = null;
+   }
+
+   public String updateCustomProperty(CustomProperty custProp, Object inst, Object propVal) {
+      String err = custProp.updateInstance(inst, propVal);
+      if (pendingCreate) // In this case this was the last value we needed, update the error
+         pendingCreateError = completeCreateInstance(false);
+      return err;
+   }
+
+   public String updatePendingProperty(String propName, Object value) {
+      if (pendingCreate) {
+         if (currentWrapper != null) {
+            currentWrapper.pendingValues.put(propName, value);
+         }
+         pendingCreateError = completeCreateInstance(false);
+      }
+      return null;
+   }
+
+   public String completeCreateInstance(boolean doCreate) {
+      if (pendingCreate) {
+         if (currentType instanceof TypeDeclaration) {
+            TypeDeclaration typeDecl = (TypeDeclaration) currentType;
+            AbstractMethodDefinition createMeth = typeDecl.getEditorCreateMethod();
+            ArrayList<Object> args = new ArrayList<Object>();
+            if (constructorProps != null) {
+               ArrayList<String> missingPropNames = null;
+               for (ConstructorProperty prop:constructorProps) {
+                  String paramName = prop.name;
+
+                  Object val = currentWrapper.pendingValues == null ? null : currentWrapper.pendingValues.get(paramName);
+                  if (!isValid(val)) {
+                     if (missingPropNames == null)
+                        missingPropNames = new ArrayList<String>();
+                     missingPropNames.add(paramName);
+                  }
+                  args.add(val);
+               }
+            
+               // Ready to create the new instance
+               if (doCreate && missingPropNames == null) {
+                  Object[] argsArr = args.toArray();
+                  Object inst;
+                  if (createMeth instanceof ConstructorDefinition) {
+                     inst = currentWrapper.theInstance = DynUtil.createInstance(typeDecl, createMeth.getTypeSignature(), argsArr);
+                  }
+                  else {
+                     inst = currentWrapper.theInstance = DynUtil.invokeMethod(null, createMeth, argsArr);
+                  }
+                  if (inst != null) {
+                     pendingCreate = false;
+                     currentWrapper.labelName = null;
+
+                     currentInstance = inst;
+                     ArrayList<InstanceWrapper> selInsts = new ArrayList<InstanceWrapper>();
+                     selInsts.add(currentWrapper);
+                     selectedInstances = selInsts; // NOTE: make sure the value is defined before setting because it's bound to another property
+
+                     currentWrapper.pendingCreate = false;
+
+                     // Register the instance with the dynamic type system so it is returned by getInstancesOfType
+                     DynUtil.addDynInstance(currentWrapper.typeName, inst);
+
+                     // Now we've created the instance. For any pendingValues the user entered that were not
+                     // constructor properties, set the property to the value in the instance.
+                     for (Map.Entry<String,Object> pendingEnt:currentWrapper.pendingValues.entrySet()) {
+                        String propName = pendingEnt.getKey();
+                        boolean skipProp = false;
+                        for (int pix = 0; pix < constructorProps.size(); pix++) {
+                           ConstructorProperty cprop = constructorProps.get(pix);
+                           if (cprop.name.equals(propName)) {
+                              skipProp = true;
+                              break;
+                           }
+                        }
+                        if (!skipProp) {
+                           Object value = pendingEnt.getValue();
+                           try {
+                              DynUtil.setPropertyValue(currentWrapper.theInstance, propName, value);
+                           }
+                           catch (IllegalArgumentException exc) {
+                              return "Failed to set property after create: " + propName + " to: " + value + " error: " + exc.toString();
+                           }
+                        }
+                     }
+
+                     // Now add it to the type tree
+                     instanceAdded(inst);
+                     constructorProps = null;
+                  }
+                  else
+                     return "Failed to create instance";
+               }
+               else if (missingPropNames != null) {
+                   return "Missing values for properties: " + missingPropNames;
+               }
+            }
+         }
+      }
+      return null;
+   }
+
+   public String updateInstanceProperty(Object propC, String propName, Object instance, InstanceWrapper wrapper, Object elementValue) {
+      if (propC instanceof CustomProperty) {
+         return updateCustomProperty((CustomProperty) propC, instance, elementValue);
+      }
+      if (instance != null) {
+         try {
+            DynUtil.setPropertyValue(instance, propName, elementValue);
+         }
+         catch (IllegalArgumentException exc) {
+            return exc.toString();
+         }
+         catch (UnsupportedOperationException exc1) {
+            return exc1.toString();
+         }
+      }
+      else if (pendingCreate && wrapper == currentWrapper) {
+         currentWrapper.pendingValues.put(propName, elementValue);
+      }
+      else
+         return "No instance to update";
+      return null;
+   }
+
+   private boolean isValid(Object obj) {
+      if (obj instanceof String)
+         return ((String) obj).trim().length() > 0;
+      return obj != null;
    }
 
    void removeLayers(ArrayList<Layer> layers) {

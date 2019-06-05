@@ -13,7 +13,4 @@ TypeTreeModel {
 
    public final static String PKG_INDEX_PREFIX = "<pkg>:";
 
-   boolean nodeExists(String typeName) {
-      return typeTree.rootTreeIndex.get(typeName) != null;
-   }
 }

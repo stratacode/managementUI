@@ -1,5 +1,6 @@
 class ConfirmButtons extends ComponentGroup implements PanelStyle {
    boolean enabled = true;
+   boolean cancelEnabled = true;
    int x;
    int y;
    int width := (int) (okButton.size.width + cancelButton.size.width + 2*icxpad);
@@ -16,7 +17,7 @@ class ConfirmButtons extends ComponentGroup implements PanelStyle {
       location := SwingUtil.point(okButton.location.x + okButton.size.width + icxpad, ConfirmButtons.this.y);
       icon = new ImageIcon(ConfirmButtons.class.getResource("images/cancel.png"), "Cancel");
       visible := ConfirmButtons.this.visible;
-      enabled := ConfirmButtons.this.enabled;
+      enabled := ConfirmButtons.this.cancelEnabled;
       focusPainted = false;
       borderPainted = false;
    }

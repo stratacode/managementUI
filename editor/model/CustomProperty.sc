@@ -7,6 +7,7 @@ class CustomProperty {
    Object value;
    int defaultWidth;
    UIIcon icon;
+   String operator = null;
 
    CustomProperty(String name, Object propertyType, String editorType, Object value, int defaultWidth, UIIcon icon) {
       this.name = name;
@@ -17,11 +18,23 @@ class CustomProperty {
       this.icon = icon;
    }
 
-   void updateInstance(Object inst, Object elemValue) {
-      throw new IllegalArgumentException("Custom property: " + name + " does not support updates");
+   String updateInstance(Object inst, Object elemValue) {
+      return "Custom property: " + name + " does not support updates";
+   }
+
+   boolean isSettableFromString(Object propType) {
+      return false;
    }
 
    boolean isConstant() {
       return true;
+   }
+
+   String getDescription() {
+      return "Property: " + name + " of type: " + DynUtil.getTypeName(propertyType, false);
+   }
+
+   String getValueString() {
+      return value.toString();
    }
 }

@@ -22,8 +22,6 @@ TypeTreeModel {
          }});
    }
 
-   public final static String PKG_INDEX_PREFIX = "<pkg>:";
-
    static Color selectedNodeColor = new UIColor(0xFF, 0xFE, 0xDF);
 
    class TreeCellRenderer extends DefaultTreeCellRenderer {

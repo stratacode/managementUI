@@ -335,6 +335,9 @@ TypeTree {
 
             ents.hasSrc = treeModel.system.getSrcTypeDeclaration(srcTypeName, null, true) != null;
 
+            // Need to initialize this even if there are no children so we can tell the difference between an unfetched map and an empty local map.
+            ents.initChildLists();
+
             parentEnt.addChild(ents);
          }
          return ents;
@@ -354,6 +357,7 @@ TypeTree {
             ents.imported = false;
             ents.hasSrc = true;
             ents.prependPackage = true;
+            ents.initChildLists();
             parentEnt.addChild(ents);
          }
 
@@ -366,8 +370,9 @@ TypeTree {
       String className = CTypeUtil.getClassName(srcTypeName);
       TreeEnt ent = new TreeEnt(EntType.Type, className, this, srcTypeName, null);
       ent.prependPackage = prependPackage;
+      ent.initChildLists();
 
-      // If this name is defined in an import and we do not have a src file for it, set the imported flag.
+// If this name is defined in an import and we do not have a src file for it, set the imported flag.
       ent.imported = treeModel.system.getImportDecl(null, null, className) != null;
 
       TypeDeclaration typeDecl = treeModel.loadInnerTypesAtStartup ? treeModel.system.getSrcTypeDeclaration(srcTypeName, null, true) : null;

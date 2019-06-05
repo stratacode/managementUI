@@ -2,7 +2,7 @@ import sc.lang.java.ModelUtil;
 import sc.lang.java.VariableDefinition;
 
 @Component
-@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int")
+@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int,sc.lang.InstanceWrapper")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    InstanceEditor formEditor;
    Object propC;
@@ -28,10 +28,13 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    boolean editable := !instanceMode || !constantProperty;
    boolean rowStart;
 
+   // Placeholders for the ability to allow the user to set the width/height of a component
+   int explicitWidth = -1, explicitHeight = -1;
+
    @Bindable
    boolean cellMode = false;
 
-   ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx) {
+   ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx, InstanceWrapper wrapper) {
       instanceMode = formEditor.instanceMode;
       this.formEditor = formEditor;
       editorModel = parentView.editorModel;
@@ -66,7 +69,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return !instanceMode && instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
 
-   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
       propC = elem;
       // setElemToEdit(elem); TODO - do we need this call?
       this.listIndex = ix;
@@ -144,26 +147,6 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return simpleProp;
    }
 
-   public void updateInstanceProperty() {
-      if (propC instanceof CustomProperty) {
-         ((CustomProperty) propC).updateInstance(formEditor.instance, elementValue);
-         return;
-      }
-      if (formEditor.instance != null) {
-         try {
-            DynUtil.setPropertyValue(formEditor.instance, propertyName, elementValue);
-         }
-         catch (IllegalArgumentException exc) {
-            errorText = exc.toString();
-         }
-         catch (UnsupportedOperationException exc1) {
-            errorText = exc1.toString();
-         }
-      }
-      else
-         errorText = "No instance to update";
-   }
-
    abstract Object getElementValue();
 
    void updateListeners(boolean add) {
@@ -222,11 +205,21 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    int getCellHeight() {
       if (formEditor == null)
          return 0;
-      int width = formEditor.getExplicitHeight(listIndex);
-      if (width != -1)
-         return width;
+      //int height = formEditor.getExplicitHeight(listIndex);
+      int height = explicitHeight;
+      if (height != -1)
+         return height;
       return formEditor.getDefaultCellHeight(editorType, propC);
    }
 
+   void sizeChanged() {
+      formEditor.scheduleValidateTree();
+   }
+
+   void validateEditorTree() {
+   }
+
+   void validateSize() {
+   }
 }
 

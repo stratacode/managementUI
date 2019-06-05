@@ -5,10 +5,16 @@ interface IElementEditor {
    // Called to validate the editor after the model is updated
    void invalidateEditor();
 
+   // Perform an incremental refresh of the editor and all children (e.g. size of child changed)
+   void validateEditorTree();
+
+   // Incremental refresh to detect possible size changes
+   void validateSize();
+
    boolean isVisible();
    void setVisible(boolean val);
 
-   void updateEditor(Object elem, Object prop, Object type, Object inst, int ix);
+   void updateEditor(Object elem, Object prop, Object type, Object inst, int ix, InstanceWrapper wrapper);
 
    /** This is the property, type, etc. for this editor to edit */
    void setElemToEdit(Object elem);

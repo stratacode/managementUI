@@ -51,7 +51,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    @Bindable
    int listIndex; // If we are in a list component, the original absolute index of our element
 
-   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx) {
+   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
       parentView = view;
       this.editorModel = parentView.editorModel;
       this.parentEditor = parentEditor;
@@ -100,13 +100,13 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       return null;
    }
 
-   void typeChanged() {
+   void operatorChanged() {
       operatorName = getFixedOperatorName();
       if (operatorName == null) {
          if (type == null)
             operatorName = null;
          else if (parentProperty != null)
-             operatorName = "property";
+            operatorName = "property";
          else if (ModelUtil.isEnumType(type))
             operatorName = "enum";
          else if (ModelUtil.isEnum(type))
@@ -120,6 +120,10 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          else
             operatorName = "class";
       }
+   }
+
+   void typeChanged() {
+      operatorChanged();
 
       if (parentProperty != null)
          displayName = propertyName;
@@ -137,7 +141,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
             includeStatic = false;
          ArrayList<Object> visProps = new ArrayList<Object>();
          Layer currentLayer = editorModel.currentLayer;
-         addComputedProperties(visProps);
+         addComputedProperties(visProps, newProps);
          if (newProps != null) {
             for (Object prop:newProps) {
                 // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
@@ -200,7 +204,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       }
    }
 
-   void addComputedProperties(List<Object> props) {
+   void addComputedProperties(List<Object> retProps, Object[] allProps) {
    }
 
    // Sets the field without firing a change event
@@ -271,8 +275,11 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
             return "form";
       }
 
-      if (prop instanceof CustomProperty)
-         return ((CustomProperty) prop).editorType;
+      if (prop instanceof CustomProperty) {
+         String custType = ((CustomProperty) prop).editorType;
+         if (custType != null)
+            return custType;
+      }
 
       Object instType = propInst == null ? null : DynUtil.getType(propInst);
       String editorType = instType == null ? null : (String) ModelUtil.getAnnotationValue(instType, "sc.obj.EditorSettings", "editorType");
@@ -397,5 +404,17 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          return formEditor.getDefaultCellHeight(editorType, null);
       }
       return -1;
+   }
+
+   void scheduleValidateTree() {
+      if (parentView != null)
+         parentView.scheduleValidateTree();
+   }
+
+   void validateSize() {
+      if (childViews != null) {
+         for (IElementEditor view:childViews)
+            view.validateSize();
+      }
    }
 }

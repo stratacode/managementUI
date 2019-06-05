@@ -67,7 +67,18 @@ TypeEditor {
       if (cellMode || rowMode) {
          return super.getCellHeight();
       }
+      if (lastView instanceof ListEditor) {
+         ((ListEditor) lastView).validateEditorTree();
+      }
+
       return (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
    }
 
+   void validateSize() {
+      super.validateSize();
+      Bind.refreshBinding(this, "x");
+      Bind.refreshBinding(this, "y");
+      Bind.refreshBinding(this, "width");
+      Bind.refreshBinding(this, "height");
+   }
 }

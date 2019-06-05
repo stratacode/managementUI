@@ -6,40 +6,55 @@ abstract class InstanceEditor extends TypeEditor {
    Object oldParentProperty;
    Object oldParentInst;
 
+   InstanceWrapper wrapper;
+
+   List<InstanceWrapper> instancesOfType;
+
    //Object instType := instance == null ? null : ModelUtil.resolveSrcTypeDeclaration(editorModel.system, DynUtil.getType(instance));
 
    instance =: instanceChanged();
 
-   String referenceId := DynUtil.getInstanceName(instance);
+   String referenceId := computeReferenceId(instance);
 
    // Is this a valid reference we should allow to be a link or do we just display the instanceName.
    boolean isReferenceable() {
       return instance == null || ModelUtil.isObjectType(type) || !(type instanceof java.util.Collection);
    }
 
-   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx) {
-      super(view, parentEditor, parentProperty, type, inst, listIx);
+   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
+      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper);
       instance = inst;
+      this.wrapper = wrapper;
    }
 
    @sc.obj.ManualGetSet
-   public void setTypeAndInstance(Object parentProperty, Object type, Object inst) {
+   public void setTypeAndInstance(Object parentProperty, Object type, Object inst, InstanceWrapper wrapper) {
       setTypeNoChange(parentProperty, type);
       this.instance = inst;
+      this.wrapper = wrapper;
       // Notify any bindings on instance and parentProperty that the value is changed but don't validate those bindings before we've refreshed the children.
       Bind.sendInvalidate(this, "instance", inst);
       Bind.sendInvalidate(this, "parentProperty", parentProperty);
+      Bind.sendInvalidate(this, "wrapper", wrapper);
       // This both invalidates and validates for type
       Bind.sendChange(this, "type", type);
       refreshChildren();
       // Now we're ready to validate the bindings on the instance
       Bind.sendValidate(this, "parentProperty", parentProperty);
       Bind.sendValidate(this, "instance", inst);
+      Bind.sendValidate(this, "wrapper", wrapper);
    }
 
-   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
       listIndex = ix;
-      setTypeAndInstance(prop, propType, inst);
+      setTypeAndInstance(prop, propType, inst, wrapper);
+   }
+
+   String computeReferenceId(Object instance) {
+      if (instance == null)
+         return "<unset>";
+      else
+         return CTypeUtil.getClassName(DynUtil.getInstanceName(instance));
    }
 
    void init() {
@@ -132,7 +147,7 @@ abstract class InstanceEditor extends TypeEditor {
          }
       }
       useType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, useType);
-      editorModel.changeCurrentType(useType, instance);
+      editorModel.changeCurrentType(useType, instance, null);
    }
 
    int getExplicitWidth(int colIx) {
@@ -143,4 +158,20 @@ abstract class InstanceEditor extends TypeEditor {
       return -1;
    }
 
+   List<InstanceWrapper> getInstancesOfType(Object type, boolean addNull, String nullLabelName, boolean selectToCreate) {
+      return editorModel.ctx.getInstancesOfType(type, 10, addNull, nullLabelName, selectToCreate);
+   }
+
+   int getInstSelectedIndex(Object inst, List<InstanceWrapper> instsOfType) {
+      int i = 0;
+      if (instancesOfType != null) {
+         for (InstanceWrapper wrap:instancesOfType) {
+            if (wrap.instance == inst)
+               return i;
+            i++;
+
+         }
+      }
+      return -1;
+   }
 }

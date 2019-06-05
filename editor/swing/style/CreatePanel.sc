@@ -1,8 +1,5 @@
 CreatePanel {
-   override beforeOfTypeWidth;
-   override afterOfTypeWidth;
-
-   override innerType; 
+   override innerType;
 
    override row2y; 
 

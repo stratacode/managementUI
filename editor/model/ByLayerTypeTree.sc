@@ -18,13 +18,15 @@ class ByLayerTypeTree extends TypeTree {
       String rootName;
       if (treeModel.createMode) {
          if (treeModel.propertyMode)
-            rootName = "Select Property Type by Layer";
+            rootName = "Select property type by layer";
          else if (treeModel.addLayerMode)
-            rootName = "Select Layer to Include by File";
+            rootName = "Select layer to include by file";
          else if (treeModel.createLayerMode)
-            rootName = "Select Extends Layers by File";
+            rootName = "Select extends layers by file";
+         else if (treeModel.currentCreateMode == CreateMode.Instance)
+            rootName = "Select new instance type by layer";
          else
-            rootName = "Select Extends Type by Layer";
+            rootName = "Select type by layer";
       }
       else
          rootName = "Application Types by Layer";

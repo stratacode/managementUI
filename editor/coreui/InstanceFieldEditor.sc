@@ -4,8 +4,8 @@ import sc.lang.java.DeclarationType;
  * Base class for FormEditor and RowEditor - contains the functionality to manage a list of fields in the instance
  */
 abstract class InstanceFieldEditor extends InstanceEditor {
-   InstanceFieldEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx) {
-      super(view, parentEditor, parentProperty, type, instance, listIx);
+   InstanceFieldEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
+      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
    }
 
    boolean hasInnerTypeInstance(BodyTypeDeclaration subType) {
@@ -63,12 +63,12 @@ abstract class InstanceFieldEditor extends InstanceEditor {
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(elem, prop, propType, propInst, ix);
+         oldEditor.updateEditor(elem, prop, propType, propInst, ix, null);
          oldEditor.setElemToEdit(elem);
          return oldTag;
       }
       else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceFieldEditor.this, prop, propType, propInst, ix);
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceFieldEditor.this, prop, propType, propInst, ix, null);
          newEditor.setElemToEdit(elem);
          //newEditor.setRepeatIndex(ix);
          return newEditor;

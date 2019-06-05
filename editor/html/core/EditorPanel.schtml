@@ -27,7 +27,6 @@
       viewPanel.dataView.viewVisible = isDataView;
       viewPanel.formView.viewVisible = viewType == ViewType.FormViewType;
       viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
-      typeTreeModel.includeInstances = isDataView;
    }
 
    String editorViewStyle := %>
@@ -66,7 +65,7 @@
           
    <div id="trees" visible=":= windowOpen">
       <ul id="typeList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
-         <li id="typeTree" extends="BaseTypeTree" tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+         <li id="typeTree" extends="BaseTypeTree" myTypeTree=":= typeTreeModel.typeTree" tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreePercent == -1 ? "99.5%" : "99.5%") + ";"'/>
       </ul>
 
@@ -74,7 +73,7 @@
            maxPercent=":= menuStyle.treePanePer * 2" parentHeight=":= trees.offsetHeight" prevWindowHeight=":= typeList.offsetHeight"/>
 
       <ul id="layerList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
-         <li id="layerTree" extends="BaseTypeTree" byLayer="true" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+         <li id="layerTree" extends="BaseTypeTree" byLayer="true" myTypeTree="= typeTreeModel.byLayerTypeTree" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreeHeight == -1 ? "99.5%" : (100 - topTreePercent - 1) + "%") + ";"'/>
       </ul>
    </div>

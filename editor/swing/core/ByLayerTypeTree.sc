@@ -39,7 +39,7 @@ ByLayerTypeTree {
          rootTreeNode.removeChildNode(emptyCommentNode);
          needsOpenRoot = true;
       }
-      updatePackageContents(rootDirEnt, rootTreeNode, rootPathIndex, new TreePath(rootTreeNode));
+      updatePackageContents(rootDirEnt, rootTreeNode, new TreePath(rootTreeNode));
 
       if (rootTreeNode.childCount == 0) {
          if (editorModel.codeTypes.size()== CodeType.allSet.size())

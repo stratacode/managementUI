@@ -1,6 +1,6 @@
 class ErrorLabel extends JLabel {
    foreground = new Color(0xc7, 0x41, 0x41);
    size := preferredSize;
-   JTextField errorField;
-   location := SwingUtil.point(errorField.location.x, errorField.location.y + errorField.size.height + 5);
+   JComponent errorComponent;
+   location := SwingUtil.point(errorComponent.location.x, errorComponent.location.y + errorComponent.size.height + 5);
 }

@@ -39,7 +39,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
    int statusLineHeight = 32 + 2*ypad;
    int statusPanelHeight = statusLineHeight * 3;
 
-   newTypeNameField =: typeTreeModel.propertyMode ? statusPanel.createPanel.propertyTypeField.text : statusPanel.createPanel.objExtendsTypeField.text;
+   newTypeNameField =: typeTreeModel.propertyMode || typeTreeModel.currentCreateMode == CreateMode.Instance ?
+                       statusPanel.createPanel.propertyTypeField.text : statusPanel.createPanel.objExtendsTypeField.text;
 
    newLayerNameField =: typeTreeModel.createLayerMode ? statusPanel.createPanel.objExtendsTypeField.text : statusPanel.createPanel.addLayerField.text;
 
@@ -213,11 +214,19 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
    typeTreeModel {
       // Enable to create properties so prim values are displayed
-      propertyMode := statusPanel.createPanel.viewMode == CreatePanel.ViewMode.Property;
+      propertyMode := editorModel.currentCreateMode == CreateMode.Property;
       createMode := editorModel.createMode;
       addLayerMode := statusPanel.createPanel.addLayerMode;
       createLayerMode := statusPanel.createPanel.createLayerMode;
-      includeInstances := !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == ViewType.DataViewType;
+      currentCreateMode := editorModel.currentCreateMode;
+      viewType := EditorPanel.this.viewType;
+
+      typeTree {
+         selectionListener = splitPane.scrollTypeTree.typeTree;
+      }
+      byLayerTypeTree {
+         selectionListener = splitPane.scrollLayerTree.layerTree;
+      }
    }
 
    BaseTypeTree extends JTree {
@@ -232,9 +241,16 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       void openRootNode() {
          if (model == null)
             return;
+
+         /*
          DefaultMutableTreeNode rootNode = ((DefaultMutableTreeNode) model.getRoot());
          if (rootNode == null)
             return;
+         */
+
+         DefaultMutableTreeNode rootNode = myTypeTree.getOpenToRootEnt().treeNode;
+         if (rootNode == null)
+            rootNode = ((DefaultMutableTreeNode) model.getRoot());
 
          TreePath tp = new TreePath(rootNode.getPath());
          expandPath(tp);
@@ -354,6 +370,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
          object typeTree extends BaseTypeTree {
             model := typeTreeModel.typeTree.rootTreeModel;
+            myTypeTree := typeTreeModel.typeTree;
 
             rootTreeNode =: setCellRenderer(typeTreeModel.getCellRenderer());
          }
@@ -364,6 +381,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
          object layerTree extends BaseTypeTree {
             byLayer = true;
+            myTypeTree := typeTreeModel.byLayerTypeTree;
             model := typeTreeModel.byLayerTypeTree.rootTreeModel;
          }
       }

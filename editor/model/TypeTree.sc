@@ -42,7 +42,7 @@ class TypeTree {
 // because we will build these data structures on the server or client
    transient TreeNode rootTreeNode;
 
-   transient Map<String, List<TreeNode>> rootTreeIndex;
+   transient Map<String, List<TreeNode>> rootTreeIndex = new HashMap<String, List<TreeNode>>();
 
    public TypeTree(TypeTreeModel model) {
       treeModel = model;
@@ -337,7 +337,7 @@ class TypeTree {
                 case LayerGroup: // A folder that includes layer directories
                    if (!hasAVisibleChild(byLayer))
                       return false;
-                   return getTypeIsVisible();
+                   return true;
 
                 case InactiveLayer:
                    // Can't add a layer twice - only show inactive layers which are really not active
@@ -346,6 +346,8 @@ class TypeTree {
                 case LayerDir:   // A layer directory itself
                    if (treeModel.addLayerMode) // the layer filters were applied above.  When adding layers though, don't show layers that are already there
                       return false;
+                   if (byLayer && hasAVisibleChild(byLayer))
+                      return true;
                    return getTypeIsVisible();
 
                 case LayerFile:
@@ -411,6 +413,12 @@ class TypeTree {
       }
 
       boolean getTypeIsVisible() {
+         if (treeModel.createMode && treeModel.currentCreateMode == CreateMode.Instance) {
+            if (srcTypeName != null && editorModel.ctx.isCreateInstType(srcTypeName))
+               return true;
+            return false;
+         }
+
          if (entCodeTypes != null && treeModel.codeTypes != null) {
             boolean vis = false;
             for (int i = 0; i < entCodeTypes.size(); i++) {
@@ -461,17 +469,20 @@ class TypeTree {
          return objectId;
       }
 
-      void addChild(TreeEnt ent) {
+      void initChildLists() {
          if (childEnts == null)
             childEnts = new HashMap<String,TreeEnt>();
+         if (childList == null)
+            childList = new ArrayList<TreeEnt>();
+      }
 
+      void addChild(TreeEnt ent) {
          if (ent == null) {
             System.out.println("*** Error - null child");
             return;
          }
+         initChildLists();
 
-         if (childList == null)
-            childList = new ArrayList<TreeEnt>();
          childList.add(ent);
          TreeEnt old = childEnts.put(ent.nodeId, ent);
          if (old != null)
@@ -541,17 +552,6 @@ class TypeTree {
          return hasVisibleChildren = false;
       }
 
-      void findTypeTreeEnts(List<TreeEnt> res, String typeName) {
-         if (this.typeName != null && this.typeName.equals(typeName)) {
-            res.add(this);
-         }
-         if (childEnts != null) {
-            for (TreeEnt childEnt:childEnts.values()) {
-               childEnt.findTypeTreeEnts(res, typeName);
-            }
-         }
-      }
-
       boolean updateSelected() {
          if (type == EntType.Instance) {
             boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
@@ -615,6 +615,20 @@ class TypeTree {
 
          return false;
       }
+      
+      TreeEnt getSoloVisibleChild() {
+         if (childList == null)
+            return null;
+         TreeEnt lastVis = null;
+         for (TreeEnt childEnt:childList) {
+            if (childEnt.isVisible(byLayer)) {
+               if (lastVis != null) // More than one visible child so don't open below this node
+                  return null;
+               lastVis = childEnt;
+            }
+         }
+         return lastVis;
+      }
 
       public boolean updateInstances() {
          if (!needsInstances() || type == EntType.Instance)
@@ -625,7 +639,7 @@ class TypeTree {
                  needsType = true;
             }
             if (cachedTypeDeclaration != null) {
-               insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false);
+               insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false, null, false);
             }
          }
          return updateInstances(insts);
@@ -655,7 +669,8 @@ class TypeTree {
                       }
                    }
                    if (childEnt == null) {
-                      childEnt = new TreeEnt(EntType.Instance, inst.getObjectId(), typeTree, inst.typeName, null);
+                      String nodeDisplayName = getNodeIdFromInstance(inst.theInstance);
+                      childEnt = new TreeEnt(EntType.Instance, nodeDisplayName, typeTree, inst.typeName, null);
                       childEnt.instance = inst;
                       if (childEnt.srcTypeName == null)
                          childEnt.srcTypeName = srcTypeName;
@@ -677,6 +692,9 @@ class TypeTree {
       }
 
       abstract void refreshChildren();
+
+      void addInstance(Object inst) {
+      }
 
       public void clearMarkedFlag() {
          if (childList != null) {
@@ -705,7 +723,7 @@ class TypeTree {
       public String getNodeId() {
          switch (type) {
             case Instance:
-               return CTypeUtil.getClassName(instance.toString());
+               return getNodeIdFromInstance(instance.theInstance);
             default:
                return value;
          }
@@ -721,13 +739,15 @@ class TypeTree {
 
       if (treeModel.createMode) {
          if (treeModel.propertyMode)
-            rootName = "Select Property Type";
+            rootName = "Select property type";
          else if (treeModel.addLayerMode)
-            rootName = "Select Layer to Include";
+            rootName = "Select layer to include";
          else if (treeModel.createLayerMode)
-            rootName = "Select Extends Layers";
+            rootName = "Select extends layers";
+         else if (treeModel.currentCreateMode == CreateMode.Instance)
+            rootName = "Select type for new instance";
          else
-            rootName = "Select Extends Type";
+            rootName = "Select extends type";
       }
       else
          rootName = "Application Types";
@@ -743,5 +763,39 @@ class TypeTree {
       return false;
    }
 
-   public abstract void refreshTree(); 
+   public abstract void refreshTree();
+
+   // Keep an index of the visible nodes in the tree so we can do reverse selection - i.e. go from type name
+   // to list of visible tree nodes that refer to it.
+   void addToIndex(TreeEnt childEnt, TreeNode treeNode) {
+      if (childEnt.isSelectable()) {
+         List<TreeNode> l = rootTreeIndex.get(childEnt.typeName);
+         if (l == null) {
+            l = new ArrayList<TreeNode>();
+
+            if (childEnt.type != EntType.LayerDir)
+               rootTreeIndex.put(childEnt.typeName, l);
+
+            if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
+               rootTreeIndex.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
+         }
+         l.add(treeNode);
+      }
+   }
+   
+   public TreeEnt getOpenToRootEnt() {
+      if (rootDirEnt == null)
+         return null;
+      TreeEnt treeEnt = rootDirEnt;
+      do {
+         TreeEnt next = treeEnt.getSoloVisibleChild();
+         if (next == null)
+            return treeEnt;
+         treeEnt = next;
+      } while (true);
+   }
+
+   static String getNodeIdFromInstance(Object inst) {
+      return inst == null ? "<null>" : CTypeUtil.getClassName(DynUtil.getInstanceName(inst));
+   }
 }

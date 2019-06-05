@@ -9,9 +9,9 @@ ElementEditor {
 
    propertySuffix := (ModelUtil.isArray(propType) || propType instanceof List ? "[]" : "");
 
-   String propertyOperator := propertyOperator(formEditor.instance, propC);
+   String propertyOperator := propertyOperator(formEditor.instanceMode, propC);
 
-   boolean propertyInherited := EditorModel.getLayerForMember(propC) != formEditor.classViewLayer;
+   boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
 
    int tabSize;
    int xpad;
@@ -31,7 +31,7 @@ ElementEditor {
 
       icon := GlobalResources.lookupIcon(propC);
 
-      toolTipText := "Property of type: " + ModelUtil.getPropertyType(propC) + (propC instanceof PropertyAssignment ? " set " : " defined ") + "in: " + ModelUtil.getEnclosingType(propC);
+      toolTipText := getDescription();
    }
 
    object errorLabel extends JLabel {
@@ -39,6 +39,8 @@ ElementEditor {
       location := SwingUtil.point(formComponent.location.x, formComponent.location.y + formComponent.size.height + ypad);
       size := preferredSize;
       foreground := GlobalResources.errorTextColor;
+
+      preferredSize =: sizeChanged();
    }
 
    propertyName =: updateListeners(true);
@@ -48,7 +50,6 @@ ElementEditor {
    int x := prevCell == null ? xpad : prevCell.x + prevCell.width,
        y := prev == null ? formEditor.startY : prev.y + prev.height,
        width := cellWidth, height := cellHeight;
-
 
    static Border createCellBorder() {
       return new javax.swing.border.CompoundBorder(BorderFactory.createLineBorder(Color.black), new javax.swing.border.EmptyBorder(8, 8, 8, 8));
@@ -63,22 +64,32 @@ ElementEditor {
       baseline = parentView.baseline;
    }
 
+   String getDescription() {
+      if (propC instanceof CustomProperty)
+         return ((CustomProperty) propC).getDescription();
+      return "Property of type: " + ModelUtil.getPropertyType(propC) + (propC instanceof PropertyAssignment ? " set " : " defined ") + "in: " + ModelUtil.getEnclosingType(propC);
+   }
+
    void focusChanged(JComponent component, boolean newFocus) {
       if (propC instanceof CustomProperty)
          return;
       formEditor.parentView.focusChanged(component, propC, formEditor.instance, newFocus);
    }
 
-   String propertyOperator(Object instance, Object val) {
-      return val == null ? "" : (instance != null ? "" : ModelUtil.getOperator(val) != null ? " " + ModelUtil.getOperator(val) : " =");
+   String propertyOperator(boolean instanceMode, Object val) {
+      return val == null ? "" : (instanceMode ? "" : propOperator(val) != null ? " " + propOperator(val) : " =");
+   }
+   
+   String propOperator(Object val) {
+      return val instanceof CustomProperty ? ((CustomProperty) val).operator : ModelUtil.getOperator(val);
    }
 
    void displayFormError(String msg) {
       int ix = msg.indexOf(" - ");
       if (ix != -1) {
          msg = msg.substring(ix + 3);
-         errorLabel.text = msg;
       }
+      errorLabel.text = msg;
    }
 
    String getTextFieldValue() {
@@ -133,6 +144,10 @@ ElementEditor {
       oldPropName = propName;
    }
 
+   void updateInstanceProperty() {
+      errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue);
+   }
+
    void setElementValue(Object type, Object inst, Object prop, String text) {
       if (type == null || prop == null)
          return;
@@ -148,7 +163,7 @@ ElementEditor {
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(prop), JavaSemanticNode.MemberType.PropertyAnySet, null, null, null);
          // Update this manually since we change it when moving the operator into the label
          propertyName = getPropertyNameString(propC);
-         propertyOperator = propertyOperator(formEditor.instance, propC);
+         propertyOperator = propertyOperator(formEditor.instanceMode, propC);
          if (error != null)
             displayFormError(error);
       }
@@ -161,7 +176,12 @@ ElementEditor {
 
    String propertyValueString(Object instance, Object prop, int changeCt) {
       if (prop instanceof CustomProperty)
-         return ((CustomProperty) prop).value.toString();
+         return ((CustomProperty) prop).getValueString();
+      if (editorModel.pendingCreate) {
+         Object propVal = editorModel.currentWrapper.pendingValues.get(propertyName);
+         if (propVal != null)
+            return propVal.toString();
+      }
 
       if (formEditor == null)
          System.err.println("*** Error - no formEditor for propValue");
@@ -170,5 +190,17 @@ ElementEditor {
       else if (editorModel.ctx == null)
               System.err.println("*** Error - No context for prop value");
       return editorModel.ctx.propertyValueString(formEditor.type, instance, prop);
+   }
+
+   int getCellHeight() {
+      int defaultHeight = super.getCellHeight();
+      return defaultHeight + errorLabel.height;
+   }
+
+   void validateSize() {
+      Bind.refreshBinding(this, "x");
+      Bind.refreshBinding(this, "y");
+      Bind.refreshBinding(this, "width");
+      Bind.refreshBinding(this, "height");
    }
 }

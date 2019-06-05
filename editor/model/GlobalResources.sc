@@ -13,30 +13,30 @@ class GlobalResources {
    @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
    static HashMap<String,UIIcon> iconCache = new HashMap<String,UIIcon>();
 
-   final static UIIcon classIcon = createIcon("images/class.gif", "Class");
-   final static UIIcon objectIcon = createIcon("images/object.gif", "Object");
-   final static UIIcon classDynIcon = createIcon("images/classDyn.gif", "Dynamic Class");
-   final static UIIcon objectDynIcon = createIcon("images/objectDyn.gif", "Dynamic Object");
-   final static UIIcon interfaceIcon = createIcon("images/interface.gif", "Interface");
-   final static UIIcon interfaceDynIcon = createIcon("images/interfaceDyn.gif", "Dynamic interface");
-   final static UIIcon enumIcon = createIcon("images/enum.gif", "Enum");
-   final static UIIcon enumDynIcon = createIcon("images/enumDyn.gif", "Dynamic Enum");
-   final static UIIcon layerIcon = createIcon("images/layer.gif", "Compiled Layer");
-   final static UIIcon layerDynIcon = createIcon("images/layerDyn.gif", "Dynamic Layer");
-   final static UIIcon inactiveLayerIcon = createIcon("images/inactiveLayer.gif", "Inactive Layer");
+   final static UIIcon classIcon = createIcon("/images/class.gif", "Class");
+   final static UIIcon objectIcon = createIcon("/images/object.gif", "Object");
+   final static UIIcon classDynIcon = createIcon("/images/classDyn.gif", "Dynamic Class");
+   final static UIIcon objectDynIcon = createIcon("/images/objectDyn.gif", "Dynamic Object");
+   final static UIIcon interfaceIcon = createIcon("/images/interface.gif", "Interface");
+   final static UIIcon interfaceDynIcon = createIcon("/images/interfaceDyn.gif", "Dynamic interface");
+   final static UIIcon enumIcon = createIcon("/images/enum.gif", "Enum");
+   final static UIIcon enumDynIcon = createIcon("/images/enumDyn.gif", "Dynamic Enum");
+   final static UIIcon layerIcon = createIcon("/images/layer.gif", "Compiled Layer");
+   final static UIIcon layerDynIcon = createIcon("/images/layerDyn.gif", "Dynamic Layer");
+   final static UIIcon inactiveLayerIcon = createIcon("/images/inactiveLayer.gif", "Inactive Layer");
 
-   final static UIIcon stringIcon = createIcon("images/string.gif", "String");
-   final static UIIcon intIcon = createIcon("images/int.gif", "Integer");
-   final static UIIcon floatIcon = createIcon("images/float.gif", "Floating point");
-   final static UIIcon booleanIcon = createIcon("images/boolean.gif", "Boolean");
+   final static UIIcon stringIcon = createIcon("/images/string.gif", "String");
+   final static UIIcon intIcon = createIcon("/images/int.gif", "Integer");
+   final static UIIcon floatIcon = createIcon("/images/float.gif", "Floating point");
+   final static UIIcon booleanIcon = createIcon("/images/boolean.gif", "Boolean");
 
-   final static UIIcon stringDynIcon = createIcon("images/stringDyn.gif", "Dyn String");
-   final static UIIcon intDynIcon = createIcon("images/intDyn.gif", "Dyn Integer");
-   final static UIIcon floatDynIcon = createIcon("images/floatDyn.gif", "Dyn Floating point");
-   final static UIIcon booleanDynIcon = createIcon("images/booleanDyn.gif", "Dyn Boolean");
+   final static UIIcon stringDynIcon = createIcon("/images/stringDyn.gif", "Dyn String");
+   final static UIIcon intDynIcon = createIcon("/images/intDyn.gif", "Dyn Integer");
+   final static UIIcon floatDynIcon = createIcon("/images/floatDyn.gif", "Dyn Floating point");
+   final static UIIcon booleanDynIcon = createIcon("/images/booleanDyn.gif", "Dyn Boolean");
 
    // TODO: create an icon for instances - maybe a dot
-   final static UIIcon instanceIcon = createIcon("images/inst.gif", "Instance");
+   final static UIIcon instanceIcon = createIcon("/images/inst.gif", "Instance");
 
    final static UIColor needsSaveTextColor = new UIColor(0x1c, 0x88, 0x23);
    final static UIColor errorTextColor = new UIColor(0x88, 0x22, 0x33);

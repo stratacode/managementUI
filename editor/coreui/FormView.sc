@@ -29,6 +29,18 @@ class FormView extends BaseView {
       return currentObj;
    }
 
+   InstanceWrapper getWrapperForListElement(int ix) {
+      InstanceWrapper currentObj = null;
+      if (instanceMode) {
+      // TODO: if this is a nested type, we should find the sub-object of the parent type
+         if (editorModel.selectedInstances != null && editorModel.selectedInstances.size() > ix) {
+            currentObj = editorModel.selectedInstances.get(ix);
+            return currentObj;
+         }
+      }
+      return null;
+   }
+
    // We could revalidate the form when only the instance changes but it should be faster to just update the
    // instance in each form editor when switching between instances of the same type.
    void updateInstances() {
@@ -38,8 +50,10 @@ class FormView extends BaseView {
             if (childView instanceof FormEditor) {
                FormEditor childForm = (FormEditor) childView;
                Object newInst = getObjectForListElement(i);
-               if (childForm.instance != newInst) {
+               InstanceWrapper newWrapper = getWrapperForListElement(i);
+               if (childForm.instance != newInst || childForm.wrapper != newWrapper) {
                   childForm.instance = newInst;
+                  childForm.wrapper = newWrapper;
                   childForm.updateChildInsts();
                }
             }
@@ -52,5 +66,28 @@ class FormView extends BaseView {
          for (IElementEditor child:childViews)
             child.invalidateEditor();
       }
+   }
+   
+   void validateEditorTree() {
+      if (childViews != null) {
+         for (IElementEditor child:childViews)
+            child.validateEditorTree();
+      }
+   }
+
+   boolean validateTreeScheduled = false;
+
+   // Called when a child element's size has changed, or in general to refresh the lists and sizes of all tree components
+   void scheduleValidateTree() {
+      if (validateTreeScheduled)
+         return;
+      validateTreeScheduled = true;
+      DynUtil.invokeLater(new Runnable() {
+         public void run() {
+            validateTreeScheduled = false;
+            validateEditorTree();
+         }
+      }, 0);
+
    }
 }

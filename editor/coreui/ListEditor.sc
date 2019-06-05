@@ -11,8 +11,8 @@ class ListEditor extends InstanceEditor {
 
    // TODO: add sort-by and filter criteria
 
-   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx) {
-      super(view, parentEditor, parentProperty, type, insts, listIx);
+   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
+      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
       instList = insts;
       componentType = ModelUtil.getArrayComponentType(type);
       updateComponentTypeName();
@@ -20,7 +20,7 @@ class ListEditor extends InstanceEditor {
    }
 
    @sc.obj.ManualGetSet // NOTE: get/set conversion not performed when this annotation is used
-   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix) {
+   void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
       Object compType = ModelUtil.getArrayComponentType(elem);
       setTypeNoChange(prop, compType);
       componentType = compType;
@@ -98,12 +98,12 @@ class ListEditor extends InstanceEditor {
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
       if (oldClass == editorClass) {
          IElementEditor oldEditor = (IElementEditor) oldTag;
-         oldEditor.updateEditor(null, null, compType, listVal, listIx);
+         oldEditor.updateEditor(null, null, compType, listVal, listIx, null);
          oldEditor.setListIndex(listIx);
          return oldTag;
       }
       else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx);
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx, null);
          newEditor.setElemToEdit(compType);
          newEditor.setRepeatIndex(ix);
          return newEditor;
@@ -112,7 +112,7 @@ class ListEditor extends InstanceEditor {
 
    void gotoComponentType() {
       if (componentTypeName != null)
-         editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, componentTypeName), null);
+         editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, componentTypeName), null, null);
    }
 
    Object getEditorClass(String editorType, String displayMode) {
