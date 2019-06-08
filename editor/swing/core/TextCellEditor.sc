@@ -29,21 +29,24 @@ TextCellEditor {
       focus =: focusChanged(this, focus);
    }
 
-   void setElementValue(Object type, Object inst, Object val, String text) {
+   String setElementValue(Object type, Object inst, Object val, String text) {
       if (type == null || val == null)
-         return;
+         return "No type or value";
+      String error = null;
       try {
          if (type instanceof ClientTypeDeclaration)
             type = ((ClientTypeDeclaration) type).getOriginal();
 
-         super.setElementValue(type, inst, val, text);
+         error = super.setElementValue(type, inst, val, text);
          textField.enteredText = propertyValueString(formEditor.instance, propC, changeCt);
       }
       catch (RuntimeException exc) {
-         displayFormError(exc.getMessage());
+         error = exc.getMessage();
+         displayFormError(error);
       }
       finally {
       }
+      return error;
    }
 
    String getElementStringValue() {

@@ -175,7 +175,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    void changeCurrentType(Object type, Object inst, InstanceWrapper wrapper) {
-      if (type == currentType && inst == currentInstance)
+      if (type == currentType && inst == currentInstance && wrapper == currentWrapper)
          return;
 
       String newTypeName = null;
@@ -485,5 +485,4 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       }
       return null;
    }
-
 }

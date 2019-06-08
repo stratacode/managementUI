@@ -13,6 +13,8 @@ ElementEditor {
 
    boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
 
+   boolean propertyIsCurrent := editorModel.currentProperty == propC;
+
    int tabSize;
    int xpad;
    int ypad;
@@ -25,7 +27,8 @@ ElementEditor {
       location := SwingUtil.point(ElementEditor.this.x+xpad+labelExtra, ElementEditor.this.y + baseline);
       size := preferredSize;
 
-      foreground := propertyInherited ? GlobalResources.transparentTextColor : GlobalResources.normalTextColor;
+      foreground := propertyIsCurrent ? GlobalResources.highlightColor :
+          propertyInherited ? GlobalResources.transparentTextColor : GlobalResources.normalTextColor;
 
       text := propertyName + propertySuffix + propertyOperator;
 
@@ -148,9 +151,10 @@ ElementEditor {
       errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue);
    }
 
-   void setElementValue(Object type, Object inst, Object prop, String text) {
+   String setElementValue(Object type, Object inst, Object prop, String text) {
       if (type == null || prop == null)
-         return;
+         return "No type or property";
+      String error = null;
       try {
          if (type instanceof ClientTypeDeclaration)
             type = ((ClientTypeDeclaration) type).getOriginal();
@@ -158,7 +162,7 @@ ElementEditor {
          errorLabel.text = "";
          //disableFormRebuild = true;
          boolean instMode = formEditor.parentView.instanceMode;
-         String error = editorModel.setElementValue(type, inst, prop, text, !instMode, instMode, inst == null);
+         error = editorModel.setElementValue(type, inst, prop, text, !instMode, instMode, inst == null);
          // Refetch the member since we may have just defined one for this type
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(prop), JavaSemanticNode.MemberType.PropertyAnySet, null, null, null);
          // Update this manually since we change it when moving the operator into the label
@@ -166,12 +170,13 @@ ElementEditor {
          propertyOperator = propertyOperator(formEditor.instanceMode, propC);
          if (error != null)
             displayFormError(error);
+         return error;
       }
       catch (RuntimeException exc) {
-         displayFormError(exc.getMessage());
+         error = exc.getMessage().toString();
+         displayFormError(error);
       }
-      finally {
-      }
+      return error;
    }
 
    String propertyValueString(Object instance, Object prop, int changeCt) {

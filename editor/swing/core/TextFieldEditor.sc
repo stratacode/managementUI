@@ -32,21 +32,26 @@ TextFieldEditor {
    }
 
    // TODO: prop is the same as propC here - can we remove that arg.  It's not an event trigger for sure.
-   void setElementValue(Object type, Object inst, Object prop, String text) {
+   String setElementValue(Object type, Object inst, Object prop, String text) {
       if (type == null || prop == null)
-         return;
+         return "No type or prop";
+      String error = null;
       try {
          if (type instanceof ClientTypeDeclaration)
             type = ((ClientTypeDeclaration) type).getOriginal();
 
-         super.setElementValue(type, inst, prop, text);
-         textField.enteredText = propertyValueString(formEditor.instance, prop, changeCt);
+         error = super.setElementValue(type, inst, prop, text);
+         // Let the user correct the error text in this case
+         if (errorText == null || errorText.length() == 0)
+            textField.enteredText = propertyValueString(formEditor.instance, prop, changeCt);
       }
       catch (RuntimeException exc) {
-         displayFormError(exc.getMessage());
+         error = exc.getMessage();
+         displayFormError(error);
       }
       finally {
       }
+      return error;
    }
 
    String getElementStringValue() {

@@ -146,13 +146,13 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
    JComponent preInComponent := currentCreateMode == CreateMode.Property ? propertyTypeField : objInnerChoice;
 
-   boolean innerType := !StringUtil.equalStrings((String)objInnerChoice.selectedItem, "Top level") && currentCreateMode != CreateMode.Layer;
+   boolean innerType := !StringUtil.equalStrings((String)objInnerChoice.selectedItem, "Top level") && currentCreateMode != CreateMode.Layer && !instMode;
 
    object inLabel extends JLabel {
       override @sc.bind.NoBindWarn
       location := SwingUtil.point(preInComponent.location.x + preInComponent.size.width + xpad, ypad + baseline);
       size := preferredSize;
-      text := String.valueOf(editorModel.currentPropertyType);
+      text := "in " + String.valueOf(editorModel.currentPropertyType);
       visible := innerType;
    }
 
@@ -254,13 +254,19 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
    }
 
    void onModeChange() {
-      switch (currentCreateMode) {
-         case Property:
-         case Instance:
-            if (editorModel.currentType == null) {
-               displayCreateError("Select a type for the new " + currentCreateMode.toString().toLowerCase());
-            }
-            break;
+      if (createMode) {
+         switch (currentCreateMode) {
+            case Instance:
+               if (editorModel.currentType == null) {
+                  displayCreateError("Select a type for the new " + currentCreateMode.toString().toLowerCase());
+               }
+               else {
+                  propertyTypeField.text = CTypeUtil.getClassName(editorModel.typeNames[0]);
+               }
+               break;
+            case Property:
+              break;
+         }
       }
    }
 
@@ -373,6 +379,9 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
 
       row1DialogError.errorText = "";
       row2DialogError.errorText = "";
+
+      // Switch back to non-create mode
+      editorModel.createMode = false;
 
       opComplete++;
    }
