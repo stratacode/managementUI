@@ -569,12 +569,17 @@ class TypeTree {
                // Leave the folder selected as long as it marks the current package
                else if (!DynUtil.equalObjects(srcTypeName, editorModel.currentPackage))
                   selected = false;
+
+               if (!selected)
+                  needsRefresh = true;
             }
          }
          else {
             boolean newSel = editorModel.isTypeNameSelected(typeName);
-            if (newSel != selected)
+            if (newSel != selected) {
                selected = newSel;
+               needsRefresh = true;
+            }
             boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
             if (newCreate != createModeSelected)
                createModeSelected = newCreate;

@@ -366,12 +366,16 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
       }
    }
 
-   void clearForm() {
+   void clearTextFields() {
       objExtendsTypeField.text = "";
       propertyFieldValueEditor.valueField.text = "";
       nameField.text = "";
       packageTextField.text = "";
       addLayerField.text = "";
+   }
+
+   void clearForm() {
+      clearTextFields();
 
       if (editorModel.pendingCreate) {
          editorModel.cancelCreate();
@@ -469,8 +473,9 @@ class CreatePanel extends JPanel implements EditorPanelStyle {
          }
          else {
             displayCreateError(pendingCreateError);
+            // Reset the fields for the next time but don't reset the mode
             if (pendingCreateError == null)
-               clearForm();
+               clearTextFields();
          }
       }
       else {

@@ -328,14 +328,18 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          // In create mode, we immediately clear the selection because it just temporarily copies the value into the
          // dialog
          if (!typeTreeModel.createMode) {
+            boolean instSelected = false;
             if (selectedInstances != null && selectedInstances.size() > 0) {
                for (int i = 0; i < selectedInstances.size(); i++) {
                   InstanceWrapper wrapper = selectedInstances.get(i);
                   typeTreeModel.addTreePaths(paths, byLayer, wrapper.typeName + ":" + wrapper.toString(), false);
+                  instSelected = true;
                }
             }
-            for (int i = 0; i < selectedTypeNames.length; i++) {
-               typeTreeModel.addTreePaths(paths, byLayer, selectedTypeNames[i], false);
+            if (!instSelected) {
+               for (int i = 0; i < selectedTypeNames.length; i++) {
+                  typeTreeModel.addTreePaths(paths, byLayer, selectedTypeNames[i], false);
+               }
             }
             // If we've selected a package in non create mode, that's just a regular selection, as the target for
             // a create perhaps.

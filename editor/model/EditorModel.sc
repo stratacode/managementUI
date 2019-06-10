@@ -160,6 +160,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       if (typeName == null)
          return false;
 
+      // When an instance is selected, it's type is not
+      if (selectedInstances != null && selectedInstances.size() > 0)
+         return false;
+
       for (String tn:typeNames)
          if (tn.equals(typeName))
             return true;
