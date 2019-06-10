@@ -214,12 +214,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
 
    typeTreeModel {
       // Enable to create properties so prim values are displayed
-      propertyMode := editorModel.currentCreateMode == CreateMode.Property;
-      createMode := editorModel.createMode;
       addLayerMode := statusPanel.createPanel.addLayerMode;
       createLayerMode := statusPanel.createPanel.createLayerMode;
-      currentCreateMode := editorModel.currentCreateMode;
-      viewType := EditorPanel.this.viewType;
 
       typeTree {
          selectionListener = splitPane.scrollTypeTree.typeTree;

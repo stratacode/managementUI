@@ -75,6 +75,7 @@ abstract class InstanceFieldEditor extends InstanceEditor {
       }
    }
 
+   /* moved to InstanceEditor
    void parentInstanceChanged(Object parentInst) {
       if (parentInst == null)
          instance = null;
@@ -86,6 +87,7 @@ abstract class InstanceFieldEditor extends InstanceEditor {
             instance = null;
       }
    }
+   */
 
    void updateChildInsts() {
       if (childViews != null) {

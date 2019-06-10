@@ -15,12 +15,15 @@ InstanceEditor {
       for (int i = 0; i < repeatComponents.size(); i++) {
          IElementEditor ed = (IElementEditor) repeatComponents.get(i);
 
+         IElementEditor cur;
+
          if (childViews.size() <= curIx) {
             childViews.add(ed);
             SwingUtil.addChild(this, ed);
          }
-         else if (childViews.get(curIx) != ed) {
-            remove(curIx);
+         else if ((cur = childViews.get(curIx)) != ed) {
+            if (cur != null)
+               SwingUtil.removeChild(this, cur);
             childViews.set(curIx, ed);
             SwingUtil.addChild(this, ed);
          }
@@ -31,8 +34,8 @@ InstanceEditor {
       }
       if (removeEnd) {
          while (curIx < childViews.size()) {
-            remove(curIx);
-            childViews.remove(curIx);
+            IElementEditor remEd = childViews.remove(curIx);
+            SwingUtil.removeChild(this, remEd);
          }
       }
    }

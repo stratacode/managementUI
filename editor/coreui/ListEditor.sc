@@ -54,18 +54,33 @@ class ListEditor extends InstanceEditor {
       refreshVisibleList();
    }
 
-   // Instance change events where the instance itself has not changed might mean that the contents of the list have been changed
-   void instanceChanged() {
+   void updateInstance() {
+      updateInstList();
+   }
+
+   void updateInstList() {
       if (instance instanceof List && instance != instList)
          instList = (List) instance;
+      else if (instance == null)
+         instList = null;
+   }
+
+   // Instance change events where the instance itself has not changed might mean that the contents of the list have been changed
+   void instanceChanged() {
+      updateInstList();
       refreshVisibleList();
       super.instanceChanged();
+
+      parentView.scheduleValidateTree();
    }
 
    void refreshVisibleList() {
       oldLayer = editorModel == null ? null : editorModel.currentLayer;
       if (instList == null) {
-         visList = new ArrayList();
+         if (visList == null)
+            visList = new ArrayList();
+         else
+            visList.clear();
       }
       else {
          int inSz = instList.size();

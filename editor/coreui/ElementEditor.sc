@@ -197,6 +197,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       int width = formEditor.getExplicitWidth(listIndex);
       if (width != -1)
          return width;
+      if (explicitWidth != -1)
+         return explicitWidth;
       if (propC instanceof CustomProperty)
          return ((CustomProperty) propC).defaultWidth;
       return formEditor.getDefaultCellWidth(editorType, propC);
@@ -205,8 +207,12 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    int getCellHeight() {
       if (formEditor == null)
          return 0;
-      //int height = formEditor.getExplicitHeight(listIndex);
-      int height = explicitHeight;
+      // If this component is in a row, this will return the row height
+      int height = formEditor.getExplicitHeight(listIndex);
+      //int height = explicitHeight;
+      if (height != -1)
+         return height;
+      height = explicitHeight;
       if (height != -1)
          return height;
       return formEditor.getDefaultCellHeight(editorType, propC);

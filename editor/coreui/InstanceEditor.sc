@@ -59,21 +59,29 @@ abstract class InstanceEditor extends TypeEditor {
 
    void init() {
       super.init();
-      instanceChanged();
+      updateInstance();
+   }
+
+   void updateInstance() {
+      oldInstance = instance;
    }
 
    void instanceChanged() {
       if (removed)
          return;
       if (instance != oldInstance) {
-         childViewsChanged();
+         childViewsChanged(false);
          oldInstance = instance;
       }
    }
 
-   void childViewsChanged() {
+   void childViewsChanged(boolean fromParent) {
       updateListeners(true);
-      updateChildInsts();
+      // When we are rebuilding the child list anyway don't up the child instances. If this is only an update
+      // to the instance for this editor, we need to let any child views know that the parent instance has
+      // changed.
+      if (!fromParent)
+         updateChildInsts();
    }
 
    void updateListeners(boolean add) {
@@ -118,6 +126,10 @@ abstract class InstanceEditor extends TypeEditor {
    void parentPropValueChanged() {
       Object parentInst = ((InstanceEditor) parentEditor).instance;
       if (parentInst != null) {
+         if (parentProperty instanceof CustomProperty) {
+            System.out.println("***");
+            return;
+         }
          String propName = ModelUtil.getPropertyName(parentProperty);
          Object newInst = DynUtil.getPropertyValue(parentInst, propName);
          instance = newInst;
@@ -173,5 +185,19 @@ abstract class InstanceEditor extends TypeEditor {
          }
       }
       return -1;
+   }
+
+   void parentInstanceChanged(Object parentInst) {
+      if (parentInst == null)
+         instance = null;
+      else {
+         if (parentProperty instanceof CustomProperty)
+            return;
+         String propName = parentProperty == null ? CTypeUtil.getClassName(ModelUtil.getInnerTypeName(type)) : ModelUtil.getPropertyName(parentProperty);
+         if (DynUtil.hasProperty(parentInst, propName))
+            instance = DynUtil.getProperty(parentInst, propName);
+         else
+            instance = null;
+      }
    }
 }

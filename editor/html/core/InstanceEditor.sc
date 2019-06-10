@@ -8,7 +8,7 @@ InstanceEditor {
       }
 
       void repeatTagsChanged() {
-         childViewsChanged();
+         childViewsChanged(true);
       }
 
       // Called when an element above us in the list has been removed, so we can renumber the elements in the list.
@@ -29,6 +29,7 @@ InstanceEditor {
    }
 
    void updateListeners(boolean add) {
+      scheduleValidateTree();
       if (repeatWrapper != null) {
          Object[] children = DynUtil.getObjChildren(repeatWrapper, null, true);
          if (children == null) {
