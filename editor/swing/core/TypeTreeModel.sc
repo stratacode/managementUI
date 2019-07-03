@@ -150,19 +150,20 @@ TypeTreeModel {
       return new TreeCellRenderer();
    }
 
-   void addTreePaths(List<TreePath> paths, boolean byLayer, String typeOrPkgName, boolean pkgName) {
+   boolean addTreePaths(List<TreePath> paths, boolean byLayer, String typeOrPkgName, boolean pkgName) {
       Map<String, List<TreePath>> index = byLayer ? byLayerTypeTree.rootPathIndex : typeTree.rootPathIndex;
       if (index == null) // not initialized yet
-         return;
+         return false;
       if (pkgName)
          typeOrPkgName = PKG_INDEX_PREFIX + typeOrPkgName;
       List<TreePath> l = index.get(typeOrPkgName);
       if (l == null || l.size() == 0)
-         return;
+         return false;
       // TODO: filter by the currently selected layer?
       for (int i = 0; i < l.size(); i++) {
          paths.add(l.get(i));
       }
+      return true;
    }
 
    boolean nodeExists(String typeName) {

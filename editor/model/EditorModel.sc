@@ -48,6 +48,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** The enclosing type of the current property */
    Object currentPropertyType;
 
+   /** The name of currentProperty */
+   String currentPropertyName;
+
    /** The currentPropertyType filtered based on the imported type name */
    String importedPropertyType;
 
@@ -488,5 +491,25 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          return props;
       }
       return null;
+   }
+
+   public String getLayerPrefixForLayerName(String layerName) {
+      Layer layer = system.getLayerByDirName(layerName);
+      if (layer != null)
+         return "Package: " + layer.packagePrefix +
+                (layer.packagePrefix != null && layer.packagePrefix.length() > 0 ? "." : "");
+      return "";
+   }
+
+   public List<String> getMatchingLayerNamesForType(String typeName) {
+      if (system.layers == null)
+         return java.util.Arrays.asList(new String[]{"No layers loaded"});
+      ArrayList<String> res = new ArrayList<String>();
+      for (Layer layer:system.layers) {
+         if (typeName == null || typeName.length() == 0 ||
+             layer.packagePrefix == null || typeName.startsWith(layer.packagePrefix + "."))
+            res.add(layer.getLayerName());
+      }
+      return res;
    }
 }

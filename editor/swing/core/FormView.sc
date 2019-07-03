@@ -143,6 +143,8 @@ FormView {
 
          void listChanged() {
             validateTree();
+            // TODO: and remove explicit repaint/stuff below?
+            // super.listChanged();
          }
 
          public void validateTree() {
@@ -186,6 +188,7 @@ FormView {
             if (maxChildHeight != newMaxChildY)
                maxChildHeight = newMaxChildY;
 
+            // TODO: replace with super.listChanged call above?
             invalidate();
             FormView.this.invalidate();
             doLayout();

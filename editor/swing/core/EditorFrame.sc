@@ -129,7 +129,7 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
 
        CreatePanel cp = editorPanel.statusPanel.createPanel;
        cp.createTypeChoice.selectedItem = "Layer";
-       cp.addLayerField.requestFocus();
+       cp.createSubPanel.requestFocus();
    }
 
    void showErrorDialog(String message, String title) {

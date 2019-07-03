@@ -14,6 +14,7 @@ import sc.lang.java.InterfaceDeclaration;
 import sc.lang.java.VariableDefinition;
 import sc.lang.java.ConstructorDefinition;
 import sc.lang.java.ModelUtil;
+import sc.lang.JavaLanguage;
 import sc.lang.sc.PropertyAssignment;
 
 import sc.lang.IUndoOp;
@@ -27,7 +28,7 @@ EditorModel {
    BodyTypeDeclaration currentCtxType := ctx.currentType;
 
    override @Bindable(crossScope=true)
-   currentCtxType =: changeCurrentType(currentCtxType, ctx.currentObject, null);
+   currentCtxType =: !pendingCreate ? changeCurrentType(currentCtxType, ctx.currentObject, null) : null;
 
    currentProperty =: validateCurrentProperty();
 
@@ -618,6 +619,45 @@ EditorModel {
       return ctx.setElementValue(type, inst, prop, expr, updateType, updateInstances, valueIsExpr);
    }
 
+
+   String validateTypeText(String text, boolean instType) {
+      String typeName = text.trim();
+      if (typeName.length() == 0) {
+         return null;
+      }
+      String err = ModelUtil.validateElement(JavaLanguage.getJavaLanguage().type, text, false);
+      if (err != null) {
+         return err;
+      }
+      else {
+         if (instType) {
+            if (!ctx.isCreateInstType(typeName)) {
+               String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
+               if (fullTypeName == null)
+                  return "No type named: " + typeName;
+               return null;
+            }
+            else
+               return null;
+         }
+         else
+            return null;
+      }
+   }
+
+   String validateNameText(String text) {
+      if (text.trim().length() == 0) {
+         return null;
+      }
+      JavaLanguage lang = JavaLanguage.getJavaLanguage();
+      String err = ModelUtil.validateElement(lang.identifier, text, false);
+      if (err != null) {
+         return err;
+      }
+      return null;
+   }
+
+
    String updateCurrentProperty(Object operator, String value, boolean instanceMode) {
       return setElementValue(currentPropertyType, null, currentProperty, operator + value, !instanceMode, true, true);
    }
@@ -626,6 +666,7 @@ EditorModel {
       Object prop = currentProperty;
       if (prop == null) {
          currentPropertyType = null;
+         currentPropertyName = null;
       }
       else {
          currentPropertyType = ModelUtil.getEnclosingType(prop);
@@ -633,6 +674,7 @@ EditorModel {
          savedPropertyOperator = currentPropertyOperator = ModelUtil.getOperator(currentProperty);
          if (savedPropertyOperator == null)
             savedPropertyOperator = currentPropertyOperator = "=";
+         currentPropertyName = ModelUtil.getPropertyName(prop);
       }
       propertySelectionChanged();
    }
@@ -791,6 +833,10 @@ EditorModel {
       }
    }
 
+   public Object findType(String typeName) {
+      return system.getSrcTypeDeclaration(typeName, null, true);
+   }
+
    public String findCurrentType(String rootName) {
       if (rootName == null)
          return null;
@@ -907,7 +953,62 @@ EditorModel {
       else
          return "Unable to create instance of type: " + typeName + " - no type metadata found";
       return null;
-    }
+   }
+
+   public String createType(CreateMode mode, String name, Object outerType, String extendsTypeName, String pkg, Layer destLayer) {
+      String err;
+      if (name.length() == 0)
+         err = "No name specified for new " + mode.toString().toLowerCase();
+      else if (outerType != null)
+         err = ctx.addInnerType(mode == CreateMode.Object ? "Object" : "Class", outerType, name, extendsTypeName, false, null);
+      else {
+         if (destLayer == null)
+            err = "No layer specified for new " + mode.toString().toLowerCase();
+         err = addTopLevelType(mode == CreateMode.Object ? "Object" : "Class", pkg, destLayer, name, extendsTypeName);
+      }
+      return err;
+   }
+
+   public String createLayer(String layerName, String pkgIdentifier, String extendsTypeList, boolean isDynamic, boolean isPublic, boolean isTransparent) {
+      try {
+         String layerPackage = pkgIdentifier == null || pkgIdentifier.trim().length() == 0 ? "" : ctx.validateIdentifier(pkgIdentifier);
+         String[] extendsNames = ctx.validateExtends(extendsTypeList);
+
+         Layer layer = ctx.createLayer(layerName, layerPackage, extendsNames, isDynamic, isPublic, isTransparent, true);
+
+         if (layer != null) {
+            changeCurrentTypeName(layer.layerModelTypeName);
+            createMode = false;
+         }
+
+         return null;
+      }
+      catch (IllegalArgumentException exc) {
+         return exc.toString();
+      }
+   }
+
+   public String addLayer(String layerNameList, boolean isDynamic) {
+      try {
+         String[] addNames = ctx.validateExtends(layerNameList);
+
+         Layer origLastLayer = system.lastLayer;
+
+         ctx.addLayers(addNames, isDynamic, true);
+
+         Layer newLastLayer = system.lastLayer;
+         if (newLastLayer != origLastLayer) {
+            if (newLastLayer != null) {
+               changeCurrentTypeName(newLastLayer.layerModelTypeName);
+               createMode = false;
+            }
+         }
+         return null;
+      }
+      catch (IllegalArgumentException exc) {
+         return exc.toString();
+      }
+   }
 
    public void cancelCreate() {
       changeCurrentType(null, null, null);

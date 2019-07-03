@@ -1,5 +1,9 @@
 enum CreateMode {
-   Instance, Property, Class, Object, Layer;
+   Instance,
+   Property,
+   Class,
+   Object,
+   Layer;
 
    static String[] getAllNames() {
       return new String[] {"Instance", "Property", "Class", "Object", "Layer"};

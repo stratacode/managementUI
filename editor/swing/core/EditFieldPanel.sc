@@ -5,7 +5,7 @@ class EditFieldPanel extends JPanel implements EditorPanelStyle {
    EditorModel editorModel;
 
    Object currentProperty := editorModel.currentProperty;
-   currentProperty =: fieldValueEditor.opSelector.selectedItem = currentProperty == null ? "=" : ModelUtil.getOperator(currentProperty);
+   //currentProperty =: fieldValueEditor.opSelector.selectedItem = currentProperty == null ? "=" : ModelUtil.getOperator(currentProperty);
 
    int icxpad = 2;
    int confirmButtonsWidth = (24 + icxpad) * 2;

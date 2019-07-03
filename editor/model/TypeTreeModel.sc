@@ -24,8 +24,11 @@ import sc.dyn.DynUtil;
 import sc.sync.SyncManager;
 
 @sc.obj.Component
+@sc.obj.CompilerSettings(constructorProperties="editorModel,viewType")
 class TypeTreeModel {
    EditorModel editorModel;
+   EditorPanel.ViewType viewType;
+
    LayeredSystem system;
 
    ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
@@ -37,7 +40,6 @@ class TypeTreeModel {
    boolean propertyMode = false; // when create mode is true, are we creating properties or types?
 
    CreateMode currentCreateMode;
-   EditorPanel.ViewType viewType;
    boolean addLayerMode = false;  // Exclusive with the other two
    boolean createLayerMode = false; // When layerMode is true, are we including or creating?
    boolean layerMode := createLayerMode || addLayerMode;

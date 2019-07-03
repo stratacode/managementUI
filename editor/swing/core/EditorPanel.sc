@@ -39,10 +39,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
    int statusLineHeight = 32 + 2*ypad;
    int statusPanelHeight = statusLineHeight * 3;
 
-   newTypeNameField =: typeTreeModel.propertyMode || typeTreeModel.currentCreateMode == CreateMode.Instance ?
-                       statusPanel.createPanel.propertyTypeField.text : statusPanel.createPanel.objExtendsTypeField.text;
-
-   newLayerNameField =: typeTreeModel.createLayerMode ? statusPanel.createPanel.objExtendsTypeField.text : statusPanel.createPanel.addLayerField.text;
+   newTypeNameField =: statusPanel.createPanel.newTypeSelected;
+   newLayerNameField =: statusPanel.createPanel.newLayerSelected;
 
    class ToolBarButton extends JButton {
       size := preferredSize;
@@ -332,8 +330,10 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             if (selectedInstances != null && selectedInstances.size() > 0) {
                for (int i = 0; i < selectedInstances.size(); i++) {
                   InstanceWrapper wrapper = selectedInstances.get(i);
-                  typeTreeModel.addTreePaths(paths, byLayer, wrapper.typeName + ":" + wrapper.toString(), false);
-                  instSelected = true;
+                  // note: for singleton tree nodes, we have treeEnt.instance set but don't create a special node in the index so just use
+                  // the selectedTypeName to do the selection in that case.
+                  if (typeTreeModel.addTreePaths(paths, byLayer, wrapper.typeName + ":" + wrapper.toString(), false))
+                     instSelected = true;
                }
             }
             if (!instSelected) {
@@ -555,10 +555,10 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          editorModel := EditorPanel.this.editorModel;
       }
       object createPanel extends CreatePanel {
+         editorModel = EditorPanel.this.editorModel;
          visible := editorModel.createMode;
          location := SwingUtil.point(editStart, ypad);
          size := SwingUtil.dimension(statusPanel.size.width - editStart, statusPanelHeight);
-         editorModel := EditorPanel.this.editorModel;
 
          opComplete =: editFieldPanel.currentTypeTextField.requestFocus();
       }

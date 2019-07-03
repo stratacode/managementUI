@@ -27,7 +27,7 @@ ReferenceFieldEditor {
    height := (int) (refLabel.location.y + refLabel.size.height) + 2 * ypad;
 
    object instanceList extends JComboBox {
-      location := SwingUtil.point(nameButton.location.x + nameButton.size.width + xpad, baseline);
+      location := SwingUtil.point(nameButton.location.x + nameButton.size.width + xpad, 0);
       size := preferredSize;
       //items := !visible ? java.util.Collections.emptyList() : instancesOfType;
       items := instancesOfType;

@@ -14,12 +14,12 @@ class EditorPanel {
 
    @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object typeTreeModel extends TypeTreeModel {
-      editorModel := EditorPanel.this.editorModel;
+      editorModel = EditorPanel.this.editorModel;
+      viewType := EditorPanel.this.viewType;
 
       propertyMode := editorModel.currentCreateMode == CreateMode.Property;
       createMode := editorModel.createMode;
       currentCreateMode := editorModel.currentCreateMode;
-      viewType := EditorPanel.this.viewType;
    }
 
    enum ViewType {
