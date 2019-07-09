@@ -31,24 +31,13 @@ CreateProperty {
       location := SwingUtil.point(propertyStart, ypad);
       size := SwingUtil.dimension(propertyFieldRatio * (createPanel.size.width - propertyStart - xpad), preferredSize.height);
 
-      text =: validateType();
-
       completionProvider {
          ctx := editorModel.ctx;
          completionType = CompletionTypes.ApplicationType;
       }
-
-      void validateType() {
-         String err = editorModel.validateTypeText(text, false);
-         if (err == null)
-            createPanel.displayComponentError("", null);
-         else
-            createPanel.displayComponentError(err, this);
-      }
    }
 
    object inLabel extends JLabel {
-      override @sc.bind.NoBindWarn
       location := SwingUtil.point(propertyTypeField.location.x + propertyTypeField.size.width + xpad, ypad + baseline);
       size := preferredSize;
       text = "to ";
@@ -59,7 +48,7 @@ CreateProperty {
       items := editorModel.ctx.getCreateInstTypeNames();
       location := SwingUtil.point(inLabel.location.x + inLabel.size.width + xpad, ypad);
       size := preferredSize;
-      selectedItem =: updateCurrentType((String)selectedItem);
+      selectedItem =: editorModel.updateCurrentType((String)selectedItem);
    }
 
    object beforeAfter extends JComboBox {
@@ -71,7 +60,7 @@ CreateProperty {
    object beforeAfterLabel extends JLabel {
       location := SwingUtil.point(beforeAfter.location.x + beforeAfter.size.width + xpad, ypad + baseline);
       size := preferredSize;
-      text := relPropertyName == null ? "the " + (addBefore ? "first" : "last")  + " property" : relPropertyName;
+      text := beforeAfterText;
    }
 
    object nameLabel extends JLabel {
@@ -86,13 +75,9 @@ CreateProperty {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(nameFieldRatio * createPanel.size.width, preferredSize.height);
 
-      text =: validateName(text);
+      text =: displayNameError(editorModel.validateNameText(text));
 
-      userEnteredCount =: createProperty();
-
-      void clearError() {
-         displayNameError("");
-      }
+      userEnteredCount =: doSubmit();
    }
 
    object propertyFieldValueEditor extends FieldValueEditor {
@@ -100,7 +85,7 @@ CreateProperty {
       size := SwingUtil.dimension((int)(createPanel.size.width - (nameField.location.x + nameField.size.width + 2*xpad)), valueField.preferredSize.height);
 
       valueField {
-         userEnteredCount =: confirmButtons.okButton.enabled ? createProperty() : null;
+         userEnteredCount =: confirmButtons.okButton.enabled ? doSubmit() : null;
       }
 
       confirmButtons {
@@ -110,7 +95,7 @@ CreateProperty {
             clickCount =: createPanel.clearForm();
          }
          okButton {
-            clickCount =: createProperty();
+            clickCount =: doSubmit();
          }
       }
    }
@@ -121,14 +106,14 @@ CreateProperty {
    }
 
    void doSubmit() {
-      createProperty();
-   }
-
-   void createProperty() {
-      super.createProperty();
+      super.doSubmit();
 
       // After create, go back to the name since we may create multiples of the same thing.
       nameField.requestFocus();
+   }
+
+   void displayComponentError(String error) {
+      createPanel.displayComponentError(error, propertyTypeField);
    }
 
    void displayNameError(String error) {
@@ -139,8 +124,4 @@ CreateProperty {
       nameField.requestFocus();
    }
 
-   void updateCurrentType(String typeName) {
-      if (editorModel.currentType == null || !StringUtil.equalStrings(editorModel.typeNames[0], typeName))
-         editorModel.findCurrentType(typeName);
-   }
 }

@@ -4,9 +4,19 @@ class CreateInstance extends CreateSubPanel {
 
    String propertyTypeName;
 
+   propertyTypeName =: displayComponentError(editorModel.validateTypeText(propertyTypeName, true));
+
    enabled := pendingCreateError == null;
 
    newTypeSelected =: propertyTypeName;
+
+   submitCount =: displayCreateError(editorModel.startOrCompleteCreate(propertyTypeName), editorModel.pendingCreate);
+
+   row2Visible = false;
+
+   int cancelCreateCount;
+
+   cancelCreateCount =: editorModel.cancelCreate();
 
    void init() {
       if (editorModel.currentType == null) {
@@ -17,41 +27,23 @@ class CreateInstance extends CreateSubPanel {
       }
    }
 
-   void createInstance() {
-      if (!editorModel.pendingCreate) {
-         String err = editorModel.createInstance(propertyTypeName);
-         if (err instanceof String) {
-            displayNameError(err);
-         }
-         else {
-            displayNameError(err);
-            createPanel.displayCreateError(pendingCreateError);
-            // Reset the fields for the next time but don't reset the mode
-            if (pendingCreateError == null)
-               createPanel.clearTextFields();
-         }
-      }
-      else {
-         String err = editorModel.completeCreateInstance(true);
-         if (err != null) {
-            displayNameError(err);
-         }
+   void displayCreateError(String err, boolean pendingCreate) {
+      if (err == null || err.length() == 0) {
+         if (pendingCreate)
+            createPanel.clearTextFields();
          else {
             createPanel.clearForm();
-            editorModel.createMode = false; // Set this back to non-create state
-            editorModel.invalidateModel(); // Rebuild it so it says instance instead of new
          }
       }
+      else
+         displayComponentError(err);
    }
 
    void clearForm() {
       if (editorModel.pendingCreate) {
-          editorModel.cancelCreate();
+         // Run remote server method editorModel.cancelCreate() from a binding
+         cancelCreateCount++;
       }
-   }
-
-   void doSubmit() {
-      createInstance();
    }
 
    void clearFields() {

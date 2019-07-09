@@ -1,5 +1,4 @@
 import sc.lang.EditorContext;
-import sc.util.StringUtil;
 import sc.lang.java.JavaModel;
 import sc.layer.SrcEntry;
 

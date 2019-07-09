@@ -125,8 +125,9 @@ ElementEditor {
 
       if (oldPropName != null && !oldPropName.equals("<null>")) {
          if (oldListenerInstance != null) {
-            Bind.removeDynamicListener(oldListenerInstance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
+            Bind.removeDynamicListener(oldListenerInstance, oldListenerType, oldPropName, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = null;
+            oldListenerType = null;
          }
          else if (oldListenerModel != null) {
             Bind.removeListener(oldListenerModel, null, valueEventListener, IListener.VALUE_CHANGED);
@@ -138,6 +139,7 @@ ElementEditor {
          if (formEditor.instance != null) {
             Bind.addDynamicListener(formEditor.instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = formEditor.instance;
+            oldListenerType = formEditor.type;
          }
          else if (javaModel != null) {
                  Bind.addListener(javaModel, null, valueEventListener, IListener.VALUE_CHANGED);

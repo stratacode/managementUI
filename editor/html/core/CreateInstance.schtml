@@ -1,0 +1,6 @@
+<span> 
+   <span id="row1">
+      of type <input type="text" value="=: createPanel.row1ErrorText = editorModel.validateTypeText(value, true)"/>
+      <span id="confirmButtons" extends="PanelConfirmButtons"/>
+   </span> 
+</span>

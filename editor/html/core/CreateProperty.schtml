@@ -1,0 +1,26 @@
+<span>
+   <%!
+      propertyName :=: row2.nameField.value;
+      operator :=: (String)row2.opChoice.selectedValue;
+      propertyValue :=: row2.valueField.inputValue;
+      propertyTypeName :=: row1.propertyTypeField.value;
+      ownerTypeName :=: row1.inTypeCombo.selectedValue;
+      addBefore := TextUtil.equals(row1.beforeAfter.selectedValue, "before");
+   %>
+   <span id="row1">
+      of type <input id="propertyTypeField" type="text" value="=: createPanel.row1ErrorText = editorModel.validateTypeText(value, false)"/> to
+      <select id="inTypeCombo" optionDataSource=":= editorModel.ctx.getCreateInstTypeNames()"
+              selectedValue="=: editorModel.updateCurrentType((String) selectedValue)"/>
+      <select id="beforeAfter" optionDataSource='= {"before", "after"}' selectedValue='=: addBefore = ((String)selectedValue).equals("before")'/>
+      <%= beforeAfterText %>
+   </span>
+   <span id="row2">
+      <span id="nameLabel" visible=":= editorModel.createMode != CreateMode.Instance">Name</span> 
+      <input id="nameField" value="=: createPanel.row2ErrorText = editorModel.validateNameText(value)" changeEvent="=: doSubmit()"/>
+      <select id="opChoice"
+              optionDataSource="= sc.editor.EditorModel.operatorList"
+              style="margin-left: 5px; margin-right: 5px"/>
+      <span id="valueField" extends="ValueFieldInput" style="flex: 1 1 auto"/>
+      <span id="confirmButtons" extends="PanelConfirmButtons"/>
+   </span>
+</span>

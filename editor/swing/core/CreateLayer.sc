@@ -66,7 +66,7 @@ CreateLayer {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(createPanel.size.width * nameFieldRatio, preferredSize.height);
 
-      text =: validateName(text);
+      text =: displayNameError(editorModel.validateNameText(text));
 
       userEnteredCount =: doSubmit();
 

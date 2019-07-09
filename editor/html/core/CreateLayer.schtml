@@ -1,0 +1,29 @@
+<span>
+   <%!
+      layerMode :=: (String)row1.layerModeChoice.selectedValue;
+      newLayerName :=: row2.addLayerField.inputValue;
+      newLayerPackage :=: row1.newLayerOptions.packageTextField.value;
+      newLayerExtends :=: row2.extendsTypeField.inputValue;
+
+      isPublic :=: row1.newLayerOptions.publicCheck.checked;
+      isDynamic :=: row1.dynamicCheck.checked;
+      isTransparent :=: row1.newLayerOptions.transparentCheck.checked;
+   %>
+   <span id="row1">
+      <select id="layerModeChoice" optionDataSource='= {"Include", "Create"}'/>
+      Dynamic <input id="dynamicCheck" type="checkbox"/>
+      <span id="newLayerOptions" visible=":= !addLayerMode">
+         Public <input id="publicCheck" type="checkbox"/>
+         Transparent <input id="transparentCheck" type="checkbox"/>
+         Package <input id="packageTextField" type="text"/>
+      </span>
+   </span>
+
+   <span id="row2">
+      Layer Name
+      <span id="addLayerField" extends="CompletionTextField"/>
+      <span id="extendsLabel" visible=":= !addLayerMode">extends</span>
+      <span id="extendsTypeField" extends="CompletionTextField" visible=":= !addLayerMode"/>
+      <span id="confirmButtons" extends="PanelConfirmButtons"/>
+   </span>
+</span>

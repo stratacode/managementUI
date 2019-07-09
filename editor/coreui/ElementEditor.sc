@@ -19,6 +19,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    String oldPropName;
    int changeCt = 0;
    Object oldListenerInstance = null;
+   Object oldListenerType = null;
    Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode);
    String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue); // WARNING: using currentValue.toString() does not work because data binding has a bug and won't listen for changes on 'currentValue' in that case
    Object propType;
@@ -162,6 +163,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
          if (formEditor.instance != null) {
             Bind.addDynamicListener(formEditor.instance, formEditor.type, simpleProp, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = formEditor.instance;
+            oldListenerType = formEditor.type;
          }
       }
       oldPropName = propName;
@@ -170,9 +172,11 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    void removeListeners() {
       if (oldPropName != null && !oldPropName.equals("<null>") && !(propC instanceof CustomProperty)) {
          if (oldListenerInstance != null) {
-            Bind.removeDynamicListener(oldListenerInstance, formEditor.type, getSimplePropName(), valueEventListener, IListener.VALUE_CHANGED);
+            Bind.removeDynamicListener(oldListenerInstance, oldListenerType, oldPropName, valueEventListener, IListener.VALUE_CHANGED);
             oldListenerInstance = null;
+            oldListenerType = null;
          }
+         oldPropName = null;
       }
    }
 

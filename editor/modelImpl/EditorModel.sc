@@ -621,7 +621,7 @@ EditorModel {
 
 
    String validateTypeText(String text, boolean instType) {
-      String typeName = text.trim();
+      String typeName = text == null ? "" : text.trim();
       if (typeName.length() == 0) {
          return null;
       }
@@ -630,18 +630,18 @@ EditorModel {
          return err;
       }
       else {
-         if (instType) {
-            if (!ctx.isCreateInstType(typeName)) {
-               String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
-               if (fullTypeName == null)
-                  return "No type named: " + typeName;
+         if (ctx.isCreateInstType(typeName))
+            return null;
+         String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
+         if (fullTypeName != null)
+            return null;
+
+         if (!instType) {
+            if (findType(typeName) != null) {
                return null;
             }
-            else
-               return null;
          }
-         else
-            return null;
+         return "No type named: " + typeName;
       }
    }
 
@@ -837,6 +837,11 @@ EditorModel {
       return system.getSrcTypeDeclaration(typeName, null, true);
    }
 
+   public void updateCurrentType(String typeName) {
+      if (currentType == null || !StringUtil.equalStrings(typeNames[0], typeName))
+         findCurrentType(typeName);
+   }
+
    public String findCurrentType(String rootName) {
       if (rootName == null)
          return null;
@@ -909,6 +914,45 @@ EditorModel {
       changeCurrentType(res, null, null);
 
       return null;
+   }
+
+   String createProperty(String ownerTypeName, String propertyTypeName, String propertyName, String operator, String propertyValue, boolean addBefore, String relPropertyName) {
+      String name = propertyName.trim();
+      if (StringUtil.isEmpty(ownerTypeName)) {
+         return "Select a type to hold the new property";
+      }
+      if (StringUtil.isEmpty(propertyTypeName)) {
+         return "Select a data type for the new property";
+      }
+      Object ownerType = findType(ownerTypeName);
+      if (ownerType == null) {
+         return "No type: " + ownerTypeName;
+      }
+      String err = ctx.addProperty(ownerType, propertyTypeName, name, operator, propertyValue, addBefore, relPropertyName);
+      return err;
+   }
+
+   String startOrCompleteCreate(String typeName) {
+      if (!pendingCreate) {
+         String err = createInstance(typeName);
+         if (err != null) {
+            return err;
+         }
+         else {
+            return pendingCreateError;
+         }
+      }
+      else {
+         String err = completeCreateInstance(true);
+         if (err != null) {
+            return err;
+         }
+         else {
+            createMode = false; // Set this back to non-create state
+            invalidateModel(); // Rebuild it so it says instance instead of new
+            return null;
+         }
+      }
    }
 
    public String createInstance(String typeName) {

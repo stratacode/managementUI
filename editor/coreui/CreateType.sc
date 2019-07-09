@@ -4,26 +4,28 @@ class CreateType extends CreateSubPanel {
    String extendsTypeName;
    String subPackage;
 
-   boolean innerType := !StringUtil.equalStrings(innerChoice, "Top level");
+   List<String> innerChoiceItems := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Inside", "Top level"});
+   String beforeAfterText := editorModel.currentProperty == null ? "the last property" : ModelUtil.getPropertyName(editorModel.currentProperty);
 
-   enabled := !StringUtil.isEmpty(newTypeName);
+   boolean innerType := !TextUtil.equals(innerChoice, "Top level");
+
+   enabled := !TextUtil.isEmpty(newTypeName);
 
    newTypeSelected =: extendsTypeName;
 
-   void createType() {
-      CreateMode mode = createPanel.currentCreateMode;
-      Object currentType = editorModel.currentType;
-      String pkg = subPackage == null ? editorModel.currentPackage : CTypeUtil.prefixPath(editorModel.currentPackage, subPackage);
-      String err = editorModel.createType(mode, newTypeName, currentType, extendsTypeName, pkg, editorModel.currentLayer);
-      if (err != null) {
-         displayNameError(err);
-      }
-      else
-         createPanel.clearForm();
+   submitCount =: displayTypeError(
+                    editorModel.createType(createPanel.currentCreateMode, newTypeName, editorModel.currentType,
+                                           extendsTypeName, createPackageName, editorModel.currentLayer));
+
+   String getCreatePackageName() {
+      return subPackage == null ? editorModel.currentPackage : CTypeUtil.prefixPath(editorModel.currentPackage, subPackage);
    }
 
-   void doSubmit() {
-      createType();
+   void displayTypeError(String err) {
+      if (err != null)
+         displayNameError(err);
+      else
+         createPanel.clearForm();
    }
 
    void clearFields() {

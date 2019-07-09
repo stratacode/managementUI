@@ -9,7 +9,6 @@ import sc.layer.SrcEntry;
 
 import sc.util.ArrayList;
 import sc.util.LinkedHashMap;
-import sc.util.StringUtil;
 import sc.type.CTypeUtil;
 
 import sc.obj.Constant;

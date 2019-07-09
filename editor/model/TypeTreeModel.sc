@@ -9,7 +9,6 @@ import sc.layer.SrcEntry;
 
 import sc.util.ArrayList;
 import sc.util.LinkedHashMap;
-import sc.util.StringUtil;
 import sc.type.CTypeUtil;
 
 import sc.obj.Constant;
@@ -27,7 +26,7 @@ import sc.sync.SyncManager;
 @sc.obj.CompilerSettings(constructorProperties="editorModel,viewType")
 class TypeTreeModel {
    EditorModel editorModel;
-   EditorPanel.ViewType viewType;
+   ViewType viewType;
 
    LayeredSystem system;
 
@@ -148,7 +147,7 @@ class TypeTreeModel {
       if (refreshInProgress || valid)
          return;
 
-      includeInstances = !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == EditorPanel.ViewType.DataViewType;
+      includeInstances = !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == ViewType.DataViewType;
 
       refreshInProgress = true;
       valid = true;

@@ -20,22 +20,13 @@ CreateInstance {
       location := SwingUtil.point(propertyStart, ypad);
       size := SwingUtil.dimension(propertyFieldRatio * (createPanel.size.width - propertyStart - xpad), preferredSize.height);
 
-      text =: validateType();
-
-      userEnteredCount =: createInstance();
+      userEnteredCount =: doSubmit();
 
       completionProvider {
          ctx := createPanel.editorModel.ctx;
          completionType := CompletionTypes.CreateInstanceType;
       }
 
-      void validateType() {
-         String err = createPanel.editorModel.validateTypeText(text, true);
-         if (err == null)
-            displayNameError("");
-         else
-            displayNameError(err);
-      }
    }
 
    void displayNameError(String error) {

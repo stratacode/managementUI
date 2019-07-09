@@ -34,7 +34,7 @@ class FormEditor extends InstanceFieldEditor {
                if (allProps != null) {
                   for (int i = 0; i < allProps.length; i++) {
                      String propName = ModelUtil.getPropertyName(allProps[i]);
-                     if (StringUtil.equalStrings(propName, cprop.name)) {
+                     if (TextUtil.equals(propName, cprop.name)) {
                         found = true;
                         break;
                      }

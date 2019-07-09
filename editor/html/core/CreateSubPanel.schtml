@@ -1,0 +1,19 @@
+<span abstract="true">
+   <%!
+      void displayComponentError(String error) {
+         createPanel.row1ErrorText = error;
+      }
+      void displayNameError(String error) {
+         createPanel.row2ErrorText = error;
+      }
+
+      void requestFocus() {
+      }
+   %>
+   <span abstract="true" id="PanelConfirmButtons" extends="ConfirmButtons" enabled=":= createPanel.confirmButtonsEnabled">
+      <a id="okButton" clickCount="=: doSubmit() "/>
+      <a id="cancelButton" clickCount="=: createPanel.clearForm() "/>
+   </span>
+   <span id="row1"/>
+   <span id="row2"/>
+</span>

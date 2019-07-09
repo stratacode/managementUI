@@ -1,0 +1,22 @@
+<span>
+   <%!
+      innerChoice :=: (String) row1.innerChoiceCombo.selectedValue;
+      newTypeName :=: row2.nameField.value;
+      extendsTypeName :=: row2.objExtendsTypeField.inputValue;
+    %>
+   <span id="row1">
+      <select id="innerChoiceCombo" optionDataSource=":= innerChoiceItems"/>
+      <select id="inTypeCombo" optionDataSource=":= editorModel.ctx.getCreateInstTypeNames()" visible=":= innerType"/>
+      <select id="beforeAfterCombo" optionDataSource='= {"before", "after"}' visible=":= innerType"/>
+      <span id="beforeAfterLabel" visible=":= innerType"><%= beforeAfterText %></span>
+      in layer
+      <select id="inLayerCombo" optionDataSource=":= editorModel.getMatchingLayerNamesForType((String)inTypeCombo.selectedValue)"/>
+   </span>
+   <span id="row2">
+      Name
+      <input id="nameField" value="=: createPanel.row2ErrorText = editorModel.validateNameText(value)" changeEvent="=: doSubmit()"/>
+      extends
+      <span id="objExtendsTypeField" extends="CompletionTextField" inputValue="=: createPanel.row2ErrorText = editorModel.validateTypeText(inputValue, false)"/>
+      <span id="confirmButtons" extends="PanelConfirmButtons"/>
+   </span>
+</span>

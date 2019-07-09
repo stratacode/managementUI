@@ -6,10 +6,15 @@ class CreateProperty extends CreateSubPanel {
    String propertyValue;
    boolean addBefore;
    String relPropertyName;
+   String beforeAfterText := relPropertyName == null ? "the " + (addBefore ? "first" : "last")  + " property" : relPropertyName;
 
-   enabled := !StringUtil.isEmpty(propertyName) && !StringUtil.isEmpty(propertyTypeName) && !StringUtil.isEmpty(ownerTypeName);
+   enabled := !TextUtil.isEmpty(propertyName) && !TextUtil.isEmpty(propertyTypeName) && !TextUtil.isEmpty(ownerTypeName);
+
+   propertyTypeName =: displayPropertyError(editorModel.validateTypeText(propertyTypeName, false));
 
    newTypeSelected =: propertyTypeName;
+
+   submitCount =: displayPropertyError(editorModel.createProperty(ownerTypeName, propertyTypeName, propertyName, operator, propertyValue, addBefore, relPropertyName));
 
    void init() {
       if (editorModel.currentType == null) {
@@ -20,27 +25,10 @@ class CreateProperty extends CreateSubPanel {
       }
    }
 
-   void createProperty() {
-      String name = propertyName.trim();
-      if (StringUtil.isEmpty(ownerTypeName)) {
-         displayNameError("Select a type to hold the new property");
-         return;
-      }
-      if (StringUtil.isEmpty(propertyTypeName)) {
-         displayNameError("Select a data type for the new property");
-         return;
-      }
-      Object ownerType = editorModel.findType(ownerTypeName);
-      if (ownerType == null) {
-         displayNameError("No type: " + ownerTypeName);
-         return;
-      }
-      String err = editorModel.ctx.addProperty(ownerType, propertyTypeName, name, operator, propertyValue, addBefore, relPropertyName);
-      if (err != null) {
+   void displayPropertyError(String err) {
+      if (err != null)
          displayNameError(err);
-      }
       else
          clearForm();
    }
-
 }

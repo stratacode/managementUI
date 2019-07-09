@@ -6,30 +6,18 @@ class CreateLayer extends CreateSubPanel {
 
    boolean isPublic, isDynamic, isTransparent;
 
-   boolean addLayerMode := StringUtil.equalStrings(layerMode, "Include");
+   boolean addLayerMode := TextUtil.equals(layerMode, "Include");
 
    newTypeSelected =: newLayerExtends;
    newLayerSelected =: addLayerMode ? newLayerName : newLayerExtends;
 
-   enabled := !StringUtil.isEmpty(newLayerName);
+   enabled := TextUtil.length(newLayerName) != 0;
 
-   void doSubmit() {
-      if (addLayerMode)
-         addLayer();
-      else
-         createLayer();
-   }
+   submitCount =: displayLayerError(addLayerMode ?
+              editorModel.addLayer(newLayerName, isDynamic) :
+              editorModel.createLayer(newLayerName, newLayerPackage, newLayerExtends, isPublic, isDynamic, isTransparent));
 
-   void addLayer() {
-      String err = editorModel.addLayer(newLayerName, isDynamic);
-      if (err == null)
-         clearForm();
-      else
-         displayNameError(err);
-   }
-
-   void createLayer() {
-      String err = editorModel.createLayer(newLayerName, newLayerPackage, newLayerExtends, isPublic, isDynamic, isTransparent);
+   void displayLayerError(String err) {
       if (err == null)
          clearForm();
       else

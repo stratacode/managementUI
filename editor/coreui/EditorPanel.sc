@@ -22,10 +22,6 @@ class EditorPanel {
       currentCreateMode := editorModel.currentCreateMode;
    }
 
-   enum ViewType {
-       DataViewType, FormViewType, CodeViewType;
-   }
-
    Object createTypeModeName;
 
    @Sync

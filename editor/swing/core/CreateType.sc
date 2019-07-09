@@ -8,7 +8,7 @@ CreateType {
    lastComponent = objExtendsTypeField;
 
    object objInnerChoice extends JComboBox {
-      items := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Inside", "Top level"});
+      items := innerChoiceItems;
       location := SwingUtil.point(followComponent.location.x + followComponent.size.width + xpad, ypad);
       size := preferredSize;
    }
@@ -31,7 +31,7 @@ CreateType {
    object beforeAfterLabel extends JLabel {
       location := SwingUtil.point(beforeAfter.location.x + beforeAfter.size.width + xpad, ypad + baseline);
       size := preferredSize;
-      text := editorModel.currentProperty == null ? "the last property" : ModelUtil.getPropertyName(editorModel.currentProperty);
+      text := beforeAfterText;
       visible := innerType;
    }
 
@@ -53,16 +53,14 @@ CreateType {
       text = "Name";
       location := SwingUtil.point(xpad, row2y + baseline);
       size := preferredSize;
-
-      visible := editorModel.currentCreateMode != CreateMode.Instance;
    }
    object nameField extends JTextField {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(nameFieldRatio * createPanel.size.width, preferredSize.height);
 
-      text =: editorModel.validateNameText(text);
+      text =: displayNameError(editorModel.validateNameText(text));
 
-      userEnteredCount =: createType();
+      userEnteredCount =: doSubmit();
    }
 
    object objExtendsLabel extends JLabel {
@@ -75,9 +73,9 @@ CreateType {
       location := SwingUtil.point(objExtendsLabel.location.x + objExtendsLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(createPanel.size.width * nameFieldRatio, preferredSize.height);
 
-      text =: editorModel.validateTypeText(text, false);
+      text =: displayComponentError(editorModel.validateTypeText(text, false));
 
-      userEnteredCount =: createType();
+      userEnteredCount =: doSubmit();
 
       completionProvider {
          ctx := editorModel.ctx;
