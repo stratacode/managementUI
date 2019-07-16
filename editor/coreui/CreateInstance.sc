@@ -1,8 +1,10 @@
 class CreateInstance extends CreateSubPanel {
+   @Sync
    String pendingCreateError := editorModel.pendingCreateError;
    pendingCreateError =: createPanel.displayCreateError(pendingCreateError);
 
-   String propertyTypeName;
+   @Sync
+   String propertyTypeName = "";
 
    propertyTypeName =: displayComponentError(editorModel.validateTypeText(propertyTypeName, true));
 

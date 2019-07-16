@@ -1,6 +1,6 @@
 <span> 
    <span id="row1">
-      of type <input type="text" value="=: createPanel.row1ErrorText = editorModel.validateTypeText(value, true)"/>
+      of type <input id="propertyTypeField" type="text" value=":=: propertyTypeName"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span> 
 </span>

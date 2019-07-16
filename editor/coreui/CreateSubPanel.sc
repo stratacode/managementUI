@@ -1,18 +1,22 @@
-@CompilerSettings(propagateConstructor="sc.editor.CreatePanel,sc.editor.CreateMode")
+//@CompilerSettings(propagateConstructor="sc.editor.CreatePanel,sc.editor.CreateMode")
+@CompilerSettings(constructorProperties="createPanel,createMode")
 abstract class CreateSubPanel {
    CreatePanel createPanel;
    CreateMode createMode;
    EditorModel editorModel;
-   
+
+   @Sync
    boolean enabled = true;
    boolean needsConfirmButtons = true;
 
    boolean row2Visible = true;
 
+   @Sync
    String newTypeSelected, newLayerSelected;
 
    double nameFieldRatio = 0.3;
 
+   @Sync
    int submitCount;
 
    CreateSubPanel(CreatePanel panel,CreateMode mode) {

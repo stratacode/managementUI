@@ -26,7 +26,7 @@
    int formLabelPer = 31;
    int toolbarHeightPix = 50; // This is 32 plus padding plus ??
    int menubarHeightPix = 18;
-   int statusBarHeightPix := twoColumns ? 50 : 150;
+   int statusBarHeightPix := twoColumns ? 100 : 150;
    int bodyMarginPix = 8;
    double bodyMarginHPer := bodyMarginPix / Window.window.innerHeight * 100.0;
    double bodyMarginWPer := bodyMarginPix / Window.window.innerWidth * 100.0;

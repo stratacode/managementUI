@@ -1,13 +1,8 @@
-<span>
+<span style="line-height:2">
    <span id="createLabel"><%= createLabelText %></span>
    <select id="createTypeChoice" optionDataSource=":= createModeNames" selectedValue=":=: createModeName"/>
-
    <span id="subPanelRow1"><%= createSubPanel != null ? createSubPanel.row1.output() : "" %></span>
-
    <div id="row1DialogError" visible=":= row1ErrorText.length() > 0"><%= row1ErrorText %></div>
-
    <div id="subPanelRow2" visible=":= createSubPanel != null && createSubPanel.row2Visible"><%= createSubPanel != null ? createSubPanel.row2.output() : "" %></div>
-
    <div id="row2DialogError" visible=":= row2ErrorText.length() > 0"><%= row2ErrorText %></div>
-
 </span>

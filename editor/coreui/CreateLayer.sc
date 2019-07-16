@@ -1,11 +1,17 @@
 class CreateLayer extends CreateSubPanel {
+   @Sync
    String layerMode;
+   @Sync
    String newLayerName;
+   @Sync
    String newLayerPackage;
+   @Sync
    String newLayerExtends;
 
+   @Sync
    boolean isPublic, isDynamic, isTransparent;
 
+   @Sync
    boolean addLayerMode := TextUtil.equals(layerMode, "Include");
 
    newTypeSelected =: newLayerExtends;

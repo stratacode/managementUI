@@ -1,34 +1,36 @@
+import sc.sync.SyncManager;
+
 class CreatePanel {
    EditorModel editorModel;
 
    // Incremented each time an operation finishes
-   int opComplete = 0;
+   @Sync int opComplete = 0;
 
-   String createModeName = CreateMode.Instance.toString();
+   @Sync String createModeName = CreateMode.Instance.toString();
    createModeName =: currentCreateMode = CreateMode.valueOf(createModeName);
    createModeName =: clearErrors();
 
-   CreateMode currentCreateMode :=: editorModel.currentCreateMode;
-   boolean createMode := editorModel.createMode;
+   @Sync CreateMode currentCreateMode :=: editorModel.currentCreateMode;
+   @Sync boolean createMode := editorModel.createMode;
 
    createMode =: onModeChange();
    currentCreateMode =: onModeChange();
 
    CreateSubPanel createSubPanel = null;
 
-   String newLayerSelected =: createSubPanel.newLayerSelected;
-   String newTypeSelected =: createSubPanel.newTypeSelected;
+   @Sync String newLayerSelected =: createSubPanel.newLayerSelected;
+   @Sync String newTypeSelected =: createSubPanel.newTypeSelected;
 
-   String createLabelText := editorModel.pendingCreate ? (createSubPanel.enabled ? "Create instance" : "Provide required fields for instance") :  "Add";
+   @Sync String createLabelText := editorModel.pendingCreate ? (createSubPanel.enabled ? "Create instance" : "Provide required fields for instance") :  "Add";
    List<String> createModeNames := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null ?
                                                             CreateMode.getNoCurrentTypeNames() : CreateMode.getAllNames());
 
-   boolean addLayerMode := createSubPanel instanceof CreateLayer && ((CreateLayer) createSubPanel).addLayerMode;
-   boolean createLayerMode := createSubPanel instanceof CreateLayer && !addLayerMode;
+   @Sync boolean addLayerMode := createSubPanel instanceof CreateLayer && ((CreateLayer) createSubPanel).addLayerMode;
+   @Sync boolean createLayerMode := createSubPanel instanceof CreateLayer && !addLayerMode;
 
-   String row1ErrorText = "", row2ErrorText = "";
+   @Sync String row1ErrorText = "", row2ErrorText = "";
 
-   boolean confirmButtonsEnabled := createSubPanel.enabled && row2ErrorText.length() == 0 && row1ErrorText.length() == 0;
+   @Sync boolean confirmButtonsEnabled := createSubPanel.enabled && row2ErrorText.length() == 0 && row1ErrorText.length() == 0;
 
    void onModeChange() {
       if (createMode) {
@@ -38,9 +40,20 @@ class CreatePanel {
             removeSubPanel(createSubPanel);
          }
 
-         createSubPanel = currentCreateMode.createSubPanel(this);
-         addSubPanel(createSubPanel);
-
+         if (currentCreateMode == null)
+            System.out.println("***");
+         // Need to queue sync events here because addSubPanel calls register and that needs to happen before we process
+         // the addSyncInst call inside of the createSubPanel call. Otherwise, the remote side will try to serialize the create
+         // of the type panel, rather than just synchronizing changes made to subcomponents.
+         // TODO: should this be replaced by a new 'registered' flag in @Sync(registered)
+         boolean flush = SyncManager.beginSyncQueue();
+         try {
+            createSubPanel = currentCreateMode.createSubPanel(this);
+            addSubPanel(createSubPanel);
+         }
+         finally {
+            if (flush) SyncManager.flushSyncQueue();
+         }
          createSubPanel.init();
       }
       else if (createSubPanel != null) {
@@ -55,6 +68,10 @@ class CreatePanel {
    }
 
    void addSubPanel(CreateSubPanel panel) {
+      // TODO: should we have a SyncMode.Register so that this is done via an annotation?
+      // It supports the ability to have sync'd objects as children of the panel but where the tree is
+      // created automatically on both sides so we can just send property changes back and forth.
+      sc.sync.SyncManager.registerSyncTree(createSubPanel);
    }
 
    void modeChangeComplete() {}
