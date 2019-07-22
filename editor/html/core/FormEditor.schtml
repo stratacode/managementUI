@@ -11,7 +11,7 @@
 
       <select id="selectInstance" class="selectInstance"
                optionDataSource=":= instancesOfType"
-               selectedIndex="=: updateWrapper(selectedValue)"
+               selectedIndex="=: updateWrapper((InstanceWrapper) selectedValue)"
                selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
                visible=":= showInstanceSelect"/>
    </div>

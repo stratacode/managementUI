@@ -42,6 +42,8 @@ CreatePanel extends JPanel implements EditorPanelStyle {
    }
 
    void displayCreateError(String err) {
+      if (err == null)
+         err = "";
       super.displayCreateError(err);
       row1DialogError.errorComponent = createLabel;
    }

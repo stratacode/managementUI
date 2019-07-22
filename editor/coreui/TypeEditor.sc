@@ -215,6 +215,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          parentPropertyType = EditorModel.getPropertyType(parentProp);
       newType = resolveSrcTypeDeclaration(newType);
       type = newType;
+      setElemToEdit(newType);
    }
 
    void removeListeners() {

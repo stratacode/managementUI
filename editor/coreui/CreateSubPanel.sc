@@ -16,7 +16,7 @@ abstract class CreateSubPanel {
 
    double nameFieldRatio = 0.3;
 
-   @Sync
+   //@Sync - don't synchronize since it will cause the method to be caused twice
    int submitCount;
 
    CreateSubPanel(CreatePanel panel,CreateMode mode) {

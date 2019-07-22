@@ -29,6 +29,12 @@ CreateInstance {
 
    }
 
+   void displayComponentError(String error) {
+      if (error == null)
+         error = "";
+      createPanel.displayComponentError(error, propertyTypeField);
+   }
+
    void displayNameError(String error) {
       createPanel.displayCreateError(error);
    }

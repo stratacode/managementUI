@@ -316,7 +316,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
              DynUtil.equalObjects(lastSelectedInstances, selectedInstances))
             return;
          updateSelectionCount++;
-         lastSelectedTypeNames = selectedTypeNames;
+         String[] selTypeNames = selectedTypeNames;
+         lastSelectedTypeNames = selTypeNames;
          lastCreateMode = typeTreeModel.createMode;
          lastPackageNode = currentPackageNode;
          lastSelectedInstances = selectedInstances == null ? null : new ArrayList<InstanceWrapper>(selectedInstances);
@@ -328,6 +329,11 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          if (!typeTreeModel.createMode) {
             boolean instSelected = false;
             if (selectedInstances != null && selectedInstances.size() > 0) {
+               // Need to fetch type and update the instances before we look for the treePaths here
+               for (int i = 0; i < selTypeNames.length; i++) {
+                  String selType = selTypeNames[i];
+                  typeTreeModel.updateInstancesForType(selType, byLayer);
+               }
                for (int i = 0; i < selectedInstances.size(); i++) {
                   InstanceWrapper wrapper = selectedInstances.get(i);
                   // note: for singleton tree nodes, we have treeEnt.instance set but don't create a special node in the index so just use
@@ -337,8 +343,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                }
             }
             if (!instSelected) {
-               for (int i = 0; i < selectedTypeNames.length; i++) {
-                  typeTreeModel.addTreePaths(paths, byLayer, selectedTypeNames[i], false);
+               for (int i = 0; i < selTypeNames.length; i++) {
+                  typeTreeModel.addTreePaths(paths, byLayer, selTypeNames[i], false);
                }
             }
             // If we've selected a package in non create mode, that's just a regular selection, as the target for

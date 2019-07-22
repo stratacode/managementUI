@@ -6,7 +6,9 @@ class CreateInstance extends CreateSubPanel {
    @Sync
    String propertyTypeName = "";
 
-   propertyTypeName =: displayComponentError(editorModel.validateTypeText(propertyTypeName, true));
+   // Comparing propertyTypeName to "" to avoid the remote method call in the client/server version to validateTypeText.
+   // Also a good test of remote method calls in ? expressions
+   propertyTypeName =: displayComponentError(propertyTypeName.equals("") ? "" : editorModel.validateTypeText(propertyTypeName, true));
 
    enabled := pendingCreateError == null;
 

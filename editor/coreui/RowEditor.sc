@@ -40,10 +40,10 @@ class RowEditor extends InstanceFieldEditor {
 
    void addComputedProperties(List<Object> props, Object[] allProps) {
       if (showIndex) {
-         props.add(new CustomProperty("#", Integer.class, "text", listIndex, 35, null));
+         props.add(new ComputedProperty("#", Integer.class, "text", listIndex, 35, null));
       }
       if (showId) {
-         props.add(new CustomProperty("Id", editorModel.fetchInstanceType(instance), "ref", instance, 200, null));
+         props.add(new ComputedProperty("Id", editorModel.fetchInstanceType(instance), "ref", instance, 200, null));
       }
    }
 

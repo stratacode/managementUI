@@ -159,7 +159,8 @@ class TypeTreeModel {
 
          if (needsUpdateSelection) {
             for (TypeTree typeTree:typeTrees) {
-               typeTree.selectionListener.updateListSelection();
+               if (typeTree.selectionListener != null)
+                  typeTree.selectionListener.updateListSelection();
             }
          }
       }
@@ -179,6 +180,17 @@ class TypeTreeModel {
 
    boolean rebuildLayerDirEnts() {
       return false;
+   }
+
+   void updateInstancesForType(String typeName, boolean byLayer) {
+      List<TypeTree.TreeNode> typeNodes = (byLayer ? byLayerTypeTree : typeTree).rootTreeIndex.get(typeName);
+      if (typeNodes != null) {
+         for (TypeTree.TreeNode typeNode:typeNodes) {
+            typeNode.ent.instanceSelected = true;
+            typeNode.ent.updateInstances();
+            typeNode.ent.refreshChildren();
+         }
+      }
    }
 
    boolean nodeExists(String typeName) {

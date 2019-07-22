@@ -30,7 +30,7 @@ class CreatePanel {
 
    @Sync String row1ErrorText = "", row2ErrorText = "";
 
-   @Sync boolean confirmButtonsEnabled := createSubPanel.enabled && row2ErrorText.length() == 0 && row1ErrorText.length() == 0;
+   @Sync boolean confirmButtonsEnabled := createSubPanel != null && createSubPanel.enabled && row2ErrorText.length() == 0 && row1ErrorText.length() == 0;
 
    void onModeChange() {
       if (createMode) {
@@ -64,7 +64,7 @@ class CreatePanel {
    }
 
    void removeSubPanel(CreateSubPanel panel) {
-      DynUtil.dispose(createSubPanel);
+      DynUtil.disposeLater(createSubPanel, true);
    }
 
    void addSubPanel(CreateSubPanel panel) {
@@ -77,6 +77,8 @@ class CreatePanel {
    void modeChangeComplete() {}
 
    void displayCreateError(String err) {
+      if (err == null)
+         err = "";
       row1ErrorText = err;
    }
 

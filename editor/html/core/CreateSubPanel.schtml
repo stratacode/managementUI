@@ -1,12 +1,5 @@
 <span abstract="true">
    <%!
-      void displayComponentError(String error) {
-         createPanel.row1ErrorText = error;
-      }
-      void displayNameError(String error) {
-         createPanel.row2ErrorText = error;
-      }
-
       void requestFocus() {
       }
    %>

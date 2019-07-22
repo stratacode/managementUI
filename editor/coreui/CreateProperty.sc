@@ -7,7 +7,7 @@ class CreateProperty extends CreateSubPanel {
 
    enabled := !TextUtil.isEmpty(propertyName) && !TextUtil.isEmpty(propertyTypeName) && !TextUtil.isEmpty(ownerTypeName);
 
-   propertyTypeName =: displayPropertyError(editorModel.validateTypeText(propertyTypeName, false));
+   //propertyTypeName =: displayPropertyError(editorModel.validateTypeText(propertyTypeName, false));
 
    newTypeSelected =: propertyTypeName;
 

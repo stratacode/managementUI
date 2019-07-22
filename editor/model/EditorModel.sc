@@ -94,6 +94,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    boolean pendingCreate = false;
 
    /** Set to the list of ConstructorProperties or regular properties when pendingCreate = true if there are required params to build the new instance */
+   @Sync(syncMode=SyncMode.Disabled)
    List<ConstructorProperty> constructorProps = null;
 
    /** Set to an error string to display when pendingCreate = true and missing required values are present */

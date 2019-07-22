@@ -103,7 +103,7 @@
 
    <div style="clear:both;"/>
 
-   <div id="statusPanel" visible=":= windowOpen" style="display:flex; align-items: baseline">
+   <div id="statusPanel" visible=":= windowOpen">
       <a clickEvent="=: editorModel.createMode = !editorModel.createMode"><img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/></a>
 
       <span id="editFieldPanel" extends="EditFieldPanel" visible=":= !editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>

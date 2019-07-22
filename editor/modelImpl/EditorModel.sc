@@ -957,9 +957,10 @@ EditorModel {
 
    public String createInstance(String typeName) {
       Object typeObj = DynUtil.findType(typeName);
+      String fullTypeName = null;
       if (typeObj == null) {
          // Implements the rule where you can just type in the class name
-         String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
+         fullTypeName = ctx.getCreateInstFullTypeName(typeName);
          if (fullTypeName != null) {
             typeName = fullTypeName;
             typeObj = DynUtil.findType(fullTypeName);
@@ -993,6 +994,8 @@ EditorModel {
          changeCurrentType(typeDecl, null, instWrap);
 
          pendingCreateError = completeCreateInstance(false);
+         if (fullTypeName != null)
+            createModeTypeName = fullTypeName;
       }
       else
          return "Unable to create instance of type: " + typeName + " - no type metadata found";
@@ -1102,17 +1105,19 @@ EditorModel {
                   Object[] argsArr = args.toArray();
                   Object inst;
                   if (createMeth instanceof ConstructorDefinition) {
-                     inst = currentWrapper.theInstance = DynUtil.createInstance(typeDecl, createMeth.getTypeSignature(), argsArr);
+                     inst = DynUtil.createInstance(typeDecl, createMeth.getTypeSignature(), argsArr);
                   }
                   else {
-                     inst = currentWrapper.theInstance = DynUtil.invokeMethod(null, createMeth, argsArr);
+                     inst = DynUtil.invokeMethod(null, createMeth, argsArr);
                   }
                   if (inst != null) {
                      pendingCreate = false;
-                     currentWrapper.labelName = null;
 
                      currentInstance = inst;
                      ArrayList<InstanceWrapper> selInsts = new ArrayList<InstanceWrapper>();
+                     Map<String,Object> pendingValues = currentWrapper.pendingValues;
+                     // Currently we don't serialize changes made to the InstanceWrapper... they get created on either side so maybe it's simpler just to create a new one
+                     currentWrapper = currentWrapper.copyWithInstance(inst);
                      selInsts.add(currentWrapper);
                      selectedInstances = selInsts; // NOTE: make sure the value is defined before setting because it's bound to another property
 
@@ -1123,7 +1128,7 @@ EditorModel {
 
                      // Now we've created the instance. For any pendingValues the user entered that were not
                      // constructor properties, set the property to the value in the instance.
-                     for (Map.Entry<String,Object> pendingEnt:currentWrapper.pendingValues.entrySet()) {
+                     for (Map.Entry<String,Object> pendingEnt:pendingValues.entrySet()) {
                         String propName = pendingEnt.getKey();
                         boolean skipProp = false;
                         for (int pix = 0; pix < constructorProps.size(); pix++) {
@@ -1147,6 +1152,9 @@ EditorModel {
                      // Now add it to the type tree
                      instanceAdded(inst);
                      constructorProps = null;
+
+                     // Signal to the form view to refresh it's current instance
+                     newInstSelected++;
                   }
                   else
                      return "Failed to create instance";

@@ -5,4 +5,8 @@
       <%= displayName %>
    </span>
    <a class="textLink" disabled=":= !referenceable" clickEvent="=: gotoReference()"><%= referenceId %></a>
+   <select id="instanceSelect" optionDataSource=":= instancesOfType"
+           selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
+           selectedValue="=: instance = ((InstanceWrapper) selectedValue).instance"
+           selectedValue="=: editorModel.updateInstanceProperty(parentProperty, propertyName, formEditor.instance, formEditor.wrapper, instance)"/>
 </div>

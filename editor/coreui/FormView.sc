@@ -52,8 +52,12 @@ class FormView extends BaseView {
                Object newInst = getObjectForListElement(i);
                InstanceWrapper newWrapper = getWrapperForListElement(i);
                if (childForm.instance != newInst || childForm.wrapper != newWrapper) {
+                  // There's a pending event to refresh the instances so our instances may not be valid. Need them to be valid so that we can find the selected instance in the UI.
+                  if (!editorModel.refreshInstancesValid)
+                     Bind.refreshBinding(childForm, "instancesOfType");
                   childForm.instance = newInst;
                   childForm.wrapper = newWrapper;
+                  childForm.operatorChanged();
                   childForm.updateChildInsts();
                }
             }

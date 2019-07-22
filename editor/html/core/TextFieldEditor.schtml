@@ -7,10 +7,16 @@
    String getElementStringValue() {
       return textFieldForm.textField.value;
    }
+
+   void onBlurEvent() {
+      if (!textFieldForm.textField.value.equals(currentStringValue)) {
+         elementSubmitCount++;
+      }
+   }
 %>
    <form id="textFieldForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
       <label extends="ElementLabel"/>
-      <input id="textField" class="formFieldValue" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue" disabled=":= !editable"/>
+      <input id="textField" class="formFieldValue" type="text" focusEvent="=: onFocusEvent()" blurEvent="=: onBlurEvent()" value=":= currentStringValue" disabled=":= !editable"/>
       <div extends="ErrorText"/>
    </form>
 </div>

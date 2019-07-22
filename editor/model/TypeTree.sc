@@ -170,6 +170,8 @@ class TypeTree {
       HashMap<String,TreeEnt> childEnts;
       ArrayList<TreeEnt> removed = null;
 
+      childList =: childrenAvailable();
+
       boolean imported;
       boolean hasSrc;
       boolean transparent; // Entry does not exist on the file system yet
@@ -206,7 +208,7 @@ class TypeTree {
       // Set to true when you need the type fetched
       boolean needsType = false;
 
-      boolean selected = false;
+      boolean selected = false, instanceSelected = false;
       /*
       public void setSelected(boolean sel) {
          if (srcTypeName != null && srcTypeName.equals("sc.util.ArrayList"))
@@ -289,6 +291,13 @@ class TypeTree {
             return;
          if (selectionListener != null)
             selectionListener.treeTypeAvailable(this);
+      }
+
+      void childrenAvailable() {
+         // Once our children are available, might need to open our children and so on
+         if (childEnts != null) {
+            updateSelected();
+         }
       }
 
       String getTypeName() {
@@ -559,6 +568,33 @@ class TypeTree {
             return false;
          }
 
+         boolean hasSelectedType = editorModel.typeNames.length > 0;
+
+         // Automatically open package nodes that contain the selected type
+         if (type == EntType.Package && childList == null && hasSelectedType) {
+            String packageName = srcTypeName;
+            String typeName = editorModel.typeNames[0];
+            if (typeName.startsWith(packageName) && typeName.length() > packageName.length() && typeName.charAt(packageName.length()) == '.') {
+               setOpen(true);
+            }
+         }
+
+         if (hasSelectedType && (type == EntType.LayerGroup || type == EntType.LayerDir)) {
+            String entName = srcTypeName;
+            if (type == EntType.LayerDir && layer != null)
+               entName = layer.getLayerName();
+            else if (type == EntType.LayerGroup && entName.startsWith("layerGroup:"))
+               entName = entName.substring(entName.indexOf(':')+1);
+            Layer selLayer = editorModel.currentLayer;
+            if (selLayer != null) {
+               String selLayerName = selLayer.getLayerName();
+               int srcLen = entName.length();
+               int layerNameLen = selLayerName.length();
+               if (selLayerName.startsWith(entName) && (layerNameLen == srcLen || layerNameLen > srcLen && selLayerName.charAt(srcLen) == '.'))
+                  setOpen(true);
+            }
+         }
+
          boolean needsRefresh = false;
          if (typeName == null) {
             if (selected) {
@@ -639,7 +675,7 @@ class TypeTree {
             return false;
          List<InstanceWrapper> insts = null;
          if (treeModel.includeInstances) {
-            if (cachedTypeDeclaration == null && (open || selected)) {
+            if (cachedTypeDeclaration == null && (open || selected || instanceSelected)) {
                  needsType = true;
             }
             if (cachedTypeDeclaration != null) {
@@ -736,6 +772,10 @@ class TypeTree {
       void sendChangedEvent() {
         sc.bind.Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
       }
+
+      String getIndexKey() {
+         return type == EntType.Instance ? typeName + ":" + instance.toString() : typeName;
+      }
    }
 
    String getRootName() {
@@ -773,17 +813,18 @@ class TypeTree {
    // to list of visible tree nodes that refer to it.
    void addToIndex(TreeEnt childEnt, TreeNode treeNode) {
       if (childEnt.isSelectable()) {
-         List<TreeNode> l = rootTreeIndex.get(childEnt.typeName);
+         List<TreeNode> l = rootTreeIndex.get(childEnt.getIndexKey());
          if (l == null) {
             l = new ArrayList<TreeNode>();
 
             if (childEnt.type != EntType.LayerDir)
-               rootTreeIndex.put(childEnt.typeName, l);
+               rootTreeIndex.put(childEnt.getIndexKey(), l);
 
             if (childEnt.type == EntType.Package || childEnt.type == EntType.LayerDir)
                rootTreeIndex.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
          }
-         l.add(treeNode);
+         if (!l.contains(treeNode))
+            l.add(treeNode);
       }
    }
    
@@ -802,4 +843,5 @@ class TypeTree {
    static String getNodeIdFromInstance(Object inst) {
       return inst == null ? "<null>" : CTypeUtil.getClassName(DynUtil.getInstanceName(inst));
    }
+
 }

@@ -1,5 +1,5 @@
 <%@ import sc.lang.java.ModelUtil; %>
-<span style="display: flex; flex: 1 1 auto">
+<span>
    <%! 
       EditorModel editorModel;
       Object currentProperty := editorModel.currentProperty;
@@ -8,23 +8,23 @@
 
    <span id="currentTypeTextField" extends="CompletionTextField"
          inputValue=':= editorModel.currentPropertyType == null ? "" : ModelUtil.getInnerTypeName(editorModel.currentPropertyType)'
-         enteredText="=: editorModel.currentTypeSearch" style="width: 30%">
+         enteredText="=: editorModel.currentTypeSearch">
        <input id="inputField"/>
    </span>
 
    <img visible=":= currentIcon != null" src=":= currentIcon.path" style="align-self: baseline; padding-right: 2px"/>
-   <span visible=":= editorModel.currentProperty != null" style="flex-shrink: 0">
+   <span visible=":= editorModel.currentProperty != null">
        <%= currentProperty == null ? "<no property selected>" : editorModel.importedPropertyType + " " + ModelUtil.getPropertyName(currentProperty) %>
    </span>
 
-   <form  id="fieldValueEditor" extends="FieldValueEditor" visible=":= currentProperty != null"
-          style="display: flex; width: 50%"
-          opStr=":=: editorModel.currentPropertyOperator"
-          valueStr=":=: editorModel.currentPropertyValue"
-          submitEvent="=: fieldValueSubmitted()"
-          editorModel=":= EditFieldPanel.this.editorModel">
+   <form id="fieldValueEditor" extends="FieldValueEditor" visible=":= currentProperty != null"
+         style="display:inline"
+         opStr=":=: editorModel.currentPropertyOperator"
+         valueStr=":=: editorModel.currentPropertyValue"
+         submitEvent="=: fieldValueSubmitted()"
+         editorModel=":= EditFieldPanel.this.editorModel">
       <span id="confirmButtons" 
-          enabled=":= editorModel.enableUpdateProperty && TextUtil.length(valueField.errorText) == 0"/>
+            enabled=":= editorModel.enableUpdateProperty && TextUtil.length(valueField.errorText) == 0"/>
    </form>
 
 </span>

@@ -8,7 +8,7 @@
    <a href="#" class="tooltip">
       <!-- For this style attribute, we use the normal equals, not binding. Less, code and faster if it is not dynamic -->
       <% if (alt != null) { %><span style='= (alignRight ? "left: -70px" : "left: 0px") + "; min-width: " +  tipMinWidth'><%= alt %></span><% } %>
-      <img src=":= icon" class=':= disabled ? "disabledImage" : ""' width="= size" height="= size" alt="= alt"><%= buttonText %>
+      <img src=":= icon" class=':= ToolbarButton.this.disabled ? "disabledImage" : ""' width="= size" height="= size" alt="= alt"><%= buttonText %>
    </a>
 </span>
 
