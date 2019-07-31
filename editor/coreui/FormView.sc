@@ -14,6 +14,9 @@ class FormView extends BaseView {
    int newInstSelected := editorModel.newInstSelected;
    newInstSelected =: updateInstances();
 
+   int instanceModeChanged := editorModel.instanceModeChanged;
+   instanceModeChanged =: rebuildForm();
+
    abstract List<IElementEditor> getChildViews();
 
    Object getObjectForListElement(int ix) {
@@ -94,4 +97,6 @@ class FormView extends BaseView {
       }, 0);
 
    }
+
+   abstract void rebuildForm();
 }

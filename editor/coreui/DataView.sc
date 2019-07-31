@@ -1,5 +1,5 @@
 
 
 class DataView extends FormView {
-   instanceMode = true;
+   instanceMode := editorModel.selectedInstances != null && editorModel.selectedInstances.size() > 0;
 }

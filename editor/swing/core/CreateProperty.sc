@@ -11,8 +11,6 @@ CreateProperty {
    // Do we need this direction?
    //addBefore =: addBefore ? (beforeAfter.selectedItem = "before"): (beforeAfter.selectedItem = "after");
 
-   relPropertyName := editorModel.currentPropertyName;
-
    object propertyOfTypeLabel extends JLabel {
       text = "of type";
       location := SwingUtil.point(followComponent.location.x + followComponent.size.width + xpad, ypad + baseline);
@@ -27,7 +25,7 @@ CreateProperty {
 
    lastComponent = propertyFieldValueEditor.valueField;
 
-   object propertyTypeField extends CompletionTextField {
+    object propertyTypeField extends CompletionTextField {
       location := SwingUtil.point(propertyStart, ypad);
       size := SwingUtil.dimension(propertyFieldRatio * (createPanel.size.width - propertyStart - xpad), preferredSize.height);
 
@@ -74,8 +72,6 @@ CreateProperty {
    object nameField extends JTextField {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(nameFieldRatio * createPanel.size.width, preferredSize.height);
-
-      text =: displayNameError(editorModel.validateNameText(text));
 
       userEnteredCount =: doSubmit();
    }

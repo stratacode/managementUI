@@ -7,11 +7,15 @@ class CreateProperty extends CreateSubPanel {
 
    enabled := !TextUtil.isEmpty(propertyName) && !TextUtil.isEmpty(propertyTypeName) && !TextUtil.isEmpty(ownerTypeName);
 
-   //propertyTypeName =: displayPropertyError(editorModel.validateTypeText(propertyTypeName, false));
-
    newTypeSelected =: propertyTypeName;
 
-   submitCount =: displayPropertyError(editorModel.createProperty(ownerTypeName, propertyTypeName, propertyName, operator, propertyValue, addBefore, relPropertyName));
+   submitCount =: handlePropertySubmitResult(editorModel.createProperty(ownerTypeName, propertyTypeName, propertyName, operator, propertyValue, addBefore, relPropertyName));
+
+   propertyTypeName =: displayNameError(editorModel.validatePropertyTypeName(propertyTypeName));
+
+   relPropertyName := editorModel.currentPropertyName;
+
+   propertyName =: displayNameError(editorModel.validateNameText(propertyName));
 
    void init() {
       if (editorModel.currentType == null) {
@@ -22,10 +26,15 @@ class CreateProperty extends CreateSubPanel {
       }
    }
 
-   void displayPropertyError(String err) {
-      if (err != null)
+   void handlePropertySubmitResult(String err) {
+      if (err != null && err.length() > 0)
          displayNameError(err);
       else
          clearForm();
+   }
+
+   void clearForm() {
+      editorModel.createMode = false;
+      clearFields();
    }
 }

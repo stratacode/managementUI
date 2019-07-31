@@ -15,6 +15,10 @@
           return res;
        }
 
+      void rebuildForm() {
+         formScroll.formList_Repeat.rebuildRepeat();
+      }
+
    %>
    <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
       <%! Element createElement(Object value, int ix, Element oldTag) {

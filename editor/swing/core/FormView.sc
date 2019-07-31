@@ -61,6 +61,11 @@ FormView {
       super.invalidateModel();
    }
 
+   void rebuildForm() {
+      contentPanel.childList.rebuildList();
+      contentPanel.childList.validateTree();
+   }
+
    contentPanel {
       int maxChildWidth, maxChildHeight;
       preferredSize := SwingUtil.dimension(maxChildWidth, maxChildHeight);

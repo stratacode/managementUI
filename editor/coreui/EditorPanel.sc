@@ -17,18 +17,19 @@ class EditorPanel {
       editorModel = EditorPanel.this.editorModel;
       viewType := EditorPanel.this.viewType;
 
-      propertyMode := editorModel.currentCreateMode == CreateMode.Property;
+      propertyMode := editorModel.createMode && editorModel.currentCreateMode == CreateMode.Property;
       createMode := editorModel.createMode;
       currentCreateMode := editorModel.currentCreateMode;
    }
-
-   Object createTypeModeName;
 
    @Sync
    ViewType viewType = ViewType.DataViewType;
 
    String newTypeNameField :=: editorModel.createModeTypeName;  // Set on selection to a value to pre-populate the 'extends' form field
    String newLayerNameField;           // Set to populate the new layer field properties
+
+   newTypeNameField =: statusPanel.createPanel.newTypeSelected;
+   newLayerNameField =: statusPanel.createPanel.newLayerSelected;
 
    @Sync(syncMode=SyncMode.Disabled)
    boolean staleSelection = false;
@@ -249,11 +250,18 @@ class EditorPanel {
                String[] newSelTypes = newTypeNames.toArray(new String[newTypeNames.size()]);
                boolean typeChanged = false;
                boolean instChanged = false;
+               boolean instanceModeChanged = false;
                if (!Arrays.equals(selectedTypeNames, newSelTypes)) {
                   selectedTypeNames = newSelTypes;
                   typeChanged = true;
                }
                if (!DynUtil.equalObjects(editorModel.selectedInstances, newInstances)) {
+                  int newSize = newInstances.size();
+                  int oldSize = editorModel.selectedInstances == null ? 0 : editorModel.selectedInstances.size();
+                  // When we go from having a current type to the same type with an instance or vice versa, need to rebuild the form view
+                  if (newSize != oldSize && (newSize == 0 || oldSize == 0)) {
+                     instanceModeChanged = true;
+                  }
                   instChanged = true;
                   editorModel.selectedInstances = newInstances;
                }
@@ -261,8 +269,12 @@ class EditorPanel {
                if (typeChanged || instChanged)
                   editorModel.selectionChanged++;
                // But if only the instance changed we also need to update the instance in the form
-               if (instChanged && !typeChanged)
-                  editorModel.newInstSelected++;
+               if (instChanged && !typeChanged) {
+                  if (instanceModeChanged)
+                     editorModel.instanceModeChanged++;
+                  else
+                     editorModel.newInstSelected++;
+               }
             }
          }
          lastUpdateSelectionCount = updateSelectionCount;

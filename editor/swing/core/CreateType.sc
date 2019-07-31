@@ -3,6 +3,8 @@ CreateType {
    newTypeName :=: nameField.text;
    extendsTypeName :=: objExtendsTypeField.text;
 
+   outerTypeName :=: (String) inTypeCombo.selectedItem;
+
    row2y := (int)(2*ypad + beforeAfter.size.height + createPanel.row1ErrorHeight);
 
    lastComponent = objExtendsTypeField;
@@ -46,7 +48,8 @@ CreateType {
    object inLayerCombo extends JComboBox {
       location := SwingUtil.point(inLabel.location.x + inLabel.size.width + xpad, ypad);
       size := preferredSize;
-      items := editorModel.getMatchingLayerNamesForType((String)inTypeCombo.selectedItem);
+      items := matchingLayerNames;
+      selectedIndex := currentLayerIndex;
    }
 
    object nameLabel extends JLabel {
@@ -57,8 +60,6 @@ CreateType {
    object nameField extends JTextField {
       location := SwingUtil.point(nameLabel.location.x + nameLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(nameFieldRatio * createPanel.size.width, preferredSize.height);
-
-      text =: displayNameError(editorModel.validateNameText(text));
 
       userEnteredCount =: doSubmit();
    }
@@ -72,8 +73,6 @@ CreateType {
    object objExtendsTypeField extends CompletionTextField {
       location := SwingUtil.point(objExtendsLabel.location.x + objExtendsLabel.size.width + xpad, row2y);
       size := SwingUtil.dimension(createPanel.size.width * nameFieldRatio, preferredSize.height);
-
-      text =: displayComponentError(editorModel.validateTypeText(text, false));
 
       userEnteredCount =: doSubmit();
 

@@ -29,6 +29,12 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    boolean editable := !instanceMode || !constantProperty;
    boolean rowStart;
 
+   boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
+
+   boolean propertyIsCurrent := editorModel.currentProperty == propC;
+
+   String propertyOperator := retPropertyOperator(formEditor.instanceMode, propC);
+
    // Placeholders for the ability to allow the user to set the width/height of a component
    int explicitWidth = -1, explicitHeight = -1;
 
@@ -66,9 +72,19 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       return prop == null ? "<null>" : EditorModel.getPropertyName(prop);
    }
 
+   String retPropertyOperator(boolean instanceMode, Object val) {
+      return val == null ? "" : (instanceMode ? "" : propOperator(val) != null ? " " + propOperator(val) : " =");
+   }
+
+   String propOperator(Object val) {
+      return val instanceof CustomProperty ? ((CustomProperty) val).operator : ModelUtil.getOperator(val);
+   }
+
+   /*
    String getOperatorDisplayStr(Object instance, IVariableInitializer varInit) {
       return !instanceMode && instance == null && varInit != null ? (varInit.operatorStr == null ? " = " : varInit.operatorStr) : "";
    }
+      */
 
    void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
       propC = elem;
@@ -99,26 +115,31 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    static Object getPropertyValue(Object prop, Object instance, int changeCt, boolean instanceMode) {
       if (prop == null)
          return null;
-      if (prop instanceof CustomProperty)
-         return ((CustomProperty) prop).value;
-      if (prop instanceof IVariableInitializer) {
-         IVariableInitializer varInit = (IVariableInitializer) prop;
+      try {
+         if (prop instanceof CustomProperty)
+            return ((CustomProperty) prop).value;
+         if (prop instanceof IVariableInitializer) {
+            IVariableInitializer varInit = (IVariableInitializer) prop;
 
-         if (instance == null)
-            return !instanceMode ? varInit.initializerExprStr == null ? "" : varInit.initializerExprStr : null;
-         else if (!isIndexedProperty(prop)) {
-            Object val = DynUtil.getPropertyValue(instance, varInit.variableName);
-            if (val == null)
+            if (instance == null)
+               return !instanceMode ? varInit.initializerExprStr == null ? "" : varInit.initializerExprStr : null;
+            else if (!isIndexedProperty(prop)) {
+               Object val = DynUtil.getPropertyValue(instance, varInit.variableName);
+               if (val == null)
+                  return null;
+               return val;
+            }
+            else
                return null;
-            return val;
          }
-         else
-            return null;
+         else if (prop instanceof String)
+            return DynUtil.getPropertyValue(instance, (String)prop);
+         else if (prop instanceof sc.type.IBeanMapper)
+            return DynUtil.getPropertyValue(instance, ((sc.type.IBeanMapper) prop).getPropertyName());
       }
-      else if (prop instanceof String)
-         return DynUtil.getPropertyValue(instance, (String)prop);
-      else if (prop instanceof sc.type.IBeanMapper)
-         return DynUtil.getPropertyValue(instance, ((sc.type.IBeanMapper) prop).getPropertyName());
+      catch (IllegalArgumentException exc) {
+         System.err.println("*** Instance missing property: " + prop);
+      }
       return null;
    }
 

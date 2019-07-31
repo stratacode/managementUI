@@ -19,20 +19,19 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
             text = "Add...";
             object layerItem extends JMenuItem {
                text = "Layer";
-               clickCount =: doAddLayer();
-
+               clickCount =: enableCreateMode("Layer");
             }
             object classItem extends JMenuItem {
                text = "Class";
-               clickCount =: enableTypeCreateMode("Class");
+               clickCount =: enableCreateMode("Class");
             }
             object objectItem extends JMenuItem {
                text = "Object";
-               clickCount =: enableTypeCreateMode("Object");
+               clickCount =: enableCreateMode("Object");
             }
             object propertyItem extends JMenuItem {
                text = "Property";
-               clickCount =: enablePropCreateMode();
+               clickCount =: enableCreateMode("Property");
             }
          }
          object quitItem extends JMenuItem {
@@ -124,14 +123,6 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
       size := SwingUtil.dimension(windowWidth, windowHeight-40-ypad);
    }
 
-   void doAddLayer() {
-       super.doAddLayer();
-
-       CreatePanel cp = editorPanel.statusPanel.createPanel;
-       cp.createTypeChoice.selectedItem = "Layer";
-       cp.createSubPanel.requestFocus();
-   }
-
    void showErrorDialog(String message, String title) {
       JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
    }
@@ -140,26 +131,6 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
       return JOptionPane.showOptionDialog(EditorFrame.this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
           options,  //the titles of buttons
           defaultTitle); //default button title
-   }
-
-   void enableTypeCreateMode(String type) {
-      if (editorModel.currentPackage != null) {
-         editorModel.createMode = true;
-         editorPanel.createTypeModeName = type;
-      }
-      else {
-         UIUtil.showErrorDialog(this, "Select a layer or type to choose the destination package before clicking 'Add " + type + "'", "No package selected");
-      }
-   }
-
-   void enablePropCreateMode() {
-      if (editorModel.currentType != null) {
-         editorModel.createMode = true;
-         editorPanel.createTypeModeName = "Property";
-      }
-      else {
-         UIUtil.showErrorDialog(this, "Select a type for the property before clicking 'Add'", "No type selected");
-      }
    }
 
 }

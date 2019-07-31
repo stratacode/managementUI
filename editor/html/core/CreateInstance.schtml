@@ -1,4 +1,9 @@
-<span> 
+<span>
+   <%!
+      void requestFocus() {
+         row1.propertyTypeField.focus();
+      }
+   %>
    <span id="row1">
       of type <input id="propertyTypeField" type="text" value=":=: propertyTypeName"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>

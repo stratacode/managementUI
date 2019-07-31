@@ -7,25 +7,37 @@ class CreateType extends CreateSubPanel {
    String extendsTypeName;
    @Sync
    String subPackage;
+   @Sync
+   String outerTypeName;
 
    @Sync
-   List<String> innerChoiceItems := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Inside", "Top level"});
+   List<String> innerChoiceItems := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Top level", "Inside"});
    @Sync
    String beforeAfterText := editorModel.currentProperty == null ? "the last property" : ModelUtil.getPropertyName(editorModel.currentProperty);
 
    @Sync
    boolean innerType := !TextUtil.equals(innerChoice, "Top level");
 
+   List<String> matchingLayerNames := editorModel.getMatchingLayerNamesForType(!innerType ? null : outerTypeName);
+   int currentLayerIndex := matchingLayerNames.indexOf(editorModel.currentLayer.layerName);
+
    enabled := !TextUtil.isEmpty(newTypeName);
 
    newTypeSelected =: extendsTypeName;
 
    submitCount =: displayTypeError(
-                    editorModel.createType(createPanel.currentCreateMode, newTypeName, editorModel.currentType,
+                    editorModel.createType(createPanel.currentCreateMode, newTypeName, outerTypeName,
                                            extendsTypeName, createPackageName, editorModel.currentLayer));
+
+   newTypeName =: displayNameError(editorModel.validateNameText(newTypeName));
+   extendsTypeName =: displayNameError(editorModel.validateTypeText(extendsTypeName, false));
 
    String getCreatePackageName() {
       return subPackage == null ? editorModel.currentPackage : CTypeUtil.prefixPath(editorModel.currentPackage, subPackage);
+   }
+
+   void setMatchingLayerNames(List<String> lns) {
+      this.matchingLayerNames = lns;
    }
 
    void displayTypeError(String err) {
@@ -41,4 +53,8 @@ class CreateType extends CreateSubPanel {
       subPackage = "";
    }
 
+   void init() {
+      super.init();
+
+   }
 }

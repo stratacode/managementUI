@@ -2,7 +2,7 @@
    <span id="createLabel"><%= createLabelText %></span>
    <select id="createTypeChoice" optionDataSource=":= createModeNames" selectedValue=":=: createModeName" visible=":= !editorModel.pendingCreate"/>
    <span id="subPanelRow1" replaceWith=":= createSubPanel != null ? createSubPanel.row1 : null"/>
-   <div id="row1DialogError"><%= row1ErrorText %></div>
-   <div id="subPanelRow2" visible=":= createSubPanel != null && createSubPanel.row2Visible" replaceWith=":= createSubPanel != null ? createSubPanel.row2 : null"/>
-   <div id="row2DialogError"><%= row2ErrorText %></div>
+   <div id="row1DialogError" class="statusRowStart"><%= row1ErrorText %></div>
+   <div id="subPanelRow2" class="statusRowStart" visible=":= createSubPanel != null && createSubPanel.row2Visible" replaceWith=":= createSubPanel != null ? createSubPanel.row2 : null"/>
+   <div id="row2DialogError" class="statusRowStart"><%= row2ErrorText %></div>
 </span>

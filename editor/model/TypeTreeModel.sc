@@ -44,6 +44,7 @@ class TypeTreeModel {
    boolean layerMode := createLayerMode || addLayerMode;
 
    /** Should we also include instances in the type tree.  When included, they are children under their type */
+   @Sync(syncMode=SyncMode.Disabled)
    boolean includeInstances = true;
 
    transient boolean valid = true;
@@ -82,8 +83,6 @@ class TypeTreeModel {
 
    // Rules controlling when to refresh.  
    codeTypes =: refresh();
-
-   includeInstances =: refresh();
 
    // When the current type in the model changes, if we're in create mode we need to refresh to reflect the newly visible/highlighted elements.
    editorModel =: createMode || layerMode ? refresh() : null;

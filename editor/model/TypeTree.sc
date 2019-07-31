@@ -224,6 +224,10 @@ class TypeTree {
 
       boolean createModeSelected = false;
 
+      void setCachedTypeDeclaration(Object ctd) {
+         cachedTypeDeclaration = ctd;
+      }
+
       // We change this on the client for instances as a shortcut.  Don't need to sync that change to the server since
       // the server will set it to the thing anyway
       @Sync(syncMode=SyncMode.ServerToClient)
@@ -249,6 +253,10 @@ class TypeTree {
       }
 
       private boolean open = false;
+
+      void setNeedsType(boolean needsType) {
+         this.needsType = needsType;
+      }
 
       void setOpen(boolean newOpen) {
          boolean orig = open;
@@ -459,10 +467,6 @@ class TypeTree {
          return false;
       }
 
-      public String getIdPrefix() {
-          return "T";
-      }
-
       @Constant
       String getObjectId() {
          if (objectId != null)
@@ -616,8 +620,10 @@ class TypeTree {
                needsRefresh = true;
             }
             boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
-            if (newCreate != createModeSelected)
+            if (newCreate != selected) {
                createModeSelected = newCreate;
+               needsRefresh = true;
+            }
          }
          if (needsOpen() && !open && !closed) {
             open = true;
@@ -674,13 +680,11 @@ class TypeTree {
          if (!needsInstances() || type == EntType.Instance)
             return false;
          List<InstanceWrapper> insts = null;
-         if (treeModel.includeInstances) {
-            if (cachedTypeDeclaration == null && (open || selected || instanceSelected)) {
-                 needsType = true;
-            }
-            if (cachedTypeDeclaration != null) {
-               insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false, null, false);
-            }
+         if (cachedTypeDeclaration == null && (open || selected || instanceSelected)) {
+            needsType = true;
+         }
+         if (cachedTypeDeclaration != null) {
+            insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false, null, false);
          }
          return updateInstances(insts);
       }
@@ -774,8 +778,16 @@ class TypeTree {
       }
 
       String getIndexKey() {
+         if (type == EntType.Instance && instance == null) {
+            System.err.println("*** Weird case in type tree index key");
+            return typeName;
+         }
          return type == EntType.Instance ? typeName + ":" + instance.toString() : typeName;
       }
+   }
+
+   public String getIdPrefix() {
+      return "T";
    }
 
    String getRootName() {

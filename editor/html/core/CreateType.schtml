@@ -3,20 +3,26 @@
       innerChoice :=: (String) row1.innerChoiceCombo.selectedValue;
       newTypeName :=: row2.nameField.value;
       extendsTypeName :=: row2.objExtendsTypeField.inputValue;
+
+      outerTypeName :=: (String) row1.inTypeCombo.selectedValue;
+      
+      void requestFocus() {
+         row2.nameField.focus();
+      }
     %>
    <span id="row1">
-      <select id="innerChoiceCombo" optionDataSource=":= innerChoiceItems"/>
+      <select id="innerChoiceCombo" optionDataSource=":= innerChoiceItems" selectedIndex="0"/>
       <select id="inTypeCombo" optionDataSource=":= editorModel.ctx.getCreateInstTypeNames()" visible=":= innerType"/>
-      <select id="beforeAfterCombo" optionDataSource='= {"before", "after"}' visible=":= innerType"/>
+      <select id="beforeAfterCombo" optionDataSource='= {"before", "after"}' visible=":= innerType" selectedIndex="0"/>
       <span id="beforeAfterLabel" visible=":= innerType"><%= beforeAfterText %></span>
       in layer
-      <select id="inLayerCombo" optionDataSource=":= editorModel.getMatchingLayerNamesForType((String)inTypeCombo.selectedValue)"/>
+      <select id="inLayerCombo" optionDataSource=":= matchingLayerNames" selectedIndex=":= currentLayerIndex"/>
    </span>
    <span id="row2">
       Name
-      <input id="nameField" value="=: createPanel.row2ErrorText = editorModel.validateNameText(value)" changeEvent="=: doSubmit()"/>
+      <input id="nameField" keyUpEvent="=: keyUpEvent.key.equals("Enter") ? doSubmit() : null"/>
       extends
-      <span id="objExtendsTypeField" extends="CompletionTextField" inputValue="=: createPanel.row2ErrorText = editorModel.validateTypeText(inputValue, false)"/>
+      <span id="objExtendsTypeField" extends="CompletionTextField"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span>
 </span>

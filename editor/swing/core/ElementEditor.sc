@@ -9,12 +9,6 @@ ElementEditor {
 
    propertySuffix := (ModelUtil.isArray(propType) || propType instanceof List ? "[]" : "");
 
-   String propertyOperator := propertyOperator(formEditor.instanceMode, propC);
-
-   boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
-
-   boolean propertyIsCurrent := editorModel.currentProperty == propC;
-
    int tabSize;
    int xpad;
    int ypad;
@@ -77,14 +71,6 @@ ElementEditor {
       if (propC instanceof CustomProperty)
          return;
       formEditor.parentView.focusChanged(component, propC, formEditor.instance, newFocus);
-   }
-
-   String propertyOperator(boolean instanceMode, Object val) {
-      return val == null ? "" : (instanceMode ? "" : propOperator(val) != null ? " " + propOperator(val) : " =");
-   }
-   
-   String propOperator(Object val) {
-      return val instanceof CustomProperty ? ((CustomProperty) val).operator : ModelUtil.getOperator(val);
    }
 
    void displayFormError(String msg) {
@@ -169,7 +155,7 @@ ElementEditor {
          propC = ModelUtil.definesMember(type, ModelUtil.getPropertyName(prop), JavaSemanticNode.MemberType.PropertyAnySet, null, null, null);
          // Update this manually since we change it when moving the operator into the label
          propertyName = getPropertyNameString(propC);
-         propertyOperator = propertyOperator(formEditor.instanceMode, propC);
+         propertyOperator = retPropertyOperator(formEditor.instanceMode, propC);
          if (error != null)
             displayFormError(error);
          return error;

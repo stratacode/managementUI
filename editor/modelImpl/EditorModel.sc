@@ -619,6 +619,38 @@ EditorModel {
       return ctx.setElementValue(type, inst, prop, expr, updateType, updateInstances, valueIsExpr);
    }
 
+   String validatePropertyTypeName(String typeName) {
+      typeName = typeName == null ? "" : typeName.trim();
+      if (typeName.length() == 0) {
+         return null;
+      }
+      String err = ModelUtil.validateElement(JavaLanguage.getJavaLanguage().type, typeName, false);
+      if (err != null) {
+         return err;
+      }
+      else {
+         if (ctx.isCreateInstType(typeName))
+            return null;
+         String fullTypeName = ctx.getCreateInstFullTypeName(typeName);
+         if (fullTypeName != null)
+            return null;
+
+         if (findType(typeName) != null) {
+            return null;
+         }
+
+         if (Type.getPrimitiveType(typeName) != null)
+            return null;
+
+         if (system.getTypeDeclaration(typeName) != null)
+            return null;
+
+         if (system.getTypeDeclaration(CTypeUtil.prefixPath("java.lang", typeName)) != null)
+            return null;
+
+         return "No property type named: " + typeName;
+      }
+   }
 
    String validateTypeText(String text, boolean instType) {
       String typeName = text == null ? "" : text.trim();
@@ -939,6 +971,10 @@ EditorModel {
             return err;
          }
          else {
+            // Need to potentially refresh the editor - and if the current type is already selected, it's a mode changed requiring a full refresh of the form
+            //newInstSelected++;
+            instanceModeChanged++;
+
             return pendingCreateError;
          }
       }
@@ -1002,8 +1038,20 @@ EditorModel {
       return null;
    }
 
-   public String createType(CreateMode mode, String name, Object outerType, String extendsTypeName, String pkg, Layer destLayer) {
+   public String createType(CreateMode mode, String name, String outerTypeName, String extendsTypeName, String pkg, Layer destLayer) {
       String err;
+
+      Object outerType;
+      if (outerTypeName == null) {
+         outerType = null;
+      }
+      else {
+         outerType = findType(outerTypeName);
+         if (outerType == null) {
+            return "No outer type: " + outerTypeName;
+         }
+      }
+
       if (name.length() == 0)
          err = "No name specified for new " + mode.toString().toLowerCase();
       else if (outerType != null)
@@ -1105,7 +1153,7 @@ EditorModel {
                   Object[] argsArr = args.toArray();
                   Object inst;
                   if (createMeth instanceof ConstructorDefinition) {
-                     inst = DynUtil.createInstance(typeDecl, createMeth.getTypeSignature(), argsArr);
+                     inst = DynUtil.newInnerInstance(typeDecl, null, createMeth.getTypeSignature(), argsArr);
                   }
                   else {
                      inst = DynUtil.invokeMethod(null, createMeth, argsArr);

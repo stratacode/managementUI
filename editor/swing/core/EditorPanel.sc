@@ -39,9 +39,6 @@ EditorPanel extends JPanel implements EditorPanelStyle {
    int statusLineHeight = 32 + 2*ypad;
    int statusPanelHeight = statusLineHeight * 3;
 
-   newTypeNameField =: statusPanel.createPanel.newTypeSelected;
-   newLayerNameField =: statusPanel.createPanel.newLayerSelected;
-
    class ToolBarButton extends JButton {
       size := preferredSize;
       rolloverEnabled = true;
@@ -569,8 +566,6 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          opComplete =: editFieldPanel.currentTypeTextField.requestFocus();
       }
    }
-
-   createTypeModeName =: statusPanel.createPanel.createTypeChoice.selectedItem;
 
    // When viewType changes, update the visible status of each view
    viewType =: validateViewType();

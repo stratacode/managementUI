@@ -24,10 +24,11 @@
          <ul id="fileMenu">
             <li><a class="level2Menu">Add...</a>
                <ul>
-                  <li><a clickEvent="=: doAddLayer()">Layer</a></li>
-                  <li><a clickEvent='=: enableTypeCreateMode("Class")'>Class</a></li>
-                  <li><a clickEvent='=: enableTypeCreateMode("Object")'>Object</a></li>
-                  <li><a clickEvent='=: enablePropCreateMode()'>Property</a></li>
+                  <li><a clickEvent='=: enableCreateMode("Instance")'>Instance</a></li>
+                  <li><a clickEvent="=: enableCreateMode("Layer")">Layer</a></li>
+                  <li><a clickEvent='=: enableCreateMode("Class")'>Class</a></li>
+                  <li><a clickEvent='=: enableCreateMode("Object")'>Object</a></li>
+                  <li><a clickEvent='=: enableCreateMode("Property")'>Property</a></li>
                </ul>
             </li>
          </ul>

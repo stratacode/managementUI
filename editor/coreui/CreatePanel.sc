@@ -40,8 +40,6 @@ class CreatePanel {
             removeSubPanel(createSubPanel);
          }
 
-         if (currentCreateMode == null)
-            System.out.println("***");
          // Need to queue sync events here because addSubPanel calls register and that needs to happen before we process
          // the addSyncInst call inside of the createSubPanel call. Otherwise, the remote side will try to serialize the create
          // of the type panel, rather than just synchronizing changes made to subcomponents.
@@ -55,6 +53,8 @@ class CreatePanel {
             if (flush) SyncManager.flushSyncQueue();
          }
          createSubPanel.init();
+
+         createSubPanel.requestFocus();
       }
       else if (createSubPanel != null) {
          removeSubPanel(createSubPanel);
@@ -97,7 +97,6 @@ class CreatePanel {
 
    void clearTextFields() {
       if (createSubPanel == null) {
-         System.err.println("***");
          return;
       }
       createSubPanel.clearFields();
@@ -105,7 +104,6 @@ class CreatePanel {
 
    void clearForm() {
       if (createSubPanel == null) {
-         System.err.println("***");
          return;
       }
       clearTextFields();

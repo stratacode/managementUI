@@ -260,12 +260,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       return editorModel.getPropertyName(parentProperty);
    }
 
-   boolean getInstanceMode() {
-      if (parentView == null) {
-         return true;
-      }
-      return parentView.instanceMode;
-   }
+   boolean instanceMode := parentView.instanceMode;
 
    String getEditorType(Object prop, Object propType, Object propInst, boolean instMode) {
       // When editing the type, things are simple - it's just forms for sub-types and text fields for properties for the init expr

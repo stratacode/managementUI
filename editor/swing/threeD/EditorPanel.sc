@@ -1,9 +1,4 @@
 EditorPanel {
-   ViewType {
-      ThreeDViewType {
-      }
-   }
-   
    editorToolBar {
       object threeDViewButton extends ToolBarToggleButton {
         toolTipText = "Show 3D view of the selected types";

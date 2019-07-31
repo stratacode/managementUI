@@ -66,8 +66,7 @@ class EditFieldPanel extends JPanel implements EditorPanelStyle {
       }
 
       void cancelValue() {
-         editorModel.currentPropertyValue = editorModel.savedPropertyValue;
-         editorModel.currentPropertyOperator = editorModel.savedPropertyOperator;
+         editorModel.cancelPropertyEdit();
          valueFieldError.text = "";
       }
 

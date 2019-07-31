@@ -57,6 +57,8 @@
    //String borderColorSelected = "#22F";
    String borderColorSelected = "#3434c7";
    String textHighlightColor = "#F1FFAE";
+   String currentPropertyColor = "#22C";
+   String transparentPropertyColor = "#888";
    String dropShadow = %>
       border-style: solid;
       border-width: 1px;
@@ -428,6 +430,18 @@ a.tooltip:hover span {
    width: <%= formLabelPer %>%;
    text-align: right;
    float: left;
+}
+
+.currentProperty {
+   color: <%= currentPropertyColor %>;
+}
+
+.statusRowStart {
+   margin-left: 35px;
+}
+
+.transparentProperty {
+   color: <%= transparentPropertyColor %>;
 }
 
 .formFieldValue {

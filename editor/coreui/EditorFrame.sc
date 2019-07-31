@@ -2,10 +2,6 @@ class EditorFrame {
    EditorModel editorModel := editorPanel.editorModel;
    EditorPanel editorPanel;
 
-   void doAddLayer() {
-       editorModel.createMode = true;
-   }
-
    void doDeleteCurrentSelection() {
       if (editorModel.currentProperty != null) {
           editorModel.deleteCurrentProperty();
@@ -41,23 +37,8 @@ class EditorFrame {
        }
    }
 
-   void enableTypeCreateMode(String type) {
-      if (editorModel.currentPackage != null) {
-         editorModel.createMode = true;
-         editorPanel.createTypeModeName = type;
-      }
-      else {
-         UIUtil.showErrorDialog(this, "Select a layer or type to choose the destination package before clicking 'Add " + type + "'", "No package selected");
-      }
-   }
-
-   void enablePropCreateMode() {
-      if (editorModel.currentType != null) {
-         editorModel.createMode = true;
-         editorPanel.createTypeModeName = "Property";
-      }
-      else {
-         UIUtil.showErrorDialog(this, "Select a type for the property before clicking 'Add'", "No type selected");
-      }
+   void enableCreateMode(String type) {
+      editorModel.createMode = true;
+      editorPanel.statusPanel.createPanel.createModeName = type;
    }
 }

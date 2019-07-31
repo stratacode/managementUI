@@ -58,9 +58,10 @@ TypeTreeModel {
               super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
               // In createMode or layerMode, if the guy is selected, need to change the color so we identify the selected items
+              /*
               if ((createMode || layerMode) && (editorModel.isTypeNameSelected(nodeInfo.getTypeName()) || (nodeInfo.type == TypeTree.EntType.Package && StringUtil.equalStrings(nodeInfo.value, editorModel.currentPackage))))
                  setBackgroundNonSelectionColor(selectedNodeColor);
-              else
+              else */
                 setBackgroundNonSelectionColor(tree.getBackground());
 
               switch (nodeInfo.type) {

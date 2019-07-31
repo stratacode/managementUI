@@ -106,6 +106,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Incremented each time a new instance is selected with the same type */
    int newInstSelected = 0;
 
+   /** Incremented each time the type remains the same but the instance mode changes (meaning we need to rebuild the editor lists) */
+   int instanceModeChanged = 0;
+
    /** Set to true when changes have been made to source files in the current runtime which require a process restart. */
    boolean staleCompiledModel;
 
@@ -416,6 +419,14 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       this.currentInstance = newInst;
    }
 
+   void cancelPropertyEdit() {
+      /* to reset back to the original values instead of just clearing the current property like we do now
+      currentPropertyValue = savedPropertyValue;
+      currentPropertyOperator = savedPropertyOperator;
+      */
+      currentProperty = null;
+   }
+
    void instanceAdded(Object inst) {
       refreshInstances();
    }
@@ -448,6 +459,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    boolean getPropertyInherited(Object prop, Layer layer) {
+      if (prop == null) // list element
+         return false;
       if (prop instanceof CustomProperty)
          return false;
       return ModelUtil.getLayerForMember(null, prop) != layer;
