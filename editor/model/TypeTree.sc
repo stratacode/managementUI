@@ -475,10 +475,30 @@ class TypeTree {
             return null;
          String valuePart = CTypeUtil.escapeIdentifierString(value == null ? "" : "_" + value.toString());
          String typeNamePart = srcTypeName == null ? "" : "_" + CTypeUtil.escapeIdentifierString(srcTypeName);
-         String entTypePart = type == null ? "_unknown" : "_" + type;
+         String entTypePart = type == null ? "_unknown" : "_" + getTypePart(type);
          String layerPart = layer == null ? "" : "_" + CTypeUtil.escapeIdentifierString(layer.layerName);
          objectId = "TE" + getIdPrefix() + entTypePart + layerPart + typeNamePart + valuePart;
          return objectId;
+      }
+      
+      // Because we update the type from "Type" to "ParentObject", etc. need to keep the id from changing during that change
+      private String getTypePart(EntType type) {
+         switch(type) {
+            case ParentType:
+            case Type:
+            case ParentObject:
+            case Object:
+            case ParentEnumConstant:
+            case EnumConstant:
+            case ParentEnum:
+            case Enum:
+            case ParentInterface:
+            case Interface:
+               return "Type";
+            case Instance:
+               return "Instance";
+         }
+         return type.toString();
       }
 
       void initChildLists() {
@@ -565,7 +585,7 @@ class TypeTree {
       }
 
       boolean updateSelected() {
-         if (type == EntType.Instance) {
+         if (type == EntType.Instance || type == EntType.Object || type == EntType.ParentObject) {
             boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
             if (newSel != selected)
                selected = newSel;
