@@ -425,7 +425,10 @@ class TypeTree {
             return cachedTypeDeclaration;
          if (typeName == null)
             return null;
-         return DynUtil.resolveName(typeName, false);
+         if (editorModel.ctx.system == null)
+            return null;
+         //return DynUtil.resolveName(typeName, false);
+         return editorModel.ctx.system.getSrcTypeDeclaration(typeName, null);
       }
 
       boolean getTypeIsVisible() {
@@ -480,7 +483,7 @@ class TypeTree {
          objectId = "TE" + getIdPrefix() + entTypePart + layerPart + typeNamePart + valuePart;
          return objectId;
       }
-      
+
       // Because we update the type from "Type" to "ParentObject", etc. need to keep the id from changing during that change
       private String getTypePart(EntType type) {
          switch(type) {
@@ -585,14 +588,26 @@ class TypeTree {
       }
 
       boolean updateSelected() {
+         boolean hasSelectedType = editorModel.typeNames.length > 0;
+
          if (type == EntType.Instance || type == EntType.Object || type == EntType.ParentObject) {
+            // To make sure we update the instance here the first time this type is selected elsewhere
+            if (instance == null && hasSelectedType && srcTypeName.equals(editorModel.typeNames[0])) {
+               if (cachedTypeDeclaration == null) {
+                  cachedTypeDeclaration = getTypeDeclaration();
+               }
+               if (cachedTypeDeclaration != null)
+                  updateInstances();
+               else
+                  needsType = true;
+            }
+
             boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
             if (newSel != selected)
                selected = newSel;
             return false;
          }
 
-         boolean hasSelectedType = editorModel.typeNames.length > 0;
 
          // Automatically open package nodes that contain the selected type
          if (type == EntType.Package && childList == null && hasSelectedType) {
@@ -736,12 +751,16 @@ class TypeTree {
                       String nodeDisplayName = getNodeIdFromInstance(inst.theInstance);
                       childEnt = new TreeEnt(EntType.Instance, nodeDisplayName, typeTree, inst.typeName, null);
                       childEnt.instance = inst;
+                      childEnt.prependPackage = true;
                       if (childEnt.srcTypeName == null)
-                         childEnt.srcTypeName = srcTypeName;
+                         childEnt.srcTypeName = inst.typeName;
                       if (srcTypeName.equals(inst.typeName))
                          childEnt.cachedTypeDeclaration = cachedTypeDeclaration;
                       else
                          childEnt.cachedTypeDeclaration = childEnt.getTypeDeclaration();
+
+                      if (childEnt.cachedTypeDeclaration == null)
+                         childEnt.needsType = true;
                       addChild(childEnt);
                    }
                    anyChanges = true;

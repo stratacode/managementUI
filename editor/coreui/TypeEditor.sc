@@ -22,7 +22,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    ClientTypeDeclaration clientType := ModelUtil.getClientTypeDeclaration(type);;
 
    EditorModel editorModel;
-   Layer classViewLayer = editorModel.currentLayer;  // Gets set to the current layer when we are created
+   Layer classViewLayer;
 
    Layer oldLayer = null; // layer the last time were updated
    boolean oldMergeLayers, oldInherit;
@@ -70,6 +70,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          this.properties = parentList.properties;
       }
       */
+      updateClassViewLayer();
    }
 
    void updateComputedValues() {
@@ -215,7 +216,12 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          parentPropertyType = EditorModel.getPropertyType(parentProp);
       newType = resolveSrcTypeDeclaration(newType);
       type = newType;
+      updateClassViewLayer();
       setElemToEdit(newType);
+   }
+
+   void updateClassViewLayer() {
+      classViewLayer = type == null ? null : ModelUtil.getLayerForType(editorModel.ctx.system, type);
    }
 
    void removeListeners() {
@@ -304,7 +310,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
             else if (propType == Boolean.class || propType == Boolean.TYPE) {
                editorType = "toggle";
             }
-            else if ((propInst == null || !DynUtil.isObject(propInst)) && (!editorModel.isReferenceType(propType) || (instType == null || !editorModel.isReferenceType(instType)))) {
+            else if ((propInst == null || !DynUtil.isObject(propInst)) && (!editorModel.isReferenceType(propType) || (instType != null && !editorModel.isReferenceType(instType)))) {
                editorType = "form";
             }
             else

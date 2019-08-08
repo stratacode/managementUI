@@ -50,10 +50,13 @@ TypeTree {
          }
 
          // First try to get the src version
+         if (treeModel.system == null)
+            return null;
          Object res = treeModel.system.getSrcTypeDeclaration(typeName, null, prependPackage);
          // Fall back to the class but only for things which are real types.
          if (res == null && prependPackage)
             res = treeModel.system.getClassWithPathName(typeName);
+
          return res;
       }
 

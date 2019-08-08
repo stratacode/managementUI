@@ -21,12 +21,13 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    Object oldListenerInstance = null;
    Object oldListenerType = null;
    Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode);
-   String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue); // WARNING: using currentValue.toString() does not work because data binding has a bug and won't listen for changes on 'currentValue' in that case
+   String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue);
    Object propType;
 
    boolean instanceMode;
    boolean constantProperty;
-   boolean editable := !instanceMode || !constantProperty;
+   boolean setFromBinding;
+   boolean editable := !instanceMode || (!constantProperty && !setFromBinding);
    boolean rowStart;
 
    boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
@@ -62,6 +63,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       visible = getPropVisible();
       constantProperty = EditorModel.isConstantProperty(propC);
       icon = propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
+      String operator = propC instanceof IVariableInitializer ? ModelUtil.getOperator(propC) : null;
+      setFromBinding = operator != null && operator.startsWith(":=");
    }
 
    public BaseView getParentView() {

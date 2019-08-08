@@ -10,7 +10,8 @@
 %>
    <form id="toggleForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">
       <label extends="ElementLabel"/>
-      <input id="checkbox" type="checkbox" focusEvent="=: onFocusEvent()" checked=":=: checkedValue" checked="=: elementSubmitCount = elementSubmitCount + 1"/>
+      <input id="checkbox" type="checkbox" focusEvent="=: onFocusEvent()" checked=":=: checkedValue" checked="=: elementSubmitCount = elementSubmitCount + 1"
+             disabled=":= !editable"/>
       <div extends="ErrorText"/>
    </form>
 </div>

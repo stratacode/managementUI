@@ -463,7 +463,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          return false;
       if (prop instanceof CustomProperty)
          return false;
-      return ModelUtil.getLayerForMember(null, prop) != layer;
+      Layer memberLayer = ModelUtil.getLayerForMember(null, prop);
+      if (memberLayer == null)
+         System.out.println("***");
+      return memberLayer != layer;
    }
 
    static Object getPropertyType(Object prop) {
