@@ -1,6 +1,14 @@
 ListEditor {
    numRows := (DynUtil.getArrayLength(visList) + numCols-1) / numCols;
 
+   int listWidth;
+
+   int getCellWidth() {
+      if (lastView == null)
+         return super.getCellWidth();
+      return lastView.x + lastView.width;
+   }
+
    void validateEditorTree() {
       if (childList.refreshList())
          validateChildLists();

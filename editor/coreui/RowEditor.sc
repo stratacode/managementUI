@@ -33,7 +33,7 @@ class RowEditor extends InstanceFieldEditor {
       else if (editorType.equals("form"))
          return TextCellEditor.class;
       else if (editorType.equals("list"))
-         return TextCellEditor.class;
+         return ListCellEditor.class;
       System.err.println("*** Unrecognized editorType: " + editorType);
       return TextCellEditor.class;
    }

@@ -98,4 +98,9 @@ FormEditor {
       return -1;
    }
 
+   int getCellWidth() {
+      if (lastView == null)
+         return super.getCellWidth();
+      return lastView.x + lastView.width + 2*xpad;
+   }
 }

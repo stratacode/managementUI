@@ -37,4 +37,10 @@ RowEditor {
    int getCellHeight() {
       return (showHeader ? headerHeight : 0) + rowHeight;
    }
+
+   int getCellWidth() {
+      if (lastView == null)
+         return super.getCellWidth();
+      return lastView.x + lastView.width;
+   }
 }

@@ -372,9 +372,14 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       System.err.println("*** Error response to fetchRemoteTypeDeclaration");
    }
 
-   int getDefaultCellWidth(String editorType, Object prop) {
-      if (editorType.equals("text") || editorType.equals("textArea") || editorType.equals("list"))
+   int getDefaultCellWidth(String editorType, Object prop, Object propType) {
+      if (editorType.equals("text") || editorType.equals("textArea") || editorType.equals("list")) {
+         if (propType instanceof Class) {
+            if (sc.type.Type.get((Class)propType).isANumber())
+               return 100;
+         }
          return 400;
+      }
       else if (editorType.equals("ref") || editorType.equals("form") || editorType.equals("choice"))
          return 200;
       else if (editorType.equals("toggle"))
@@ -393,7 +398,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          int width = formEditor.getExplicitWidth(listIndex);
          if (width != -1)
             return width;
-         return formEditor.getDefaultCellWidth(editorType, null);
+         return formEditor.getDefaultCellWidth(editorType, null, null);
       }
       return -1;
    }

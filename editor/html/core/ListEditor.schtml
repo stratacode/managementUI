@@ -2,7 +2,12 @@
    <%!
       repeatWrapper = listScroll.listTags_Repeat;
 
-       void refreshChildren() {
+      void clearChildren() {
+         super.clearChildren();
+         listScroll.listTags_Repeat.destroyRepeatTags();
+      }
+
+      void refreshChildren() {
           super.refreshChildren();
           listScroll.listTags_Repeat.refreshRepeat(true);
        }
