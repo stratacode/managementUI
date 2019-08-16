@@ -2,7 +2,6 @@ import sc.layer.LayerIndexInfo;
 import sc.lang.java.BodyTypeDeclaration;
 
 TypeTree {
-
    TreeEnt {
       needsType =: fetchType();
 
@@ -260,8 +259,10 @@ TypeTree {
    }
 
    boolean rebuildDirEnts() {
-      TreeEnt rootEnts = new TreeEnt(EntType.Root, "All Types", this, null, null);
-      rootDirEnt = rootEnts;
+      //TreeEnt rootEnts = new TreeEnt(EntType.Root, "All Types", this, null, null);
+      //rootDirEnt = rootEnts;
+
+      TreeEnt rootEnts = rootDirEnt;
 
       if (treeModel.includePrimitives) {
          // First add the primitive types

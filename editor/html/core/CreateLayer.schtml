@@ -15,7 +15,7 @@
       <span id="newLayerOptions" visible=":= !addLayerMode">
          Public <input id="publicCheck" type="checkbox"/>
          Transparent <input id="transparentCheck" type="checkbox"/>
-         Package <input id="packageTextField" type="text"/>
+         Package <input id="packageTextField" type="text" class="statusInputField"/>
       </span>
    </span>
 

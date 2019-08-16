@@ -26,20 +26,20 @@ class TypeTree {
    TypeTreeModel treeModel;
    boolean byLayer = false;
 
-   // These are the two main trees of TreeEnt objects.  This tree is not directly displayed but is referenced from the TreeNode classes which are displayed.
-   TreeEnt rootDirEnt;
-
-   // These will be populated from the server automatically.  Sometime after those values
-   // are set, we need to refresh the tree.
-   rootDirEnt =: treeModel.refresh();
+   // Define the rootDirEnt in the model here so that rootTreeNode is never null for the the TreeView's tree property (now a
+   // constructor property. This avoids null checks for the tree node. Need to set initDefault=true so that this value is synchronized to the client
+   // when the TypeTree is initialized. Because it's initialized in both client and server layers, the default is to
+   // not init it by default which means we are not listening for changes to the children.
+   @sc.obj.Sync(initDefault=true)
+   TreeEnt rootDirEnt = new TreeEnt(EntType.Root, "All Types", this, null, null);
 
    transient TypeTreeSelectionListener selectionListener;
 
    transient TreeEnt emptyCommentNode = new TreeEnt(EntType.Comment, "No visible types", this, null, null);
 
-// These are transient so they are not synchronized from client to the server.  That's
-// because we will build these data structures on the server or client
-   transient TreeNode rootTreeNode;
+   // These are transient so they are not synchronized from client to the server.  That's
+   // because we will build these data structures on the server or client
+   transient TreeNode rootTreeNode = new TreeNode(rootDirEnt);
 
    transient Map<String, List<TreeNode>> rootTreeIndex = new HashMap<String, List<TreeNode>>();
 

@@ -3,7 +3,7 @@
        List suggestions;
     %>
      
-   <input id="inputField" type="text" value=":=: inputValue"
+   <input id="inputField" type="text" value=":=: inputValue" class="statusInputField"
           changeEvent="=: enteredText = inputValue"/>
    <ul class="suggestionBox" visible=":= suggestions != null && suggestions.size() > 0">
      <li repeat=":= suggestions" repeatVarName="suggestion"><%= suggestion %></li>

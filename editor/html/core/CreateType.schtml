@@ -20,7 +20,7 @@
    </span>
    <span id="row2">
       Name
-      <input id="nameField" keyUpEvent="=: keyUpEvent.key.equals("Enter") ? doSubmit() : null"/>
+      <input id="nameField" keyUpEvent="=: keyUpEvent.key.equals("Enter") ? doSubmit() : null" class="statusInputField"/>
       extends
       <span id="objExtendsTypeField" extends="CompletionTextField"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>

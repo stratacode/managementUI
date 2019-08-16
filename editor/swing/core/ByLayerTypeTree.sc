@@ -13,7 +13,7 @@ ByLayerTypeTree {
          return;
 
       boolean needsOpenRoot = false;
-      if (rootDirEnt == null) {
+      if (rootDirEnt == null || rootDirEnt.childEnts == null) {
          rebuildDirEnts();
          needsOpenRoot = true;
       }
@@ -23,14 +23,16 @@ ByLayerTypeTree {
       // Now build the TreeNodes from that, sorting as we go
       if (rootTreeNode == null) {
          rootTreeNode = new TreeNode(rootName);
-         rootTreeModel = new DefaultTreeModel(rootTreeNode);
       }
       else {
          rootTreeNode.setUserObject(rootName);
          if (rootTreeNode.getChildCount() == 0)
             needsOpenRoot = true;
-         rootTreeModel.nodeChanged(rootTreeNode);
       }
+      if (rootTreeModel == null)
+         rootTreeModel = new DefaultTreeModel(rootTreeNode);
+      else
+         rootTreeModel.nodeChanged(rootTreeNode);
 
       rootPathIndex = new HashMap<String, List<TreePath>>();
 

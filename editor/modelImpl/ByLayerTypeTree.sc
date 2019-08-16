@@ -1,6 +1,8 @@
 import sc.layer.LayerIndexInfo;
 
 ByLayerTypeTree {
+   rootDirEnt = new TreeEnt(EntType.Root, "By Layer", this, null, null);
+   rootTreeNode = new TreeNode(rootDirEnt);
 
    TreeEnt addModel(ILanguageModel m, boolean prependPackage) {
       Layer layer = m.layer;
@@ -298,8 +300,9 @@ ByLayerTypeTree {
    }
 
    boolean rebuildDirEnts() {
-      TreeEnt rootEnts = new TreeEnt(EntType.Root, "By Layer", this, null, null);
-      rootDirEnt = rootEnts;
+      //TreeEnt rootEnts = new TreeEnt(EntType.Root, "By Layer", this, null, null);
+      //rootDirEnt = rootEnts;
+      TreeEnt rootEnts = rootDirEnt;
 
       for (int i = 0; i < treeModel.system.layers.size(); i++) {
          Layer layer = treeModel.system.layers.get(i);

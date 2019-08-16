@@ -67,7 +67,7 @@ TypeTree {
          return;
 
       boolean needsOpenRoot = false;
-      if (rootDirEnt == null) {
+      if (rootDirEnt == null || rootDirEnt.childEnts == null) {
          needsOpenRoot = true;
          rebuildDirEnts();
       }
@@ -78,12 +78,14 @@ TypeTree {
       if (rootTreeNode == null) {
          // Now build the TreeNodes from that, sorting as we go
          rootTreeNode = new TreeNode(rootName);
-         rootTreeModel = new DefaultTreeModel(rootTreeNode);
       }
       else {
          rootTreeNode.setUserObject(rootName);
-         rootTreeModel.nodeChanged(rootTreeNode);
       }
+      if (rootTreeModel == null)
+         rootTreeModel = new DefaultTreeModel(rootTreeNode);
+      else
+         rootTreeModel.nodeChanged(rootTreeNode);
 
       TreeNode defaultNode = rootTreeNode.findChildNodeForEnt(emptyCommentNode);
       if (defaultNode != null) {

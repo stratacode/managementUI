@@ -42,7 +42,7 @@ TypeTree {
       if (treeModel.codeTypes == null)
          return;
 
-      if (rootDirEnt == null) {
+      if (rootDirEnt == null || rootDirEnt.childEnts == null) {
          if (!rebuildDirEnts()) {
             return;
          }

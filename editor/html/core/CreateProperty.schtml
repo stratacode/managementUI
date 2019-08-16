@@ -12,7 +12,7 @@
       }
    %>
    <span id="row1">
-      of type <input id="propertyTypeField" type="text"/> to
+      of type <input id="propertyTypeField" type="text" class="statusInputField"/> to
       <select id="inTypeCombo" optionDataSource=":= editorModel.ctx.getCreateInstTypeNames()"
               selectedValue="=: editorModel.updateCurrentType((String) selectedValue)"/>
       <select id="beforeAfter" optionDataSource='= {"before", "after"}' selectedIndex="0" selectedValue='=: addBefore = ((String)selectedValue).equals("before")'/>
@@ -20,7 +20,7 @@
    </span>
    <span id="row2">
       <span id="nameLabel" visible=":= createPanel.currentCreateMode != CreateMode.Instance">Name</span>
-      <input id="nameField"/>
+      <input id="nameField" class="statusInputField"/>
       <select id="opChoice"
               optionDataSource="= sc.editor.EditorModel.operatorList"
               style="margin-left: 5px; margin-right: 5px" selectedIndex="0"/>

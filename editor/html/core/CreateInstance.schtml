@@ -5,7 +5,7 @@
       }
    %>
    <span id="row1">
-      of type <input id="propertyTypeField" type="text" value=":=: propertyTypeName"/>
+      of type <input id="propertyTypeField" type="text" value=":=: propertyTypeName" class="statusInputField"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span> 
 </span>

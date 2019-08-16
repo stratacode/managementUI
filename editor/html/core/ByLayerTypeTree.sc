@@ -5,7 +5,7 @@ ByLayerTypeTree {
       if (treeModel.codeTypes == null)
          return;
 
-      if (rootDirEnt == null) {
+      if (rootDirEnt == null || rootDirEnt.childList == null) {
          if (!rebuildDirEnts())
             return;
       }

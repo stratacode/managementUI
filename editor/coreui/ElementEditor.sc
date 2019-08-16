@@ -139,6 +139,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
             return DynUtil.getPropertyValue(instance, (String)prop);
          else if (prop instanceof sc.type.IBeanMapper)
             return DynUtil.getPropertyValue(instance, ((sc.type.IBeanMapper) prop).getPropertyName());
+         else if (prop instanceof sc.lang.java.MethodDefinition)
+            return DynUtil.getPropertyValue(instance, ((sc.lang.java.MethodDefinition) prop).propertyName);
       }
       catch (IllegalArgumentException exc) {
          System.err.println("*** Instance missing property: " + prop);

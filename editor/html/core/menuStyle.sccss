@@ -148,7 +148,7 @@ body {
 }
 
 #navMenu a:hover {
-   background-color: #2D69F0; 
+   background-color: #2D69F0;
    color: #fff;
 }
 
@@ -486,6 +486,10 @@ a.tooltip:hover span {
 
 #editFieldPanel {
   display: inline;
+}
+
+.statusInputField {
+  width: 200px;
 }
 
 .classView {
