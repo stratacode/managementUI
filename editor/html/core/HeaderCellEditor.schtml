@@ -1,6 +1,6 @@
-<span id="HeaderCellEditor">
+<span id="HeaderCellEditor" bodyOnly="true">
    <%!
-      cssClass = "cellHeader";
+      headerCell = true;
 
       String getFieldId() {
          return null;
@@ -11,5 +11,37 @@
       }
 
    %>
-   <%= propertyName %>
+   <span class=":= elemClass" style=':= "width: " + (cellWidth - (rowStart ? 1 : 2)) + "px" '><%= propertyName %>
+      <img src="/images/sortUp.png" class=':= sortDir == 1 ? "sortUpSelected" : "sortUpNormal"' clickEvent="=: toggleSortDir(1)"/><img src="/images/sortDown.png" class=':= sortDir == -1 ? "sortDownSelected" : "sortDownNormal"' clickEvent="=: toggleSortDir(-1)"/>
+   </span>
+   <span id="headerDivider" class="headerDivider" visible=":= !rowEnd" mouseDownMoveUp="=: dividerMouseEvent(mouseDownMoveUp)">
+      <%!
+         boolean pressed = false;
+         int lastX;
+         int origWidth;
+         void dividerMouseEvent(MouseEvent ev) {
+            if (ev.button != 0)
+               return;
+            if (ev.type.equals("mousedown")) {
+               pressed = true;
+               lastX = ev.clientX;
+               origWidth = cellWidth;
+               ev.preventDefault();
+            }
+            else if (ev.type.equals("mousemove")) {
+               if (pressed) {
+                  adjustCellWidth(ev.clientX - lastX);
+                  lastX = ev.clientX;
+               }
+            }
+            else if (ev.type.equals("mouseup")) {
+               if (pressed) {
+                  adjustCellWidth(ev.clientX - lastX);
+                  pressed = false;
+               }
+            }
+         }
+      %>
+      &nbsp;
+   </span>
 </span>

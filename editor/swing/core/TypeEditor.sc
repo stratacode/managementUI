@@ -10,6 +10,9 @@ TypeEditor {
 
    int xpad, ypad, baseline, tabSize;
 
+   // Space between children in the horizontal direction - used for listCells where the elements are separated
+   int xsep = 0;
+
    IElementEditor lastView;
 
    @Bindable
@@ -19,7 +22,7 @@ TypeEditor {
        width := columnWidth - (nestLevel * (parentView.nestWidth + 2*xpad)),
        height := (lastView == null ? startY : lastView.y + lastView.height) + 2 * ypad + borderSize + borderBottom;
     */
-   int x := prevCell == null ? xpad : prevCell.x + prevCell.width,
+   int x := prevCell == null ? xpad : prevCell.x + prevCell.width + formEditor.xsep,
        y := prev == null ? formEditor.startY : prev.y + prev.height,
        width := cellWidth, height := cellHeight;
 
@@ -44,7 +47,10 @@ TypeEditor {
 
    void updateComputedValues() {
       xpad = parentView.xpad;
-      ypad = parentView.ypad;
+      if (cellChild)
+         ypad = 0;
+      else
+         ypad = parentView.ypad;
       baseline = parentView.baseline;
       tabSize = parentView.tabSize;
    }

@@ -1,4 +1,4 @@
-<div id="ListEditor" class="listEditor">
+<div id="ListGridEditor" class="listEditor">
    <%!
       repeatWrapper = listScroll.listTags_Repeat;
 

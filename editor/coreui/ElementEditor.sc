@@ -4,7 +4,7 @@ import sc.lang.java.VariableDefinition;
 @Component
 @CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int,sc.lang.InstanceWrapper")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
-   InstanceEditor formEditor;
+   InstanceEditor formEditor; // TODO: rename to parentEditor since it can be a ListEditor or RowEditor too
    Object propC;
    String propertySuffix = "";
    String propertyName := getPropertyNameString(propC);
@@ -28,7 +28,6 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    boolean constantProperty;
    boolean setFromBinding;
    boolean editable := !instanceMode || (!constantProperty && !setFromBinding);
-   boolean rowStart;
 
    boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
 
@@ -39,8 +38,18 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    // Placeholders for the ability to allow the user to set the width/height of a component
    int explicitWidth = -1, explicitHeight = -1;
 
+   boolean rowStart, rowEnd;
+
+   // Set to true for cells that are in the header row
+   boolean headerCell = false;
+
+   // Set to true when element is a cell in a grid
    @Bindable
    boolean cellMode = false;
+
+   // Set to true when element is a child of the cell
+   @Bindable
+   boolean cellChild = false;
 
    ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx, InstanceWrapper wrapper) {
       instanceMode = formEditor.instanceMode;
@@ -51,6 +60,9 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
           this.currentValue = propInst;
       this.propType = propType;
       this.listIndex = listIx;
+
+      // The case where we have a type editor (is ReferenceCellEditor the only one?) that's a child of a list that's an element of a cell
+      this.cellMode = formEditor instanceof ListCellEditor;
    }
 
    void init() {
@@ -59,6 +71,13 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    void updateComputedValues() {
       rowStart = listIndex == 0 && cellMode;
+      boolean newRowEnd = false;
+      if (listIndex != -1 && formEditor != null) {
+         int sz = formEditor.getCurrentListSize();
+         if (sz != -1)
+           newRowEnd = listIndex == sz - 1;
+      }
+      rowEnd = newRowEnd;
       varInit = propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
       visible = getPropVisible();
       constantProperty = EditorModel.isConstantProperty(propC);
@@ -224,7 +243,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    int getCellWidth() {
       if (formEditor == null)
          return 0;
-      int width = formEditor.getExplicitWidth(listIndex);
+      int width = formEditor.getExplicitWidth(propertyName);
       if (width != -1)
          return width;
       if (explicitWidth != -1)
@@ -238,7 +257,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       if (formEditor == null)
          return 0;
       // If this component is in a row, this will return the row height
-      int height = formEditor.getExplicitHeight(listIndex);
+      int height = formEditor.getExplicitHeight(propertyName);
       //int height = explicitHeight;
       if (height != -1)
          return height;
@@ -256,6 +275,24 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    void validateSize() {
+   }
+
+   void adjustCellWidth(int delta) {
+      int curWidth = getCellWidth();
+      setCellWidth(curWidth + delta);
+   }
+
+   // Propagate up the fact that this property's cellWidth has changed
+   void setCellWidth(int cw) {
+      formEditor.setCellWidth(propertyName, cw);
+   }
+
+   // Once we are notified our property has changed, send out the cellWidth property change event
+   void cellWidthChanged(String propName) {
+      if (propertyName == null)
+         return;
+      if (propName.equals(propertyName))
+         Bind.sendChangedEvent(this, "cellWidth");
    }
 }
 

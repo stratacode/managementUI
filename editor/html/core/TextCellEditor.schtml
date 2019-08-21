@@ -1,7 +1,5 @@
 <span id="TextCellEditor">
 <%!
-   cssClass = "cellEditor";
-
    String getFieldId() {
       return textField.id;
    }

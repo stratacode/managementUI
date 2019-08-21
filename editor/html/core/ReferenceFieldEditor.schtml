@@ -1,4 +1,4 @@
-<div id="ReferenceFieldEditor" class="elementEditor">
+<div id="ReferenceFieldEditor">
    <span class="formFieldLabel" style="position: relative; left: -8px">
       <span visible=":= parentList != null">[ <%= listIndex %> ]</span>
       <img class="elementIcon" visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>

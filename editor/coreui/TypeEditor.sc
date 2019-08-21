@@ -44,6 +44,9 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    @Bindable
    boolean cellMode = false;
 
+   @Bindable
+   boolean cellChild = false;
+
    boolean rowMode = false;
 
    type =: typeChanged();
@@ -59,10 +62,12 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          this.parentList = (ListEditor) parentEditor;
       if (parentEditor instanceof InstanceEditor)
          this.formEditor = (InstanceEditor) parentEditor;
-      updateComputedValues();
       this.setTypeNoChange(parentProperty, type);
       if (parentEditor != null)
          this.nestLevel = parentEditor.nestLevel + 1;
+
+      // The case where we have a type editor (is ReferenceCellEditor the only one?) that's a child of a list that's an element of a cell
+      this.cellChild = parentEditor instanceof ListCellEditor;
 
       this.listIndex = listIx;
       /* TODO: ideally would like to optimize the case where there's a common type for all elements in the list
@@ -88,6 +93,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       typeChanged();
       Bind.sendChange(this, "type", type);
       Bind.sendChange(this, "parentProperty", parentProperty);
+      updateComputedValues();
    }
 
    abstract void refreshChildren();
@@ -343,7 +349,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       else if (editorType.equals("form"))
          return FormEditor.class;
       else if (editorType.equals("list"))
-         return ListEditor.class;
+         return ListGridEditor.class;
       System.err.println("*** Unrecognized editorType: " + editorType);
       return TextFieldEditor.class;
    }
@@ -395,7 +401,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
    int getCellWidth() {
       if (cellMode) {
-         int width = formEditor.getExplicitWidth(listIndex);
+         int width = formEditor.getExplicitWidth(propertyName);
          if (width != -1)
             return width;
          return formEditor.getDefaultCellWidth(editorType, null, null);
@@ -405,7 +411,7 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
    int getCellHeight() {
       if (cellMode || rowMode) {
-         int height = formEditor.getExplicitHeight(listIndex);
+         int height = formEditor.getExplicitHeight(propertyName);
          if (height != -1)
             return height;
          return formEditor.getDefaultCellHeight(editorType, null);
@@ -423,5 +429,17 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          for (IElementEditor view:childViews)
             view.validateSize();
       }
+   }
+
+   void setCellWidth(String propName, int cellWidth) {
+      if (parentEditor != null)
+         parentEditor.setCellWidth(propName, cellWidth);
+   }
+
+   void cellWidthChanged(String propName) {
+      if (propertyName == null)
+         return;
+      if (propName.equals(propertyName))
+         Bind.sendChangedEvent(this, "cellWidth");
    }
 }

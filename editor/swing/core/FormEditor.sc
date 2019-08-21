@@ -87,7 +87,7 @@ FormEditor {
       }
    }
 
-   int getExplicitWidth(int colIx) {
+   int getExplicitWidth(String propName) {
       return columnWidth - (parentView.nestWidth + 2*xpad) * nestLevel;
    }
 

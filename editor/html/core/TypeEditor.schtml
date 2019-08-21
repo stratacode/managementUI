@@ -1,5 +1,7 @@
-<div id="TypeEditor">
+<div id="TypeEditor" class=':= elemClass'>
    <%!
+      String elemClass;
+
       void setParentView(FormView fv) {
          this.parentView = fv;
          if (this.parentNode == null)
@@ -12,5 +14,19 @@
             setParentNode(te);
       }
        // fields, methods, inner classes etc defined in this tag object
+
+      void updateComputedValues() {
+         super.updateComputedValues();
+         String edClass;
+         if (cellChild)
+            edClass = "cellChild";
+         else if (cellMode)
+            edClass = "cellEditor";
+         else if (rowMode)
+            edClass = "rowEditor";
+         else
+            edClass = "formEditor";
+         elemClass = edClass;
+      }
    %>
 </div>

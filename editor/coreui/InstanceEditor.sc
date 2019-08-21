@@ -162,11 +162,11 @@ abstract class InstanceEditor extends TypeEditor {
       editorModel.changeCurrentType(useType, instance, null);
    }
 
-   int getExplicitWidth(int colIx) {
+   int getExplicitWidth(String propName) {
       return -1;
    }
 
-   int getExplicitHeight(int colIx) {
+   int getExplicitHeight(String propName) {
       return -1;
    }
 

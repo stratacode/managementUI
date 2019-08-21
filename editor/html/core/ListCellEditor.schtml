@@ -1,0 +1,18 @@
+<div id="ListCellEditor" class="elementEditor cellEditor" style=':= "width: " + cellWidth + "px"'>
+<%!
+   repeatWrapper = listScroll.listTags_Repeat;
+
+   void clearChildren() {
+      super.clearChildren();
+      listScroll.listTags_Repeat.destroyRepeatTags();
+   }
+
+   void refreshChildren() {
+      super.refreshChildren();
+      listScroll.listTags_Repeat.refreshRepeat(true);
+   }
+%>
+   <div id="listScroll" class="listCellScroll">
+      <span id="listTags" repeat=":= visList" repeatVarName="listElem" repeatWrapper="ElementRepeatWrapper"/>
+   </div>
+</div>

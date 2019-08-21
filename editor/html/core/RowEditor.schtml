@@ -1,8 +1,9 @@
-<div id="RowEditor" class="rowEditor">
+<div id="RowEditor">
    <%!
       repeatWrapper = rowContainer.propList_Repeat;
 
       class HeaderRepeatWrapper extends ElementRepeatWrapper {
+         // Will create an instance of HeaderCellEditor for each child
          displayMode = "header";
       }
    %>

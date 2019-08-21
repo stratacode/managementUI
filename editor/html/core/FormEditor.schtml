@@ -1,4 +1,4 @@
-<div id="FormEditor" class="formEditor">
+<div id="FormEditor">
    <%!
        repeatWrapper = propList_Repeat;
    %>

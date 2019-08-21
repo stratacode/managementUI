@@ -28,6 +28,15 @@ interface IElementEditor {
    public void setListIndex(int ix);
    public int getListIndex();
 
+   public int getCurrentListSize();
+
+   void cellWidthChanged(String propName);
+
    public boolean getCellMode();
    public void setCellMode(boolean b);
+
+   public boolean getCellChild();
+   public void setCellChild(boolean b);
+
+   void updateComputedValues();
 }

@@ -5,11 +5,14 @@ class ListEditor extends InstanceEditor {
    String componentTypeName;
    int startIx;
    int maxNum = 10;
-   boolean gridView = true;
-
-   gridView =: rebuildChildren(); // recreate the list in the new view mode
-
    // TODO: add sort-by and filter criteria
+
+   static class SortProp {
+      String propName;
+      boolean reverseDir;
+   }
+
+   ArrayList<SortProp> sortProps = null;
 
    ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
@@ -39,6 +42,10 @@ class ListEditor extends InstanceEditor {
 
    void updateListIndex(int ix) {
       listIndex = ix;
+   }
+
+   int getCurrentListSize() {
+      return visList == null ? -1 : visList.size();
    }
 
    void updateComponentTypeName() {
@@ -74,24 +81,134 @@ class ListEditor extends InstanceEditor {
       parentView.scheduleValidateTree();
    }
 
+   // return 0 - no sort, -1 reverse, 1 forward
+   int getSortDir(String propName) {
+      if (sortProps == null)
+         return 0;
+      for (SortProp sp:sortProps) {
+         if (sp.propName.equals(propName))
+            return sp.reverseDir ? -1 : 1;
+      }
+      return 0;
+   }
+
+   // val = 0 => remove sort, val = -1 reverse, val = 1 normal
+   void updateSortDir(String propName, int val) {
+      boolean add = false;
+      if (sortProps == null) {
+         if (val == 0)
+            return;
+         sortProps = new ArrayList<SortProp>();
+         add = true;
+      }
+      else if (val == 0) {
+         for (int i = 0; i < sortProps.size(); i++) {
+            SortProp sp = sortProps.get(i);
+            if (sp.propName.equals(propName)) {
+               sortProps.remove(i);
+               if (sortProps.size() == 0)
+                  sortProps = null;
+               break;
+            }
+         }
+      }
+      else
+         add = true;
+      if (add) {
+         SortProp sp;
+         int i;
+         for (i = 0; i < sortProps.size(); i++) {
+            sp = sortProps.get(i);
+            if (sp.propName.equals(propName)) {
+               sp.reverseDir = val == -1;
+               break;
+            }
+         }
+         if (i == sortProps.size()) {
+            sp = new SortProp();
+            sp.propName = propName;
+            sp.reverseDir = val == -1;
+            sortProps.add(sp);
+         }
+      }
+      refreshVisibleList();
+   }
+
+   List<Object> filterAndSort() {
+      if (sortProps == null)
+         return instList;
+      ArrayList<Object> res = new ArrayList<Object>(instList);
+      java.util.Collections.sort(res, new java.util.Comparator() {
+         int compare(Object o1, Object o2) {
+            int res = 0;
+            for (SortProp sp:sortProps) {
+               String propName = sp.propName;
+               Object pv1 = DynUtil.getPropertyValue(o1, propName);
+               Object pv2 = DynUtil.getPropertyValue(o2, propName);
+               int revMult = sp.reverseDir ? -1 : 1;
+               if (pv1 == pv2)
+                  res = 0;
+               else {
+                  if (pv1 instanceof Comparable) {
+                     res = ((Comparable) pv1).compareTo(pv2) * revMult;
+                  }
+                  else if (pv2 instanceof Comparable) {
+                     res = -((Comparable) pv2).compareTo(pv1) * revMult;
+                  }
+                  else {
+                     System.err.println("*** Unable to compare values of property: " + propName);
+                     res = 0;
+                  }
+               }
+               if (res != 0)
+                  return res;
+            }
+            return res;
+         }
+      });
+      return res;
+   }
+
    void refreshVisibleList() {
       oldLayer = editorModel == null ? null : editorModel.currentLayer;
       if (instList == null) {
          if (visList == null)
-            visList = new ArrayList();
-         else
+            visList = new ArrayList<Object>();
+         else if (visList.size() > 0)
             visList.clear();
       }
       else {
-         int inSz = instList.size();
+         List<Object> inList = filterAndSort();
+         int inSz = inList.size();
          int outSz = Math.min(inSz - startIx, maxNum);
-         if (visList == null) {
-            visList = new ArrayList<Object>(outSz);
+
+         List<Object> newList;
+         if (startIx != 0 || maxNum < inSz) {
+            newList = new ArrayList<Object>(outSz);
+            for (int i = 0; i < outSz; i++) {
+               newList.add(inList.get(i + startIx));
+            }
          }
          else
-            visList.clear();
-         for (int i = 0; i < outSz; i++) {
-            visList.add(instList.get(i + startIx));
+            newList = inList;
+         if (visList == null) {
+            visList = newList == instList ? new ArrayList<Object>(newList) : newList;
+         }
+         else {
+            int oldSz = visList.size();
+            for (int i = 0; i < outSz; i++) {
+               Object newVal = newList.get(i);
+               if (i >= oldSz)
+                  visList.add(newVal);
+               else if (visList.get(i) != newVal) {
+                  visList.set(i, newVal);
+               }
+            }
+            int toRemove = oldSz - outSz;
+            while (toRemove > 0) {
+               visList.remove(visList.size()-1);
+               toRemove--;
+            }
          }
       }
    }
@@ -128,14 +245,6 @@ class ListEditor extends InstanceEditor {
    void gotoComponentType() {
       if (componentTypeName != null)
          editorModel.changeCurrentType(ModelUtil.findType(editorModel.system, componentTypeName), null, null);
-   }
-
-   Object getEditorClass(String editorType, String displayMode) {
-      if (gridView) {
-         if (editorType.equals("ref") || editorType.equals("form"))
-            return RowEditor.class;
-      }
-      return super.getEditorClass(editorType, displayMode);
    }
 
    String getEditorType() {

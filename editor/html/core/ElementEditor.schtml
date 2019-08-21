@@ -6,7 +6,6 @@
    elementSubmitCount =: instanceMode && !editorModel.pendingCreate ?
       errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue) :
       errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !instanceMode, instanceMode, formEditor.instance == null);
-   String cssClass = "elementEditor";
    String elemClass;
 
    repeatIndex =: listIndex;
@@ -19,7 +18,18 @@
 
    void updateComputedValues() {
       super.updateComputedValues();
-      elemClass = cssClass + (rowStart ? " rowStart" : "");
+      String edClass;
+      if (headerCell)
+         edClass = "headerCell";
+      else if (cellMode)
+         edClass = "cellEditor";
+      else if (cellChild)
+         edClass = "cellChild";
+      else
+         edClass = "elementEditor";
+      if (rowStart)
+         edClass = edClass + " rowStart";
+      elemClass = edClass;
    }
 
 %>

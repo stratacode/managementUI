@@ -1,6 +1,4 @@
 class RowEditor extends InstanceFieldEditor {
-   sc.util.HashMap<Integer,Integer> setWidths = null;
-
    boolean showIndex = true;
    boolean showId = true;
 
@@ -51,15 +49,23 @@ class RowEditor extends InstanceFieldEditor {
       return "row";
    }
 
-   int getExplicitWidth(int colIx) {
-      if (setWidths == null)
+   int getExplicitWidth(String propName) {
+      if (!(parentEditor instanceof ListGridEditor))
          return -1;
-      Integer setWidth = setWidths.get(colIx);
-      return setWidth == null ? -1 : setWidth;
+      Map<String,Integer> cellWidths = ((ListGridEditor) parentEditor).cellWidths;
+      if (cellWidths == null)
+         return -1;
+      Integer cellWidth = cellWidths.get(propName);
+      return cellWidth == null ? -1 : cellWidth;
    }
 
-   int getExplicitHeight(int colIx) {
+   int getExplicitHeight(String propName) {
       return rowHeight;
    }
 
+   void cellWidthChanged(String propName) {
+      for (IElementEditor childView:childViews) {
+         childView.cellWidthChanged(propName);
+      }
+   }
 }
