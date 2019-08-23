@@ -20,7 +20,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    int changeCt = 0;
    Object oldListenerInstance = null;
    Object oldListenerType = null;
-   Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode);
+   Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode, headerCell);
    String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue);
    Object propType;
 
@@ -69,21 +69,32 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       updateComputedValues();
    }
 
-   void updateComputedValues() {
+   void updateRowPosition() {
+      if (propertyName != null && propertyName.equals("posts"))
+         System.out.println("***");
       rowStart = listIndex == 0 && cellMode;
       boolean newRowEnd = false;
       if (listIndex != -1 && formEditor != null) {
-         int sz = formEditor.getCurrentListSize();
+         int sz = formEditor.getNumProperties();
          if (sz != -1)
-           newRowEnd = listIndex == sz - 1;
+            newRowEnd = listIndex == sz - 1;
       }
       rowEnd = newRowEnd;
+   }
+
+   void updateComputedValues() {
+      updateRowPosition();
       varInit = propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
       visible = getPropVisible();
       constantProperty = EditorModel.isConstantProperty(propC);
       icon = propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
       String operator = propC instanceof IVariableInitializer ? ModelUtil.getOperator(propC) : null;
       setFromBinding = operator != null && operator.startsWith(":=");
+   }
+
+   void setListIndex(int ix) {
+      this.listIndex = ix;
+      updateRowPosition();
    }
 
    public BaseView getParentView() {
@@ -134,8 +145,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    // Using these values as parameters so we get change events for them
-   static Object getPropertyValue(Object prop, Object instance, int changeCt, boolean instanceMode) {
-      if (prop == null)
+   static Object getPropertyValue(Object prop, Object instance, int changeCt, boolean instanceMode, boolean headerCell) {
+      if (prop == null || headerCell)
          return null;
       try {
          if (prop instanceof CustomProperty)

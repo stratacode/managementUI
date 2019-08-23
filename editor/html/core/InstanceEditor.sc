@@ -24,6 +24,11 @@ InstanceEditor {
       }
    }
 
+   class HeaderRepeatWrapper extends ElementRepeatWrapper {
+   // Will create an instance of HeaderCellEditor for each child
+      displayMode = "header";
+   }
+
    void refreshChildren() {
       repeatWrapper.refreshRepeat(true);
    }

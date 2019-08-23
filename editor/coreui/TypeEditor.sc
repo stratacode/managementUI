@@ -70,13 +70,10 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       this.cellChild = parentEditor instanceof ListCellEditor;
 
       this.listIndex = listIx;
-      /* TODO: ideally would like to optimize the case where there's a common type for all elements in the list
-      if (parentList != null) {
-         this.properties = parentList.properties;
-      }
-      */
+
       updateClassViewLayer();
    }
+
 
    void updateComputedValues() {
    }
@@ -132,6 +129,9 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    void typeChanged() {
       operatorChanged();
 
+      if (type == null)
+         System.out.println("***");
+
       if (parentProperty != null)
          displayName = propertyName;
       else if (type != null)
@@ -141,60 +141,8 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
       if (type != null) {
          extTypeName = parentProperty == null ? ModelUtil.getExtendsTypeName(type) : ModelUtil.getTypeName(type);
-         //title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
-         Object[] newProps = editorModel.getPropertiesForType(type);
-         Boolean includeStatic = (Boolean) ModelUtil.getAnnotationValue(type, "sc.obj.EditorSettings", "includeStatic");
-         if (includeStatic == null)
-            includeStatic = false;
-         ArrayList<Object> visProps = new ArrayList<Object>();
-         Layer currentLayer = editorModel.currentLayer;
-         addComputedProperties(visProps, newProps);
-         if (newProps != null) {
-            for (Object prop:newProps) {
-                // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
-                if (editorModel.filteredProperty(type, prop, false, instanceMode))
-                    continue;
-
-                if (!editorModel.isVisible(prop))
-                   continue;
-
-                if (prop instanceof BodyTypeDeclaration) {
-                   prop = editorModel.processVisibleType(prop);
-                   if (prop == null)
-                        continue;
-                }
-                else if (ModelUtil.isProperty(prop)) {
-                   if (!includeStatic && ModelUtil.hasModifier(prop, "static"))
-                      continue;
-                   // If this type is not already a property in this layer, and there is a current layer set and this object is not defined in that layer (or merged), skip it.
-                   // If we get a def for a prop which is after the specified layer, see if there's a previous definition
-                   // we should be using first.
-                   if (parentProperty == null && currentLayer != null) {
-                      Layer propLayer = ModelUtil.getPropertyLayer(prop);
-
-                      // If this property is not defined or modified in this layer or one which should be merged continue.
-                      while (propLayer != null && !editorModel.currentLayerMatches(propLayer)) {
-                         Object prevProp = ModelUtil.getPreviousDefinition(prop);
-                         if (prevProp == null) {
-                            prop = null;
-                            break;
-                         }
-                         prop = prevProp;
-                         propLayer = ModelUtil.getPropertyLayer(prop);
-                         if (propLayer == null)
-                            prop = null;
-                      }
-                      if (prop == null)
-                         continue;
-                   }
-                }
-                else // class or a compiled type we can't handle
-                   continue;
-                visProps.add(prop);
-            }
-         }
-         properties = visProps.toArray();
-         oldLayer = currentLayer;
+         updateProperties();
+         oldLayer = editorModel.currentLayer;
          oldMergeLayers = editorModel.mergeLayers;
          oldInherit = editorModel.inherit;
       }
@@ -206,15 +154,75 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
 
       // In case we were initialized with a compiled type on the client, check and see if there's a src type on the server.
       // We should already have tried to call resolveSrcDeclaration before making the fetch call
-      if (!(type instanceof BodyTypeDeclaration)) {
+      if (!(type instanceof BodyTypeDeclaration) && type != null) {
          editorModel.system.fetchRemoteTypeDeclaration(ModelUtil.getTypeName(type), this);
       }
+   }
+
+   void updateProperties() {
+      //title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
+      Object[] newProps = editorModel.getPropertiesForType(type);
+      ArrayList<Object> visProps = new ArrayList<Object>();
+      addComputedProperties(visProps, newProps);
+      filterProperties(type, visProps, newProps);
+      properties = visProps.toArray();
    }
 
    void addComputedProperties(List<Object> retProps, Object[] allProps) {
    }
 
-   // Sets the field without firing a change event
+   void filterProperties(Object propType, List<Object> visProps, Object[] newProps) {
+      Boolean includeStatic = (Boolean) ModelUtil.getAnnotationValue(propType, "sc.obj.EditorSettings", "includeStatic");
+      Layer currentLayer = editorModel.currentLayer;
+      if (includeStatic == null)
+         includeStatic = false;
+      if (newProps != null) {
+         for (Object prop:newProps) {
+         // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
+            if (editorModel.filteredProperty(propType, prop, false, instanceMode))
+               continue;
+
+            if (!editorModel.isVisible(prop))
+               continue;
+
+            if (prop instanceof BodyTypeDeclaration) {
+               prop = editorModel.processVisibleType(prop);
+               if (prop == null)
+                  continue;
+            }
+            else if (ModelUtil.isProperty(prop)) {
+               if (!includeStatic && ModelUtil.hasModifier(prop, "static"))
+                  continue;
+               // If this type is not already a property in this layer, and there is a current layer set and this object is not defined in that layer (or merged), skip it.
+               // If we get a def for a prop which is after the specified layer, see if there's a previous definition
+               // we should be using first.
+               if (parentProperty == null && currentLayer != null) {
+                  Layer propLayer = ModelUtil.getPropertyLayer(prop);
+
+                  // If this property is not defined or modified in this layer or one which should be merged continue.
+                  while (propLayer != null && !editorModel.currentLayerMatches(propLayer)) {
+                     Object prevProp = ModelUtil.getPreviousDefinition(prop);
+                     if (prevProp == null) {
+                        prop = null;
+                        break;
+                     }
+                     prop = prevProp;
+                     propLayer = ModelUtil.getPropertyLayer(prop);
+                     if (propLayer == null)
+                        prop = null;
+                  }
+                  if (prop == null)
+                     continue;
+               }
+            }
+            else
+               continue;
+            visProps.add(prop);
+         }
+      }
+   }
+
+
    @sc.obj.ManualGetSet
    void setTypeNoChange(Object parentProp, Object newType) {
       parentProperty = parentProp;
@@ -442,4 +450,25 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       if (propName.equals(propertyName))
          Bind.sendChangedEvent(this, "cellWidth");
    }
+
+   int getNumProperties() {
+      return properties == null ? 0 : properties.length;
+   }
+
+   Object getPropertyByName(String propName) {
+      for (Object property:properties) {
+         if (EditorModel.getPropertyName(property).equals(propName))
+            return property;
+      }
+      return null;
+   }
+
+   int getExplicitWidth(String propName) {
+      return -1;
+   }
+
+   int getExplicitHeight(String propName) {
+      return -1;
+   }
+
 }

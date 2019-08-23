@@ -1,5 +1,9 @@
 ListGridEditor {
+   int headerHeight = 25;
    numRows := (DynUtil.getArrayLength(visList) + numCols-1) / numCols;
+
+   // The components in the list in the top row of the regular grid will follow the listStart component vertically
+   listStart := headerList.lastEditor;
 
    object objectLabel extends JLabel {
       location := SwingUtil.point(2*xpad + borderSize + titleBorderX, borderTitleY + baseline);
@@ -23,6 +27,35 @@ ListGridEditor {
       visible := componentTypeName != null;
       clickCount =: gotoComponentType();
       text := componentTypeName;
+   }
+
+   borderTop := (int) (componentLabel.location.y + componentLabel.size.height) + ypad;
+
+   object headerList extends ChildList {
+      headerMode = true;
+
+      displayMode = "header";
+      repeat := properties;
+   }
+
+   void validateEditorTree() {
+      boolean needsRefresh = headerList.refreshList();
+      super.validateEditorTree();
+   }
+
+   void refreshChildren() {
+      headerList.refreshList();
+      super.refreshChildren();
+   }
+
+   void validateChildLists() {
+      validateChildList(0, headerList.repeatComponents, false);
+      validateChildList(headerList.repeatComponents.size(), childList.repeatComponents, true);
+      validateSize();
+   }
+
+   List<Object> getHeaderCellList() {
+      return new ArrayList<Object>(headerList.repeatComponents);
    }
 
 }

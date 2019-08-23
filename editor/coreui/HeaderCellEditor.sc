@@ -1,9 +1,10 @@
 class HeaderCellEditor extends ElementEditor {
    cellMode = true;
+   headerCell = true;
 
    int sortDir;
 
-   ListEditor listEditor;
+   ListGridEditor listEditor;
 
    Object getElementValue() {
       return null;
@@ -12,8 +13,8 @@ class HeaderCellEditor extends ElementEditor {
    void updateComputedValues() {
       super.updateComputedValues();
 
-      // HeaderCellEditor's should be in a RowEditor inside of a ListEditor
-      listEditor = (ListEditor) formEditor.formEditor;
+      // HeaderCellEditor's should be in inside of a ListGridEditor
+      listEditor = (ListGridEditor) formEditor;
       refreshSortDir();
    }
 
@@ -27,5 +28,9 @@ class HeaderCellEditor extends ElementEditor {
       this.sortDir = newDir;
       listEditor.updateSortDir(propertyName, newDir);
       Bind.sendChange(this, "sortDir", sortDir);
+   }
+
+   // Do not try to update listeners for the header cells since we do not display the value anyway and the properties on the ListGrid are properties of the list items, not the list itself
+   void updateListeners(boolean add) {
    }
 }

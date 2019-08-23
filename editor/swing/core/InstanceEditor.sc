@@ -1,4 +1,6 @@
 InstanceEditor {
+   IElementEditor listStart;
+
    void validateChildLists() {}
 
    void clearChildren() {
@@ -43,11 +45,16 @@ InstanceEditor {
    class ChildList extends RepeatComponent<IElementEditor> {
       manageChildren = false; // We call SwingUtil.addChild explicitly when synchronizing the childViews array
 
+      // If it's the header list, don't put them into the grid
+      boolean headerMode = false;
+
       parentComponent = InstanceEditor.this;
 
       int oldNumRows, oldNumCols;
 
       IElementEditor[][] viewsGrid;
+
+      IElementEditor listStart := InstanceEditor.this.listStart;
 
       String displayMode;
 
@@ -72,16 +79,18 @@ InstanceEditor {
          int size = DynUtil.getArrayLength(repeat);
 
          boolean gridChanged = false;
-         if (oldNumRows != numRows || oldNumCols != numCols) {
-            gridChanged = true;
-            viewsGrid = new IElementEditor[numRows][numCols];
-            oldNumRows = numRows;
-            oldNumCols = numCols;
+         if (!headerMode) {
+            if (oldNumRows != numRows || oldNumCols != numCols) {
+               gridChanged = true;
+               viewsGrid = new IElementEditor[numRows][numCols];
+               oldNumRows = numRows;
+               oldNumCols = numCols;
+            }
          }
 
          boolean anyChanges = super.refreshList();
 
-         if (gridChanged || anyChanges) {
+         if ((gridChanged || anyChanges)) {
             int ix = 0;
             for (Object elem:repeatComponents) {
                IElementEditor fed = (IElementEditor) elem;
@@ -90,9 +99,11 @@ InstanceEditor {
             }
          }
 
-         lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
+         if (!headerMode)
+            lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
 
          Bind.sendChangedEvent(InstanceEditor.this, "cellHeight");
+         Bind.sendChangedEvent(this, "lastEditor");
          return anyChanges;
       }
 
@@ -101,18 +112,37 @@ InstanceEditor {
       }
 
       private void updateCell(IElementEditor ed, int ix) {
+         if (headerMode) {
+            ed.prev = null;
+            ed.prevCell = ix == 0 ? null : repeatComponents.get(ix-1);
+            return;
+         }
+
          ed.row = ix / numCols;
          ed.col = ix % numCols;
          if (ed.row != 0)
             ed.prev = viewsGrid[ed.row - 1][ed.col];
          else
-            ed.prev = null;
+            ed.prev = listStart;
          if (ed.col != 0)
             ed.prevCell = viewsGrid[ed.row][ed.col - 1];
          else
             ed.prevCell = null;
 
+         if (ed.col >= numCols)
+            System.out.println("***");
+         if (ed.row >= numRows)
+            System.out.println("***");
+
          viewsGrid[ed.row][ed.col] = ed;
+      }
+
+      @Bindable(manual=true)
+      IElementEditor getLastEditor() {
+         int sz = repeatComponents.size();
+         if (sz == 0)
+            return null;
+         return repeatComponents.get(sz-1);
       }
    }
 }

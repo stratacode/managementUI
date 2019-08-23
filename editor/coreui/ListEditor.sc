@@ -17,9 +17,32 @@ class ListEditor extends InstanceEditor {
    ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
       instList = insts;
+      // The data type may not have type info - so pick the most specific common type of all of the instances
       componentType = ModelUtil.getArrayComponentType(type);
-      updateComponentTypeName();
+      componentTypeChanged();
       refreshVisibleList();
+   }
+
+   Object findCommonBaseType(List<Object> insts, Object defaultType) {
+      Object curType = null;
+      for (int i = 0; i < insts.size(); i++) {
+         Object inst = insts.get(i);
+         if (inst != null) {
+            Object instType = DynUtil.getType(inst);
+            if (curType == null)
+               curType = instType;
+            else {
+               if (!DynUtil.isAssignableFrom(curType, instType)) {
+                  if (DynUtil.isAssignableFrom(instType, curType))
+                     curType = instType;
+                  else {
+                     curType = DynUtil.findCommonSuperType(curType, instType);
+                  }
+               }
+            }
+         }
+      }
+      return curType == null ? defaultType : curType;
    }
 
    @sc.obj.ManualGetSet // NOTE: get/set conversion not performed when this annotation is used
@@ -27,7 +50,7 @@ class ListEditor extends InstanceEditor {
       Object compType = ModelUtil.getArrayComponentType(elem);
       setTypeNoChange(prop, compType);
       componentType = compType;
-      updateComponentTypeName();
+      componentTypeChanged();
       updateListIndex(ix);
       this.instList = (List<Object>)inst;
       // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
@@ -40,6 +63,26 @@ class ListEditor extends InstanceEditor {
       Bind.sendValidate(this, "instList", inst);
    }
 
+   void componentTypeChanged() {
+      List<Object> insts = instList;
+      if (insts != null && insts.size() > 0) {
+         componentType = findCommonBaseType(insts, componentType);
+      }
+      updateComponentTypeName();
+      if (componentType != null && !(componentType instanceof BodyTypeDeclaration))
+         editorModel.system.fetchRemoteTypeDeclaration(DynUtil.getTypeName(componentType, false), new sc.type.IResponseListener() {
+            void response(Object response) {
+               if (response instanceof BodyTypeDeclaration) {
+                  componentType = response;
+               }
+            }
+            void error(int errorCode, Object error) {
+               System.err.println("*** Error response to fetchRemoteTypeDeclaration for componentType");
+            }
+         });
+      updateProperties();
+   }
+
    void updateListIndex(int ix) {
       listIndex = ix;
    }
@@ -50,7 +93,7 @@ class ListEditor extends InstanceEditor {
 
    void updateComponentTypeName() {
       if (componentType != null && componentType != java.lang.Object.class)
-         componentTypeName = ModelUtil.getTypeName(componentType);
+         componentTypeName = DynUtil.getTypeName(componentType, false);
    }
 
    String getFixedOperatorName() {
@@ -143,21 +186,18 @@ class ListEditor extends InstanceEditor {
             int res = 0;
             for (SortProp sp:sortProps) {
                String propName = sp.propName;
-               Object pv1 = DynUtil.getPropertyValue(o1, propName);
-               Object pv2 = DynUtil.getPropertyValue(o2, propName);
                int revMult = sp.reverseDir ? -1 : 1;
-               if (pv1 == pv2)
-                  res = 0;
+               Object prop = getPropertyByName(propName);
+               if (prop instanceof ComputedProperty) {
+                  res = ((ComputedProperty) prop).compare(o1, o2) * revMult;
+               }
                else {
-                  if (pv1 instanceof Comparable) {
-                     res = ((Comparable) pv1).compareTo(pv2) * revMult;
-                  }
-                  else if (pv2 instanceof Comparable) {
-                     res = -((Comparable) pv2).compareTo(pv1) * revMult;
-                  }
-                  else {
-                     System.err.println("*** Unable to compare values of property: " + propName);
+                  Object pv1 = DynUtil.getPropertyValue(o1, propName);
+                  Object pv2 = DynUtil.getPropertyValue(o2, propName);
+                  if (pv1 == pv2)
                      res = 0;
+                  else {
+                     res = DynUtil.compare(pv1, pv2) * revMult;
                   }
                }
                if (res != 0)
@@ -218,7 +258,12 @@ class ListEditor extends InstanceEditor {
       Object propType;
       BodyTypeDeclaration innerType = null;
 
-      Object compType = DynUtil.getType(listVal);
+      if (displayMode != null && displayMode.equals("header")) {
+         // For the header, the listVal is really the property
+         return super.createElementEditor(listVal, ix, oldTag, displayMode);
+      }
+
+      Object compType = componentType;
       compType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, compType);
 
       listVal = convertEditorInst(listVal);

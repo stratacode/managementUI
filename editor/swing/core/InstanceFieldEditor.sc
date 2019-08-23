@@ -1,5 +1,4 @@
 InstanceFieldEditor {
-
    void validateEditorTree() {
       if (childList.refreshList())
          validateChildLists();
@@ -15,6 +14,7 @@ InstanceFieldEditor {
 
    object childList extends ChildList {
       repeat := properties;
+      listStart = InstanceFieldEditor.this.listStart;
    }
 
    void validateChildLists() {

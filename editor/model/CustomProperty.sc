@@ -1,3 +1,4 @@
+import sc.obj.IObjectId;
 
 @sc.obj.Sync(syncMode=SyncMode.Enabled, onDemand=true)
 class CustomProperty {
@@ -36,5 +37,13 @@ class CustomProperty {
 
    String getValueString() {
       return value.toString();
+   }
+
+   int compare(Object o1, Object o2) {
+      if (!(o1 instanceof Comparable)) {
+         if (name.equals("Id"))
+            return DynUtil.compare(DynUtil.getInstanceName(o1), DynUtil.getInstanceName(o2));
+      }
+      return DynUtil.compare(o1,o2);
    }
 }

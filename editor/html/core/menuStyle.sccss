@@ -609,11 +609,19 @@ a.tooltip:hover span {
 }
 
 .sortUpNormal, .sortDownNormal {
-  opacity: 0.15;
+  opacity: 0.0;
 }
 
 .sortUpNormal:hover, .sortDownNormal:hover {
   opacity: 1.0;
+}
+
+.headerCell:hover .sortUpNormal {
+  opacity: 0.15;
+}
+
+.headerCell:hover .sortDownNormal {
+  opacity: 0.15;
 }
 
 .sortUpSelected, .sortUpNormal, .sortDownSelected, .sortDownNormal {

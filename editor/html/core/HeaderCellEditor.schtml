@@ -1,7 +1,5 @@
 <span id="HeaderCellEditor" bodyOnly="true">
    <%!
-      headerCell = true;
-
       String getFieldId() {
          return null;
       }
@@ -14,7 +12,7 @@
    <span class=":= elemClass" style=':= "width: " + (cellWidth - (rowStart ? 1 : 2)) + "px" '><%= propertyName %>
       <img src="/images/sortUp.png" class=':= sortDir == 1 ? "sortUpSelected" : "sortUpNormal"' clickEvent="=: toggleSortDir(1)"/><img src="/images/sortDown.png" class=':= sortDir == -1 ? "sortDownSelected" : "sortDownNormal"' clickEvent="=: toggleSortDir(-1)"/>
    </span>
-   <span id="headerDivider" class="headerDivider" visible=":= !rowEnd" mouseDownMoveUp="=: dividerMouseEvent(mouseDownMoveUp)">
+   <span id="headerDivider" class="headerDivider" mouseDownMoveUp="=: dividerMouseEvent(mouseDownMoveUp)">
       <%!
          boolean pressed = false;
          int lastX;

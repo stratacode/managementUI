@@ -1,7 +1,4 @@
 class RowEditor extends InstanceFieldEditor {
-   boolean showIndex = true;
-   boolean showId = true;
-
    List<Object> rowColumns;
 
    int rowHeight = 34;
@@ -9,15 +6,14 @@ class RowEditor extends InstanceFieldEditor {
 
    boolean showHeader := listIndex == 0;
 
+   ListGridEditor listEditor;
+
    RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
+      listEditor = (ListGridEditor) parentEditor;
    }
 
    Object getEditorClass(String editorType, String displayMode) {
-      if (displayMode != null && displayMode.equals("header")) {
-         return HeaderCellEditor.class;
-      }
-
       if (editorType.equals("text"))
          return TextCellEditor.class;
       else if (editorType.equals("textArea"))
@@ -36,27 +32,12 @@ class RowEditor extends InstanceFieldEditor {
       return TextCellEditor.class;
    }
 
-   void addComputedProperties(List<Object> props, Object[] allProps) {
-      if (showIndex) {
-         props.add(new ComputedProperty("#", Integer.class, "text", listIndex, 35, null));
-      }
-      if (showId) {
-         props.add(new ComputedProperty("Id", editorModel.fetchInstanceType(instance), "ref", instance, 200, null));
-      }
-   }
-
    String getEditorType() {
       return "row";
    }
 
    int getExplicitWidth(String propName) {
-      if (!(parentEditor instanceof ListGridEditor))
-         return -1;
-      Map<String,Integer> cellWidths = ((ListGridEditor) parentEditor).cellWidths;
-      if (cellWidths == null)
-         return -1;
-      Integer cellWidth = cellWidths.get(propName);
-      return cellWidth == null ? -1 : cellWidth;
+      return parentEditor.getExplicitWidth(propName);
    }
 
    int getExplicitHeight(String propName) {
@@ -68,4 +49,26 @@ class RowEditor extends InstanceFieldEditor {
          childView.cellWidthChanged(propName);
       }
    }
+
+   // Allow rows should show the same list derived from the parent grid.
+   void updateProperties() {
+      if (parentList != null) {
+         ArrayList props = new ArrayList();
+         props.addAll(java.util.Arrays.asList(parentList.properties));
+         properties = props.toArray();
+         for (int i = 0; i < properties.length; i++) {
+            if (properties[i] instanceof ComputedProperty) {
+               ComputedProperty prop = (ComputedProperty) properties[i];
+               properties[i] = prop = prop.clone();
+               if (prop.name.equals("#"))
+                  prop.value = listIndex;
+               else if (prop.name.equals("Id")) {
+                  prop.propertyType = editorModel.fetchInstanceType(instance);
+                  prop.value = instance;
+               }
+            }
+         }
+      }
+   }
+
 }

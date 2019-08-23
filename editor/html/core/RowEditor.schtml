@@ -2,14 +2,7 @@
    <%!
       repeatWrapper = rowContainer.propList_Repeat;
 
-      class HeaderRepeatWrapper extends ElementRepeatWrapper {
-         // Will create an instance of HeaderCellEditor for each child
-         displayMode = "header";
-      }
    %>
-   <div id="rowHeader" class="rowHeader" visible=":= showHeader">
-      <span id="headerList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="HeaderRepeatWrapper"/>
-   </div>
    <div id="rowContainer" class="rowContainer">
       <span id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="ElementRepeatWrapper"/>
    </div>

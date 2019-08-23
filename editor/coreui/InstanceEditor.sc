@@ -1,3 +1,5 @@
+import sc.lang.java.DeclarationType;
+
 /** Editor base class for FormEditor and ReferenceEditor - both need to manage an instance and listen for changes */
 abstract class InstanceEditor extends TypeEditor {
    Object instance;
@@ -144,9 +146,77 @@ abstract class InstanceEditor extends TypeEditor {
       return instance == null ? "null" : DynUtil.getObjectId(instance, type, displayName);
    }
 
-   IElementEditor createElementEditor(Object elem, int ix, IElementEditor oldTag, String displayMode) {
-      throw new UnsupportedOperationException();
+   boolean hasInnerTypeInstance(BodyTypeDeclaration subType) {
+      if (InstanceEditor.this.instance != null && subType.getDeclarationType() == DeclarationType.OBJECT) {
+         String scopeName = DynUtil.getScopeNameForType(subType);
+         if (scopeName != null)
+            return false;
+         return true;
+      }
+      return false;
    }
+
+   Object getInnerTypeInstance(BodyTypeDeclaration subType) {
+      Object subInst = null;
+      if (hasInnerTypeInstance(subType)) {
+         subInst = DynUtil.getProperty(InstanceEditor.this.instance, subType.typeName);
+      }
+      return subInst;
+   }
+
+   IElementEditor createElementEditor(Object elem, int ix, IElementEditor oldTag, String displayMode) {
+      Object propInst;
+      Object propType;
+      BodyTypeDeclaration innerType = null;
+      boolean headerMode = displayMode != null && displayMode.equals("header");
+
+      Object prop = null;
+      // A property
+      if (elem instanceof CustomProperty) {
+         prop = elem;
+         CustomProperty cust = (CustomProperty) elem;
+         propType = cust.propertyType;
+         propInst = cust.value;
+      }
+      else if (ModelUtil.isProperty(elem)) {
+         prop = elem;
+         propType = ModelUtil.getPropertyType(elem, editorModel.system);
+         propInst = ElementEditor.getPropertyValue(elem, InstanceEditor.this.instance, 0, instanceMode, headerMode);
+      }
+
+      else if (elem instanceof BodyTypeDeclaration) {
+         innerType = (BodyTypeDeclaration) elem;
+         if (!headerMode)
+            propInst = getInnerTypeInstance(innerType);
+         else
+            propInst = null;
+         propType = innerType;
+      }
+      else {
+         propInst = null;
+         propType = null;
+      }
+
+      propInst = convertEditorInst(propInst);
+
+      String editorType = getEditorType(prop, propType, propInst, instanceMode);
+      Object editorClass = getEditorClass(editorType, displayMode);
+
+      Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
+      if (oldClass == editorClass) {
+         IElementEditor oldEditor = (IElementEditor) oldTag;
+         oldEditor.updateEditor(elem, prop, propType, propInst, ix, null);
+         oldEditor.setElemToEdit(elem);
+         return oldTag;
+      }
+      else {
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceEditor.this, prop, propType, propInst, ix, null);
+         newEditor.setElemToEdit(elem);
+         //newEditor.setRepeatIndex(ix);
+         return newEditor;
+      }
+   }
+
 
    void gotoReference() {
       Object useType = type;
@@ -160,14 +230,6 @@ abstract class InstanceEditor extends TypeEditor {
       }
       useType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, useType);
       editorModel.changeCurrentType(useType, instance, null);
-   }
-
-   int getExplicitWidth(String propName) {
-      return -1;
-   }
-
-   int getExplicitHeight(String propName) {
-      return -1;
    }
 
    List<InstanceWrapper> getInstancesOfType(Object type, boolean addNull, String nullLabelName, boolean selectToCreate) {
