@@ -127,6 +127,16 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
    }
 
    void typeChanged() {
+      // If the external code changed it to the compiled type and the src type has already been loaded, just reset it and get out to avoid the
+      // recursive binding loop that would result otherwise.
+      if (!(type instanceof BodyTypeDeclaration)) {
+         Object newType = resolveSrcTypeDeclaration(type);
+         if (newType != type) {
+            type = newType;
+            return;
+         }
+      }
+
       operatorChanged();
 
       if (type == null)
@@ -221,7 +231,6 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
          }
       }
    }
-
 
    @sc.obj.ManualGetSet
    void setTypeNoChange(Object parentProp, Object newType) {

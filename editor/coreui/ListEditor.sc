@@ -5,20 +5,21 @@ class ListEditor extends InstanceEditor {
    String componentTypeName;
    int startIx;
    int maxNum = 10;
-   // TODO: add sort-by and filter criteria
 
    static class SortProp {
       String propName;
       boolean reverseDir;
    }
 
+   // Add filter criteria: Bool, enum, number string types: include/exclude flag, list of values, property-name
+   // do we need a 'visible' rule or should they just add a new property initialized with that rule, then use the property filter on that column to filter
+
    ArrayList<SortProp> sortProps = null;
 
    ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
       instList = insts;
-      // The data type may not have type info - so pick the most specific common type of all of the instances
-      componentType = ModelUtil.getArrayComponentType(type);
+      componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayComponentType(type));
       componentTypeChanged();
       refreshVisibleList();
    }
@@ -42,12 +43,12 @@ class ListEditor extends InstanceEditor {
             }
          }
       }
-      return curType == null ? defaultType : curType;
+      return curType == null ? defaultType : resolveSrcTypeDeclaration(curType);
    }
 
    @sc.obj.ManualGetSet // NOTE: get/set conversion not performed when this annotation is used
    void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
-      Object compType = ModelUtil.getArrayComponentType(elem);
+      Object compType = resolveSrcTypeDeclaration(ModelUtil.getArrayComponentType(elem));
       setTypeNoChange(prop, compType);
       componentType = compType;
       componentTypeChanged();
@@ -93,7 +94,7 @@ class ListEditor extends InstanceEditor {
 
    void updateComponentTypeName() {
       if (componentType != null && componentType != java.lang.Object.class)
-         componentTypeName = DynUtil.getTypeName(componentType, false);
+         componentTypeName = ModelUtil.getTypeName(componentType);
    }
 
    String getFixedOperatorName() {

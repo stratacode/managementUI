@@ -1,5 +1,4 @@
 class ListGridEditor extends ListEditor {
-   Object[] componentProperties;
    boolean showIndex = true;
    boolean showId = true;
 
@@ -13,7 +12,7 @@ class ListGridEditor extends ListEditor {
          ArrayList<Object> visProps = new ArrayList<Object>();
          addComputedComponentProperties(visProps);
          filterProperties(componentType, visProps, newProps);
-         properties = componentProperties = visProps.toArray();
+         properties = visProps.toArray();
 
          if (childViews != null) {
             for (IElementEditor childView:childViews) {
