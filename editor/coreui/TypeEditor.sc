@@ -1,7 +1,8 @@
 import java.util.Arrays;
+import sc.type.IResponseListener;
 
 @Component
-abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseListener {
+abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    @sc.obj.GetSet
    FormView parentView;  // The root view for this editor
    @sc.obj.GetSet
@@ -169,9 +170,25 @@ abstract class TypeEditor extends CompositeEditor implements sc.type.IResponseLi
       }
    }
 
+   IResponseListener updatePropListener;
+
+   IResponseListener getPropListener() {
+      if (updatePropListener == null)
+        updatePropListener = new IResponseListener() {
+           void response(Object res) {
+           // Note: res here will be the BodyTypeDeclaration of the base type we had to fetch to complete the view of the properties
+              updateProperties();
+           }
+           void error(int code, Object err) {
+              System.err.println("*** Error returned from request to getProperties");
+           }
+        };
+      return updatePropListener;
+   };
+
    void updateProperties() {
       //title = operatorName + " " + ModelUtil.getClassName(type) + (extTypeName == null ? "" : " extends " + CTypeUtil.getClassName(extTypeName));
-      Object[] newProps = editorModel.getPropertiesForType(type);
+      Object[] newProps = editorModel.getPropertiesForType(type, getPropListener());
       ArrayList<Object> visProps = new ArrayList<Object>();
       addComputedProperties(visProps, newProps);
       filterProperties(type, visProps, newProps);

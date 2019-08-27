@@ -113,7 +113,10 @@ TypeTree {
             EntType newType = null;
             switch (ModelUtil.getDeclarationType(typeDecl)) {
                case CLASS:
-                  newType = EntType.ParentType;
+                  if (DynUtil.isSingletonType(typeDecl))
+                     newType = EntType.ParentObject;
+                  else
+                     newType = EntType.ParentType;
                   break;
                case OBJECT:
                   newType = EntType.ParentObject;

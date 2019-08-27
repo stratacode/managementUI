@@ -71,7 +71,7 @@ class ListEditor extends InstanceEditor {
       }
       updateComponentTypeName();
       if (componentType != null && !(componentType instanceof BodyTypeDeclaration))
-         editorModel.system.fetchRemoteTypeDeclaration(DynUtil.getTypeName(componentType, false), new sc.type.IResponseListener() {
+         editorModel.system.fetchRemoteTypeDeclaration(ModelUtil.getTypeName(componentType), new sc.type.IResponseListener() {
             void response(Object response) {
                if (response instanceof BodyTypeDeclaration) {
                   componentType = response;
@@ -137,7 +137,7 @@ class ListEditor extends InstanceEditor {
    }
 
    // val = 0 => remove sort, val = -1 reverse, val = 1 normal
-   void updateSortDir(String propName, int val) {
+   void updateSortDir(String propName, int val, boolean append) {
       boolean add = false;
       if (sortProps == null) {
          if (val == 0)
@@ -156,8 +156,9 @@ class ListEditor extends InstanceEditor {
             }
          }
       }
-      else
+      else {
          add = true;
+      }
       if (add) {
          SortProp sp;
          int i;
@@ -169,6 +170,14 @@ class ListEditor extends InstanceEditor {
             }
          }
          if (i == sortProps.size()) {
+            if (!append && sortProps.size() > 0) {
+               ArrayList<SortProp> oldSortProps = new ArrayList<SortProp>(sortProps);
+               sortProps.clear();
+               for (SortProp oldSortProp:oldSortProps) {
+                  refreshSortDir(oldSortProp.propName);
+               }
+            }
+
             sp = new SortProp();
             sp.propName = propName;
             sp.reverseDir = val == -1;
@@ -296,4 +305,6 @@ class ListEditor extends InstanceEditor {
    String getEditorType() {
       return "list";
    }
+
+   void refreshSortDir(String propName) {}
 }

@@ -1,26 +1,33 @@
 import java.util.Arrays;
+import sc.type.IResponseListener;
 
 EditorModel {
-   // There are lots of features in the dynamic runtime dependent version of this method (e.g. transparent layers) - this is a replacement that works with what's available
-   Object[] getPropertiesForType(Object type) {
+   Object[] getPropertiesForType(Object type, IResponseListener updateListener) {
       List<Object> res;
 
       if (type instanceof TypeDeclaration) {
-         List<Object> props = ((TypeDeclaration) type).getDeclaredProperties();
+         TypeDeclaration td = ((TypeDeclaration) type);
+         List<Object> props = td.getDeclaredProperties();
          if (props == null)
             props = new ArrayList<Object>();
+         else
+            props = new ArrayList<Object>(props);
          if (inherit) {
-            Object extType = DynUtil.getExtendsType(type); // change#9
-            if (extType != null) {
-               Object[] extProps = getPropertiesForType(extType);
-               props = ModelUtil.mergeProperties(props, extProps == null ? null : Arrays.asList(extProps), false, true);
+            String baseTypeName = td.getExtendsTypeName();
+            if (baseTypeName != null) {
+               BodyTypeDeclaration extType = getOrFetchTypeByName(baseTypeName, updateListener);
+               if (extType != null) {
+                  Object[] extProps = getPropertiesForType(extType, updateListener);
+                  props = ModelUtil.mergeProperties(props, extProps == null ? null : Arrays.asList(extProps), false, true);
+               }
             }
          }
-         // if (mergeLayers) - Need to add a way to resolve the types for all layers.  Right now, the type tree loads each version of the type declaration
-         // but there's no data structure to tie them together.  We'd like a getModifiedType() method in js.layer/BodyTypeDeclaration.  When mergeLayers is true
-         // we can get the properties from that type and merge them in when mergeLayers is set to true.
-         // Design: each type meta-data when loaded registers with the Layer it's in.  We ship over the modified layer name in the type declaration.  When
-         // necessary, we fetch the layer, and from the layer we fetch the layer's version of that type.
+         if (mergeLayers) {
+            BodyTypeDeclaration modTD = td.getModifiedType();
+            if (modTD != null) {
+               props = addModifiedProperties(modTD, props);
+            }
+         }
          res = new ArrayList<Object>(props.size());
          // Reorder so that properties are always on top.  When they become interleaved with objects the display is messy
          for (Object prop:props) {
@@ -38,7 +45,35 @@ EditorModel {
          }
          return res.toArray();
       }
+      else if (type != null) {
+         BodyTypeDeclaration btd = getOrFetchTypeByName(DynUtil.getTypeName(type, false), updateListener);
+         if (btd != null) {
+            return getPropertiesForType(btd, updateListener);
+         }
+      }
       return null;
+   }
+
+   BodyTypeDeclaration getOrFetchTypeByName(String typeName, IResponseListener listener) {
+      BodyTypeDeclaration type = system.getSrcTypeDeclaration(typeName, null);
+      if (type instanceof BodyTypeDeclaration) {
+         return (BodyTypeDeclaration) type;
+      }
+      else {
+         system.fetchRemoteTypeDeclaration(typeName, listener);
+      }
+      return null;
+   }
+
+
+   List<Object> addModifiedProperties(BodyTypeDeclaration td, List<Object> props) {
+      BodyTypeDeclaration modTD = td.getModifiedType();
+      if (modTD != null) {
+         props = addModifiedProperties(modTD, props);
+      }
+      List<Object> tdProps = td.getDeclaredProperties();
+      props = ModelUtil.mergeProperties(props, tdProps, false, true);
+      return props;
    }
 
 }

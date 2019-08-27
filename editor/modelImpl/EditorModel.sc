@@ -547,7 +547,7 @@ EditorModel {
       return p == null || (pname = ModelUtil.getPropertyName(p)).startsWith("_") || filteredProps.contains(pname);
    }
 
-   public Object[] getPropertiesForType(Object type) {
+   public Object[] getPropertiesForType(Object type, sc.type.IResponseListener listener) {
       if (type instanceof ClientTypeDeclaration)
          type = ((ClientTypeDeclaration) type).getOriginal();
       Object[] props;

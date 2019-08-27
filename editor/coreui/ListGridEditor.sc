@@ -8,7 +8,7 @@ class ListGridEditor extends ListEditor {
 
    void updateProperties() {
       if (componentType != null) {
-         Object[] newProps = editorModel.getPropertiesForType(componentType);
+         Object[] newProps = editorModel.getPropertiesForType(componentType, getPropListener());
          ArrayList<Object> visProps = new ArrayList<Object>();
          addComputedComponentProperties(visProps);
          filterProperties(componentType, visProps, newProps);
@@ -55,6 +55,21 @@ class ListGridEditor extends ListEditor {
       }
       for (IElementEditor childView:childViews) {
          childView.cellWidthChanged(propName);
+      }
+   }
+
+   void refreshSortDir(String propName) {
+      List<Object> headerViews = getHeaderCellList();
+      if (headerViews != null) {
+         for (Object hv:headerViews) {
+            if (hv instanceof HeaderCellEditor) {
+               HeaderCellEditor hcell = ((HeaderCellEditor) hv);
+              if (DynUtil.equalObjects(hcell.propertyName, propName)) {
+                 hcell.sortDir = 0;
+                 Bind.sendChange(hcell, "sortDir", hcell.sortDir);
+              }
+            }
+         }
       }
    }
 

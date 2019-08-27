@@ -320,7 +320,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       setDebugSyncEnabled(!getDebugSyncEnabled());
    }
 
-   abstract Object[] getPropertiesForType(Object type);
+   abstract Object[] getPropertiesForType(Object type, sc.type.IResponseListener listener);
 
    boolean enableUpdateProperty := !DynUtil.equalObjects(currentPropertyValue, savedPropertyValue) ||
                                    !DynUtil.equalObjects(currentPropertyOperator, savedPropertyOperator); 

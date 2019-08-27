@@ -302,9 +302,11 @@ class TypeTree {
       }
 
       void childrenAvailable() {
-         // Once our children are available, might need to open our children and so on
+         // Once our children are available, might need to open our children and so on. Don't clear the selection here
+         // in case we have marked a tree ent selected, but are in responding to a fetch type that comes in before the
+         // editorModel.typeNames has been updated
          if (childEnts != null) {
-            updateSelected();
+            updateSelected(true);
          }
       }
 
@@ -587,7 +589,7 @@ class TypeTree {
          return hasVisibleChildren = false;
       }
 
-      boolean updateSelected() {
+      boolean updateSelected(boolean setOnly) {
          boolean hasSelectedType = editorModel.typeNames.length > 0;
 
          if (type == EntType.Instance || type == EntType.Object || type == EntType.ParentObject) {
@@ -603,8 +605,11 @@ class TypeTree {
             }
 
             boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
-            if (newSel != selected)
-               selected = newSel;
+            if (newSel != selected) {
+               if (newSel || !setOnly)
+                  selected = newSel;
+
+            }
             return false;
          }
 
@@ -651,8 +656,10 @@ class TypeTree {
          else {
             boolean newSel = editorModel.isTypeNameSelected(typeName);
             if (newSel != selected) {
-               selected = newSel;
-               needsRefresh = true;
+               if (newSel || !setOnly) {
+                  selected = newSel;
+                  needsRefresh = true;
+               }
             }
             boolean newCreate = editorModel.isCreateModeTypeNameSelected(typeName);
             if (newCreate != selected) {
@@ -671,7 +678,7 @@ class TypeTree {
                   System.out.println("*** Error missing child in childList!");
                else if (childEnt == this)
                   System.err.println("*** Error - invalid recursive tree!");
-               else if (childEnt.updateSelected())
+               else if (childEnt.updateSelected(setOnly))
                   needsRefresh = true;
                // auto-open trees when child nodes are selected
                if (!open && childEnt.needsOpen()) {
@@ -724,12 +731,37 @@ class TypeTree {
          return updateInstances(insts);
       }
 
+      boolean isSingleton() {
+         switch (type) {
+            case ParentObject:
+            case Object:
+            case Enum:
+            case EnumConstant:
+            case ParentEnumConstant:
+            case ParentEnum:
+            case Instance:
+               return true;
+         }
+         return false;
+      }
+
       boolean updateInstances(List<InstanceWrapper> insts) {
          clearMarkedFlag();
          boolean anyChanges = false;
          if (insts != null) {
-            if (insts.size() == 1) { // TODO: should we make sure this is really a singleton definition?  rootedObject is too strict
-               InstanceWrapper mainInst = insts.get(0);
+            InstanceWrapper mainInst = null;
+            if (isSingleton()) {
+               if (insts.size() == 1) {
+                  mainInst = insts.get(0);
+               }
+               else {
+                  if (insts.size() == 0)
+                     System.out.println("*** No instance for singleton type!");
+                  else
+                     System.out.println("*** More than one instance for singleton type: " + insts.size() + " for: " + srcTypeName);
+               }
+            }
+            if (mainInst != null) {
                anyChanges = !DynUtil.equalObjects(instance, mainInst);
                if (anyChanges) {
                   instance = mainInst;

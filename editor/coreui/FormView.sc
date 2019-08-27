@@ -17,6 +17,9 @@ class FormView extends BaseView {
    int instanceModeChanged := editorModel.instanceModeChanged;
    instanceModeChanged =: rebuildForm();
 
+   boolean mergeLayers := editorModel.mergeLayers;
+   mergeLayers =: updateFormProperties();
+
    abstract List<IElementEditor> getChildViews();
 
    Object getObjectForListElement(int ix) {
@@ -79,6 +82,17 @@ class FormView extends BaseView {
       if (childViews != null) {
          for (IElementEditor child:childViews)
             child.validateEditorTree();
+      }
+   }
+
+   // Changing the mergeLayers/inherit flags will invalidate the model but since the type does not change, FormView
+   // needs to list to this event on its own with this method
+   void updateFormProperties() {
+      if (childViews != null) {
+         for (IElementEditor child:childViews) {
+            if (child instanceof TypeEditor)
+               ((TypeEditor) child).updateProperties();
+         }
       }
    }
 

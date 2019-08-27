@@ -22,11 +22,11 @@ class HeaderCellEditor extends ElementEditor {
       sortDir = listEditor.getSortDir(propertyName);
    }
 
-   void toggleSortDir(int dir) {
+   void toggleSortDir(int dir, boolean append) {
       int oldDir = sortDir;
       int newDir = oldDir == 0 || oldDir != dir ? dir : 0;
       this.sortDir = newDir;
-      listEditor.updateSortDir(propertyName, newDir);
+      listEditor.updateSortDir(propertyName, newDir, append);
       Bind.sendChange(this, "sortDir", sortDir);
    }
 

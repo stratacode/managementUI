@@ -10,7 +10,11 @@
 
    %>
    <span class=":= elemClass" style=':= "width: " + (cellWidth - (rowStart ? 1 : 2)) + "px" '><%= propertyName %>
-      <img src="/images/sortUp.png" class=':= sortDir == 1 ? "sortUpSelected" : "sortUpNormal"' clickEvent="=: toggleSortDir(1)"/><img src="/images/sortDown.png" class=':= sortDir == -1 ? "sortDownSelected" : "sortDownNormal"' clickEvent="=: toggleSortDir(-1)"/>
+      <img src="/images/sortUp.png"
+           class=':= sortDir == 1 ? "sortUpSelected" : "sortUpNormal"'
+           clickEvent="=: toggleSortDir(1, clickEvent.shiftKey)"/>
+      <img src="/images/sortDown.png" class=':= sortDir == -1 ? "sortDownSelected" : "sortDownNormal"'
+           clickEvent="=: toggleSortDir(-1, clickEvent.shiftKey)"/>
    </span>
    <span id="headerDivider" class="headerDivider" mouseDownMoveUp="=: dividerMouseEvent(mouseDownMoveUp)">
       <%!

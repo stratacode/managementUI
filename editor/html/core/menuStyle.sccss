@@ -432,6 +432,11 @@ a.tooltip:hover span {
    float: left;
 }
 
+.formFieldLabel:hover {
+   cursor: pointer;
+   text-decoration: underline;
+}
+
 .currentProperty {
    color: <%= currentPropertyColor %>;
 }

@@ -242,7 +242,7 @@ class Editor3DView extends CGroup {
             if (type == null)
                return;
 
-            Object[] props = !mergeLayers ? model.getPropertiesForType(type) : ModelUtil.getDeclaredMergedProperties(type, null, true);
+            Object[] props = !mergeLayers ? model.getPropertiesForType(type, null) : ModelUtil.getDeclaredMergedProperties(type, null, true);
             int ix = 0;
             if (props != null) {
                for (Object p:props) {
