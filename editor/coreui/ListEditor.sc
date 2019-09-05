@@ -1,3 +1,5 @@
+import sc.type.Type;
+
 class ListEditor extends InstanceEditor {
    List<Object> instList;
    List<Object> visList;
@@ -5,6 +7,7 @@ class ListEditor extends InstanceEditor {
    String componentTypeName;
    int startIx;
    int maxNum = 10;
+   boolean componentIsValue = false;
 
    static class SortProp {
       String propName;
@@ -70,17 +73,26 @@ class ListEditor extends InstanceEditor {
          componentType = findCommonBaseType(insts, componentType);
       }
       updateComponentTypeName();
-      if (componentType != null && !(componentType instanceof BodyTypeDeclaration))
-         editorModel.system.fetchRemoteTypeDeclaration(ModelUtil.getTypeName(componentType), new sc.type.IResponseListener() {
-            void response(Object response) {
-               if (response instanceof BodyTypeDeclaration) {
-                  componentType = response;
+      if (componentType != null && !(componentType instanceof BodyTypeDeclaration)) {
+         if (componentType instanceof Class) {
+            Type ct = Type.get((Class) componentType);
+            if (ct != Type.Object) {
+               componentIsValue = true;
+            }
+         }
+         if (!componentIsValue) {
+            editorModel.system.fetchRemoteTypeDeclaration(ModelUtil.getTypeName(componentType), new sc.type.IResponseListener() {
+               void response(Object response) {
+                  if (response instanceof BodyTypeDeclaration) {
+                     componentType = response;
+                  }
                }
-            }
-            void error(int errorCode, Object error) {
-               System.err.println("*** Error response to fetchRemoteTypeDeclaration for componentType");
-            }
-         });
+               void error(int errorCode, Object error) {
+                  System.err.println("*** Error response to fetchRemoteTypeDeclaration for componentType");
+               }
+            });
+         }
+      }
       updateProperties();
    }
 
@@ -274,7 +286,18 @@ class ListEditor extends InstanceEditor {
       }
 
       Object compType = componentType;
-      compType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, compType);
+      if (!componentIsValue) {
+         // Use the type of the list value if we have a src type for it because that will let us edit the
+         // initializers of the actual instance type. Component type starts out as the common super class of
+         // all types in the grid.
+         if (listVal != null) {
+            Object newCompType = DynUtil.getType(listVal);
+            newCompType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, newCompType);
+            if (newCompType instanceof BodyTypeDeclaration || !(compType instanceof BodyTypeDeclaration))
+               compType = newCompType;
+         }
+         compType = ModelUtil.resolveSrcTypeDeclaration(editorModel.system, compType);
+      }
 
       listVal = convertEditorInst(listVal);
 

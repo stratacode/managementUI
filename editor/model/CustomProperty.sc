@@ -36,6 +36,8 @@ class CustomProperty {
    }
 
    String getValueString() {
+      if (value == null)
+         return null;
       return value.toString();
    }
 

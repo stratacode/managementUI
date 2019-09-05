@@ -8,6 +8,7 @@ import sc.lang.InstanceWrapper;
 import sc.lang.java.ModelUtil;
 import sc.lang.java.AbstractMethodDefinition;
 import sc.lang.java.Parameter;
+import sc.type.IResponseListener;
 
 import sc.layer.CodeType;
 
@@ -532,4 +533,16 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       }
       return res;
    }
+
+   BodyTypeDeclaration getOrFetchTypeByName(String typeName, IResponseListener listener) {
+      BodyTypeDeclaration type = system.getSrcTypeDeclaration(typeName, null);
+      if (type instanceof BodyTypeDeclaration) {
+         return (BodyTypeDeclaration) type;
+      }
+      else {
+         system.fetchRemoteTypeDeclaration(typeName, listener);
+      }
+      return null;
+   }
+
 }

@@ -54,17 +54,6 @@ EditorModel {
       return null;
    }
 
-   BodyTypeDeclaration getOrFetchTypeByName(String typeName, IResponseListener listener) {
-      BodyTypeDeclaration type = system.getSrcTypeDeclaration(typeName, null);
-      if (type instanceof BodyTypeDeclaration) {
-         return (BodyTypeDeclaration) type;
-      }
-      else {
-         system.fetchRemoteTypeDeclaration(typeName, listener);
-      }
-      return null;
-   }
-
 
    List<Object> addModifiedProperties(BodyTypeDeclaration td, List<Object> props) {
       BodyTypeDeclaration modTD = td.getModifiedType();

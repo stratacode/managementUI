@@ -38,8 +38,7 @@ class ListGridEditor extends ListEditor {
       }
 
       if (gridView) {
-         if (editorType.equals("ref") || editorType.equals("form"))
-            return RowEditor.class;
+         return RowEditor.class;
       }
       return super.getEditorClass(editorType, displayMode);
    }
@@ -77,8 +76,11 @@ class ListGridEditor extends ListEditor {
       if (showIndex) {
          props.add(new ComputedProperty("#", Integer.class, "text", null, 35, null));
       }
-      if (showId) {
+      if (showId && !componentIsValue) {
          props.add(new ComputedProperty("Id", null, "ref", null, 200, null));
+      }
+      if (componentIsValue) {
+         props.add(new ComputedProperty("Value", componentType, "text", null, 200, GlobalResources.lookupUIIcon(componentType)));
       }
    }
 

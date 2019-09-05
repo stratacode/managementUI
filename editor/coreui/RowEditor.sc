@@ -52,10 +52,18 @@ class RowEditor extends InstanceFieldEditor {
 
    // Allow rows should show the same list derived from the parent grid.
    void updateProperties() {
+      Object newType = editorModel.getOrFetchTypeByName(ModelUtil.getTypeName(type), getPropListener());
+      if (newType != type && newType != null)
+         type = newType;
+
       if (parentList != null) {
          ArrayList props = new ArrayList();
          props.addAll(java.util.Arrays.asList(parentList.properties));
          properties = props.toArray();
+
+         Object[] rowProps = null;
+         if (type != parentList.componentType)
+            rowProps = editorModel.getPropertiesForType(type, getPropListener());
          for (int i = 0; i < properties.length; i++) {
             if (properties[i] instanceof ComputedProperty) {
                ComputedProperty prop = (ComputedProperty) properties[i];
@@ -65,6 +73,22 @@ class RowEditor extends InstanceFieldEditor {
                else if (prop.name.equals("Id")) {
                   prop.propertyType = editorModel.fetchInstanceType(instance);
                   prop.value = instance;
+               }
+               else if (prop.name.equals("Value")) {
+                  prop.value = instance;
+               }
+            }
+            // For regular properties, find the same property in the row's type - so we get the most specific definition of this property
+            // and can edit any rules set directly on the sub-type.
+            else if (rowProps != null) {
+               Object prop = properties[i];
+               String propName = ModelUtil.getPropertyName(prop);
+               for (Object rowProp:rowProps) {
+                  String rowPropName = ModelUtil.getPropertyName(rowProp);
+                  if (rowPropName.equals(propName)) {
+                     properties[i] = rowProp;
+                     break;
+                  }
                }
             }
          }

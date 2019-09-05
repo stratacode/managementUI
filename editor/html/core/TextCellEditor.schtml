@@ -12,7 +12,7 @@
       super.updateComputedValues();
    }
 %>
+   <!-- Not setting disabled here using 'editable' because we have no other way to select these cells -->
    <input id="textField" class="textCell" type="text" focusEvent="=: onFocusEvent()" value=":= currentStringValue"
-       disabled=":= !editable"
        keyUpEvent='=: keyUpEvent.key.equals("Enter") ? errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue) : null'/>
 </span>
