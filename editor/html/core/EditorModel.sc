@@ -7,26 +7,26 @@ EditorModel {
 
       if (type instanceof TypeDeclaration) {
          TypeDeclaration td = ((TypeDeclaration) type);
-         List<Object> props = td.getDeclaredProperties();
+         boolean isHidden = td.getLayer() != null && td.getLayer().hidden;
+         List<Object> props = isHidden ? null : td.getDeclaredProperties();
          if (props == null)
             props = new ArrayList<Object>();
          else
             props = new ArrayList<Object>(props);
-         if (inherit) {
+         if (td.getInheritProperties()) {
             String baseTypeName = td.getExtendsTypeName();
             if (baseTypeName != null) {
                BodyTypeDeclaration extType = getOrFetchTypeByName(baseTypeName, updateListener);
-               if (extType != null) {
+               if (extType != null && extType.getExportProperties()) {
+                  Layer l = extType.getLayer();
                   Object[] extProps = getPropertiesForType(extType, updateListener);
                   props = ModelUtil.mergeProperties(props, extProps == null ? null : Arrays.asList(extProps), false, true);
                }
             }
          }
-         if (mergeLayers) {
-            BodyTypeDeclaration modTD = td.getModifiedType();
-            if (modTD != null) {
-               props = addModifiedProperties(modTD, props);
-            }
+         BodyTypeDeclaration modTD = td.getModifiedType();
+         if (modTD != null && ctx.currentLayers.contains(modTD.getLayer())) {
+            props = addModifiedProperties(modTD, props);
          }
          res = new ArrayList<Object>(props.size());
          // Reorder so that properties are always on top.  When they become interleaved with objects the display is messy

@@ -29,7 +29,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    LayeredSystem system;
 
-   int windowState = 0; // 0 = iconfied, 1 = open, 2 = maximized
+   int windowState = 0; // 0 = iconified, 1 = open, 2 = maximized
 
    /** Set to the current layer */
    @Bindable(crossScope=true)
@@ -82,14 +82,14 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Last known value from the model for the property */
    String savedPropertyValue;
 
-   /** Set to false if we only use types from the current layer.  Otherwise, merge all layers behind the current layer */
-   boolean mergeLayers = false;
+   /** Number of layers to merge starting from the current type's layer */
+   int mergeLayerCt = 0;
 
    /** Set to true when the current type is a layer */
    boolean currentTypeIsLayer;
 
-   /** Set to true for an object or class to show properties from its extends class */
-   boolean inherit = false;
+   /** Number of the current type's base type's properties to include in the current view */
+   int inheritTypeCt = 0;
 
    /** Set to true after the user has started a createInstance but not yet completed the create */
    boolean pendingCreate = false;
@@ -279,7 +279,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       System.err.println("*** ERROR: remote method not implemented");
    }
 
-   void removeLayers(ArrayList<Layer> layers) {
+   void removeLayers(ArrayList<String> layers) {
       System.err.println("*** Implement as a remote method");
    }
 
@@ -328,10 +328,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    //abstract String setElementValue(Object type, Object inst, Object prop, String expr, boolean updateInstances, boolean valueIsExpr);
 
-   public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
+   public boolean filteredProperty(Object type, Object prop, boolean perLayer, boolean instanceMode) {
       if (instanceMode) {
-         if (p instanceof IVariableInitializer) {
-            IVariableInitializer varInit = (IVariableInitializer) p;
+         if (prop instanceof IVariableInitializer) {
+            IVariableInitializer varInit = (IVariableInitializer) prop;
             String opStr = varInit.getOperatorStr();
             if (opStr != null && opStr.equals("=:"))
                return true;
@@ -361,9 +361,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    public boolean currentLayerMatches(Layer layer) {
       if (currentLayer == null)
          return true;
-      if (currentLayer.transparentToLayer(layer))
+      if (ctx.currentLayers.contains(layer))
          return true;
-      return ((!mergeLayers && currentLayer == layer) || (mergeLayers && (layer == currentLayer || currentLayer.extendsLayer(layer))));
+      return false;
+      //return ((!mergeLayers && currentLayer == layer) || (mergeLayers && (layer == currentLayer || currentLayer.extendsLayer(layer))));
    }
 
    BodyTypeDeclaration processVisibleType(Object typeObj) {
@@ -465,8 +466,6 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       if (prop instanceof CustomProperty)
          return false;
       Layer memberLayer = ModelUtil.getLayerForMember(null, prop);
-      if (memberLayer == null)
-         System.out.println("***");
       return memberLayer != layer;
    }
 

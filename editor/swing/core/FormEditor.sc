@@ -53,12 +53,16 @@ FormEditor {
       double visWidth := !visible ? 0.0 : size.width;
       //items := !visible ? java.util.Collections.emptyList() : instancesOfType;
       items := instancesOfType;
-      selectedIndex := getInstSelectedIndex(instance, instancesOfType);
+      // Use 'displaySelectedIndex' here instead of selectedIndex so that a change won't trigger a call to actually update the selected item
+      displaySelectedIndex := getInstSelectedIndex(instance, instancesOfType);
       userSelectedItem =: userSelectedInstance((InstanceWrapper) selectedItem);
    }
 
    void userSelectedInstance(InstanceWrapper wrapper) {
-      setSelectedInstance(wrapper.instance);
+      if (wrapper != null)
+         setSelectedInstance(wrapper.instance);
+      else
+         System.out.println("*** Null wrapper in userSelectedInstance"); // TODO: there is a bug where we end up here when setting the 'items' property of a combo box, triggering a binding in FormEditor to update the selected index... need some way to know it's not a user update of the selected index
    }
 
    void setSelectedInstance(Object inst) {

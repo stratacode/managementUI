@@ -129,7 +129,6 @@ abstract class InstanceEditor extends TypeEditor {
       Object parentInst = ((InstanceEditor) parentEditor).instance;
       if (parentInst != null) {
          if (parentProperty instanceof CustomProperty) {
-            System.out.println("***");
             return;
          }
          String propName = ModelUtil.getPropertyName(parentProperty);

@@ -17,8 +17,8 @@ class FormView extends BaseView {
    int instanceModeChanged := editorModel.instanceModeChanged;
    instanceModeChanged =: rebuildForm();
 
-   boolean mergeLayers := editorModel.mergeLayers;
-   mergeLayers =: updateFormProperties();
+   int mergeLayerCt := editorModel.mergeLayerCt;
+   mergeLayerCt =: updateFormProperties();
 
    abstract List<IElementEditor> getChildViews();
 
@@ -85,6 +85,8 @@ class FormView extends BaseView {
       }
    }
 
+   void validateSize() {}
+
    // Changing the mergeLayers/inherit flags will invalidate the model but since the type does not change, FormView
    // needs to list to this event on its own with this method
    void updateFormProperties() {
@@ -109,6 +111,21 @@ class FormView extends BaseView {
             validateEditorTree();
          }
       }, 0);
+
+   }
+
+   boolean validateSizeScheduled = false;
+
+   void scheduleValidateSize() {
+      if (validateSizeScheduled || validateTreeScheduled)
+         return;
+      validateSizeScheduled = true;
+         DynUtil.invokeLater(new Runnable() {
+            public void run() {
+               validateSizeScheduled = false;
+               validateSize();
+            }
+         }, 0);
 
    }
 

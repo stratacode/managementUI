@@ -36,8 +36,8 @@ EditorModel {
 
    typeNames =: invalidateModel();
    currentLayer =: invalidateModel();
-   mergeLayers =: invalidateModel();
-   inherit =: invalidateModel();
+   mergeLayerCt =: invalidateModel();
+   inheritTypeCt =: invalidateModel();
 
    /** Set this to true so the command line interpreter and UI do not share the same current type, etc. */
    boolean separateContext = false;
@@ -175,6 +175,7 @@ EditorModel {
             }
          }
 
+         int lastTypeLayerIx = -1;
          if (type instanceof TypeDeclaration) {
             TypeDeclaration rootTD = (TypeDeclaration) type;
             BodyTypeDeclaration modType = rootTD.getModifiedType();
@@ -182,9 +183,12 @@ EditorModel {
                addNewTypeLayer(modType.getLayer(), newTypeLayers);
                modType = modType.getModifiedType();
             }
-            if (inherit) {
+            // If we are resetting the current layer, pick the last layer that still has this type in it.
+            lastTypeLayerIx = newTypeLayers.size() - 1;
+            //if (inheritTypeCt > 0) {
                Object extType = rootTD.getExtendsTypeDeclaration();
-               while (extType != null && extType instanceof BodyTypeDeclaration) {
+               //int ct = inheritTypeCt;
+               while (/*ct > 0 && */ extType != null && extType instanceof BodyTypeDeclaration) {
                   BodyTypeDeclaration eTD = (BodyTypeDeclaration) extType;
                   // Use this method to just add the layer to the layer indexes.  When type is null, no type is added.
                   addNewTypeLayer(eTD.getLayer(), newTypeLayers);
@@ -198,10 +202,11 @@ EditorModel {
                      mtype = extModType;
                   }
                   extType = eTD.getExtendsTypeDeclaration();
+                  //ct--;
                }
 
                addInterfaceNewTypeLayers(rootTD, newTypeLayers);
-            }
+            //}
          }
 
          // Now that we have the newTypeLayers, we need to determine if we are going to reset the
@@ -214,8 +219,8 @@ EditorModel {
                if (newTypeLayers.contains(currentLayer))
                   resetCurrentLayer = false;
             }
-            if (resetCurrentLayer && newTypeLayers.size() > 0)
-               currentLayer = newTypeLayers.get(newTypeLayers.size()-1);
+            if (resetCurrentLayer && newTypeLayers.size() > lastTypeLayerIx)
+               currentLayer = newTypeLayers.get(lastTypeLayerIx);
          }
 
          /** --- */
@@ -242,9 +247,10 @@ EditorModel {
                addLayerType(modType, modType.getLayer(), newFilteredLayers);
                modType = modType.getModifiedType();
             }
-            if (inherit) {
+            //if (inheritTypeCt > 0) {
                Object extType = rootTD.getExtendsTypeDeclaration();
-               while (extType != null && extType instanceof BodyTypeDeclaration) {
+               //int ct = inheritTypeCt;
+               while (/*ct > 0 && */ extType != null && extType instanceof BodyTypeDeclaration) {
                   BodyTypeDeclaration eTD = (BodyTypeDeclaration) extType;
                   // Use this method to just add the layer to the layer indexes.  When type is null, no type is added.
                   addLayerType(eTD, eTD.getLayer(), newFilteredLayers);
@@ -261,10 +267,11 @@ EditorModel {
                      mtype = extModType;
                   }
                   extType = eTD.getExtendsTypeDeclaration();
+                  //ct--;
                }
 
                addInterfaceLayerTypes(rootTD, newFilteredLayers, inheritedTypes);
-            }
+            //}
          }
       }
 
@@ -399,7 +406,7 @@ EditorModel {
          return;
 
       // Don't show this layer if we have a currentLayer set and depending on the "mergeLayers" flag we should or not
-      if (layer != null && currentLayer != null && ((!mergeLayers && currentLayer != layer) || (mergeLayers && currentLayer.getLayerPosition() < layer.getLayerPosition()))) {
+      if (layer != null && currentLayer != null && !currentLayer.transparentToLayer(layer, mergeLayerCt)) {
          isTypeLayer = false;
       }
 
@@ -496,6 +503,8 @@ EditorModel {
    }
 
    private static void addNewTypeLayer(Layer layer, List<Layer> newTypeLayers) {
+      if (layer.hidden)
+         return;
       int allIx = newTypeLayers.indexOf(layer);
       if (allIx == -1) {
          int i;
@@ -536,8 +545,11 @@ EditorModel {
          type = ((ClientTypeDeclaration) type).getOriginal();
 
       // Normally !inherit mode only uses the declared properties.  But for transparent layers we have to get all of them and filter them here
-      if (!inherit && !ModelUtil.sameTypes(ownerType, type))
+      /* This rule does not take into account the new inheritProperties flag on a type and so excluded all properties in that case
+         Probably should just build in the transparent layer visibility rules into the getProperties method so it's all in one place
+      if (inheritTypeCt == 0 && !ModelUtil.sameTypes(ownerType, type))
          return true;
+      */
 
       // In threeD view, we don't want to merge the properties as we go up the layer stack unlike form view.
       if (perLayer && ModelUtil.getLayerForType(null, type) != ModelUtil.getLayerForType(null, ownerType))
@@ -551,15 +563,16 @@ EditorModel {
       if (type instanceof ClientTypeDeclaration)
          type = ((ClientTypeDeclaration) type).getOriginal();
       Object[] props;
-      if (!mergeLayers) {
+
+      if (mergeLayerCt == 0) {
          // Transparent layers need to grab all of the properties so we can filter them in the code
-         if (!inherit && (currentLayer == null || !currentLayer.transparent))
+         if (inheritTypeCt == 0 && (currentLayer == null || !currentLayer.transparent))
             props = ModelUtil.getDeclaredPropertiesAndTypes(type, "public", system);
           else
             props = ModelUtil.getPropertiesAndTypes(type, "public");
       }
       else {
-         if (!inherit && (currentLayer == null || !currentLayer.transparent))
+         if (inheritTypeCt == 0 && (currentLayer == null || !currentLayer.transparent))
             props = ModelUtil.getDeclaredMergedPropertiesAndTypes(type, "public", true);
          else
             props = ModelUtil.getMergedPropertiesAndTypes(type, "public", system);
@@ -1245,8 +1258,8 @@ EditorModel {
       return obj != null;
    }
 
-   void removeLayers(ArrayList<Layer> layers) {
-      ctx.removeLayers(layers);
+   void removeLayers(ArrayList<String> layers) {
+      ctx.removeLayers(layers.toArray(new String[layers.size()]));
    }
 
    ClientTypeDeclaration toClientType(Object type) {
@@ -1260,7 +1273,7 @@ EditorModel {
 
    BodyTypeDeclaration processVisibleType(Object typeObj) {
       if (typeObj instanceof BodyTypeDeclaration) {
-         return toClientType(((BodyTypeDeclaration) typeObj).getDeclarationForLayer(currentLayer, inherit, mergeLayers));
+         return toClientType(((BodyTypeDeclaration) typeObj).getDeclarationForLayer(ctx.currentLayers, inheritTypeCt, mergeLayerCt));
       }
       return null;
    }

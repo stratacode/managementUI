@@ -161,20 +161,24 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       floatable = false;
       rollover = true;
 
-      boolean isMerged :=: editorModel.mergeLayers;
+      int mergeLayerCt :=: editorModel.mergeLayerCt;
+      boolean isMerged := mergeLayerCt > 0;
 
-      boolean isInherited :=: editorModel.inherit;
+      int inheritTypeCt :=: editorModel.inheritTypeCt;
+      boolean isInherited = inheritTypeCt > 0;
 
       object mergedViewButton extends ToolBarToggleButton {
-         toolTipText := isMerged ? "Show only the current layer of the selected types" : "Show the merged view of the selected types";
-         selected :=: isMerged;
+         toolTipText := !isMerged ? "Show only the current layer of the selected types" : "Merge " + (mergeLayerCt+1) + " layers of the selected types";
+         selected := isMerged;
+         selected =: isMerged ? mergeLayerCt = 0 : mergeLayerCt = 1; // TODO add mouseEventListener to get shift status and increment mergeLayerCt
          icon := !isMerged ? new ImageIcon(EditorPanel.class.getResource("images/sepview.png"), "Separate View") :
                             new ImageIcon(EditorPanel.class.getResource("images/mergeview.png"), "Merged View");
       }
 
       object inheritButton extends ToolBarToggleButton {
          toolTipText := isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type.";
-         selected :=: isInherited;
+         selected := isInherited;
+         selected =: isInherited ? inheritTypeCt = 0 : inheritTypeCt = 1;
          icon := !isInherited ? new ImageIcon(EditorPanel.class.getResource("images/noinherit.png"), "No Inherit") :
                                 new ImageIcon(EditorPanel.class.getResource("images/inherit.png"), "Inherit");
       }
@@ -476,7 +480,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                    LayerToggle tog = new LayerToggle();
                    tog.prev = lastComp;
                    tog.layer = editorModel.typeLayers.get(i);
-                   if (editorModel.currentLayer == tog.layer)
+                   if (editorModel.ctx.currentLayers.contains(tog.layer))
                       tog.selected = true;
                    add(tog);
                    buttonGroup.add(tog);

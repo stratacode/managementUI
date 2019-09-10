@@ -8,31 +8,30 @@ class EditorFrame {
       }
       else if (editorModel.currentTypeIsLayer) {
          Layer toDelete = editorModel.currentLayer;
-         List<Layer> depLayers = toDelete.getDependentLayers();
-         if (depLayers.size() == 0) {
+         List<String> usedByLayerNames = toDelete.getUsedByLayerNames();
+         if (usedByLayerNames.size() == 0) {
              editorModel.deleteCurrentLayer();
          }
          else
-            showConfirmDeleteList(toDelete, depLayers);
+            showConfirmDeleteList(toDelete, usedByLayerNames);
       }
       else {
          editorModel.deleteCurrentType();
       }
    }
 
-   void showConfirmDeleteList(Layer toDelete, List<Layer> deps) {
+   void showConfirmDeleteList(Layer toDelete, List<String> usedByLayerNames) {
       Object[] options = {"Delete All", "Cancel"};
       int n = UIUtil.showOptionDialog(this,
-          "Layer: " + toDelete.layerName + " extended by layers: " + deps,
+          "Layer: " + toDelete.layerName + " extended by layers: " + usedByLayerNames,
           "Delete all layers?", 
           options,  //the titles of buttons
           options[0]); //default button title
        if (n == 0) {
-          ArrayList<Layer> allLayers = new ArrayList<Layer>(deps.size() + 1);
-          allLayers.add(toDelete);
-          allLayers.addAll(deps);
+          ArrayList<String> allLayerNames = new ArrayList<String>(usedByLayerNames.size() + 1);
+          allLayerNames.add(toDelete.getLayerName());
 
-          editorModel.removeLayers(allLayers);
+          editorModel.removeLayers(allLayerNames);
           editorModel.clearCurrentType();
        }
    }

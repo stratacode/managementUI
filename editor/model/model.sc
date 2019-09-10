@@ -45,6 +45,7 @@ public editor.model extends util, gui.util.core, sys.layeredSystem {
    inheritRuntime = false;
 
    liveDynamicTypes = layeredSystem.options.editEditor;
+   hidden = !layeredSystem.options.editEditor;
 
    void init() {
       // When the editor is enabled, by default we turn on dynamic types

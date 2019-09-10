@@ -26,7 +26,7 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    Layer classViewLayer;
 
    Layer oldLayer = null; // layer the last time were updated
-   boolean oldMergeLayers, oldInherit;
+   int oldMergeLayerCt, oldInheritTypeCt;
 
    // Updatable on client and server so no need to sync it explicitly
    @sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
@@ -141,7 +141,7 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       operatorChanged();
 
       if (type == null)
-         System.out.println("***");
+         System.out.println("*** Null type after change!");
 
       if (parentProperty != null)
          displayName = propertyName;
@@ -154,8 +154,8 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
          extTypeName = parentProperty == null ? ModelUtil.getExtendsTypeName(type) : ModelUtil.getTypeName(type);
          updateProperties();
          oldLayer = editorModel.currentLayer;
-         oldMergeLayers = editorModel.mergeLayers;
-         oldInherit = editorModel.inherit;
+         oldMergeLayerCt = editorModel.mergeLayerCt;
+         oldInheritTypeCt = editorModel.inheritTypeCt;
       }
       else {
          extTypeName = null;
@@ -240,6 +240,15 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
                   }
                   if (prop == null)
                      continue;
+               }
+               // If we are inheriting properties from one or more base classes for the main type, the prop list contains all properties so we need to go and
+               // remove those which are not exposed for the current inheritance depth.
+               if (propType == editorModel.currentType && editorModel.inheritTypeCt > 0) {
+                  Object enclType = ModelUtil.getEnclosingType(prop, editorModel.system);
+                  if (enclType == null) {
+                     System.err.println("*** No enclosing type for property: " + prop);
+                     continue;
+                  }
                }
             }
             else
@@ -392,8 +401,8 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    void invalidateEditor() {
       if (editorModel != null &&
           (oldLayer != null && oldLayer != editorModel.currentLayer) ||
-          (oldMergeLayers != editorModel.mergeLayers) ||
-          (oldInherit != editorModel.inherit)) {
+          (oldMergeLayerCt != editorModel.mergeLayerCt) ||
+          (oldInheritTypeCt != editorModel.inheritTypeCt)) {
          clearChildren();
          typeChanged();
          refreshChildren();

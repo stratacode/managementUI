@@ -177,7 +177,7 @@ TypeTreeModel {
    }
 
    void pruneChildren(BodyTypeDeclaration td) {
-      Object[] innerTypes = ModelUtil.getAllInnerTypes(td, null, true);
+      Object[] innerTypes = ModelUtil.getAllInnerTypes(td, null, true, false);
       if (innerTypes != null) {
          for (Object innerType:innerTypes) {
             if (innerType instanceof BodyTypeDeclaration) {

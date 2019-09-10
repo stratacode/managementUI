@@ -153,9 +153,6 @@ FormView {
          }
 
          public void validateTree() {
-            int newMaxChildX = 0;
-            int newMaxChildY = 0;
-
             int curIx = 0;
             for (Object elem:repeatComponents) {
                FormEditor fed = (FormEditor) elem;
@@ -176,17 +173,27 @@ FormView {
                 remove(curIx);
                 childViews.remove(curIx);
             }
+
+            validateSize();
+
+            currentTextField = null;
+         }
+
+         public void validateSize() {
+            int newMaxChildX = 0;
+            int newMaxChildY = 0;
+
             for (Object elem:repeatComponents) {
-                if (elem instanceof TypeEditor) {
-                   ((TypeEditor) elem).validateEditorTree();
-                }
-                Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
-                int newX = (int) (bounds.x + bounds.width + xpad);
-                int newY = (int) (bounds.y + bounds.height + ypad);
-                if (newX > newMaxChildX)
-                   newMaxChildX = newX;
-                if (newY > newMaxChildY)
-                   newMaxChildY = newY;
+               if (elem instanceof TypeEditor) {
+                  ((TypeEditor) elem).validateEditorTree();
+               }
+               Rectangle bounds = SwingUtil.getBoundingRectangle(elem);
+               int newX = (int) (bounds.x + bounds.width + xpad);
+               int newY = (int) (bounds.y + bounds.height + ypad);
+               if (newX > newMaxChildX)
+                  newMaxChildX = newX;
+               if (newY > newMaxChildY)
+                  newMaxChildY = newY;
             }
             if (maxChildWidth != newMaxChildX)
                maxChildWidth = newMaxChildX;
@@ -201,9 +208,12 @@ FormView {
             validate();
             FormView.super.validate();
             FormView.this.repaint();
-
-            currentTextField = null;
          }
       }
+   }
+
+   void validateSize() {
+      super.validateSize();
+      contentPanel.childList.validateSize();
    }
 }

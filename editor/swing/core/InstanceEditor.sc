@@ -1,3 +1,5 @@
+import sc.bind.BindingContext;
+
 InstanceEditor {
    IElementEditor listStart;
 
@@ -90,20 +92,30 @@ InstanceEditor {
 
          boolean anyChanges = super.refreshList();
 
-         if ((gridChanged || anyChanges)) {
-            int ix = 0;
-            for (Object elem:repeatComponents) {
-               IElementEditor fed = (IElementEditor) elem;
-               updateCell(fed, ix);
-               ix++;
+         // Because the child bindings all chain off of 'prev' which is set in updateCell, it's necessary to update
+         // all prev values in the list before sending any change events. Otherwise, it's possible there will be
+         // an intermediate state which causes an infinite binding loop because of how we reuse and incrementally update
+         // repeatCompoennts.
+         BindingContext oldCtx = BindingContext.queueEvents();
+         try {
+            if ((gridChanged || anyChanges)) {
+               int ix = 0;
+               for (Object elem:repeatComponents) {
+                  IElementEditor fed = (IElementEditor) elem;
+                  updateCell(fed, ix);
+                  ix++;
+               }
             }
+
+            if (!headerMode)
+               lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
+
+            Bind.sendChangedEvent(InstanceEditor.this, "cellHeight");
+            Bind.sendChangedEvent(this, "lastEditor");
          }
-
-         if (!headerMode)
-            lastView = repeatComponents.size() == 0 ? null : repeatComponents.get(repeatComponents.size()-1);
-
-         Bind.sendChangedEvent(InstanceEditor.this, "cellHeight");
-         Bind.sendChangedEvent(this, "lastEditor");
+         finally {
+            BindingContext.flushQueue(oldCtx);
+         }
          return anyChanges;
       }
 
@@ -130,9 +142,9 @@ InstanceEditor {
             ed.prevCell = null;
 
          if (ed.col >= numCols)
-            System.out.println("***");
+            System.out.println("*** Invalid column");
          if (ed.row >= numRows)
-            System.out.println("***");
+            System.out.println("*** Invalid row");
 
          viewsGrid[ed.row][ed.col] = ed;
       }

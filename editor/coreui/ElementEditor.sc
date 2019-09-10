@@ -70,8 +70,6 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    }
 
    void updateRowPosition() {
-      if (propertyName != null && propertyName.equals("posts"))
-         System.out.println("***");
       rowStart = listIndex == 0 && cellMode;
       boolean newRowEnd = false;
       if (listIndex != -1 && formEditor != null) {

@@ -20,4 +20,5 @@ public editor.coreui extends modelImpl, model, gui.util.core {
    codeType = CodeType.UI;
 
    liveDynamicTypes = layeredSystem.options.editEditor;
+   hidden = !layeredSystem.options.editEditor; 
 }

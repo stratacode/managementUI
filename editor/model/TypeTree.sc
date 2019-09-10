@@ -411,7 +411,7 @@ class TypeTree {
                    // Application mode:
                    //    just make sure we have the src for the type.  We'll have already doen the application check above.
                    //    if it's a transparent item, even if hasSrc is false we display it.
-                   return (treeModel.createMode && (imported || editorModel.currentLayer == null || layer == editorModel.currentLayer)) || hasSrc || transparent;
+                   return treeModel.createMode && (imported || editorModel.currentLayer == null || editorModel.ctx.currentLayers.contains(layer)) || hasSrc || transparent;
 
                 case Primitive:
                    return treeModel.createMode && treeModel.propertyMode;

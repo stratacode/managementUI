@@ -20,6 +20,9 @@ InstanceFieldEditor {
    void validateChildLists() {
       validateChildList(0, childList.repeatComponents, true);
       validateSize();
+      // If the root element changes in size, the parent view needs to update it's size
+      if (formEditor == null)
+         parentView.scheduleValidateSize();
    }
 
    childViews = new ArrayList<IElementEditor>();

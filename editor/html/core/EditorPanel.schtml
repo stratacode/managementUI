@@ -36,18 +36,11 @@
        <%;
 %>
    <div id="toolbar">
-      <%! boolean isMerged :=: editorModel.mergeLayers;
-          boolean isInherited :=: editorModel.inherit; %>
       <span id="openWindowButton" extends="ToolbarButton" icon="/images/add.png" clickEvent="=: windowState = 1" visible=":= !windowOpen"/>
       <span id="saveButton" extends="ToolbarButton" icon="/images/save.gif" alt="Save" clickEvent='=: editorModel.ctx.save()' tipMinWidth="4em" disabled=":= !editorModel.ctx.needsSave"/>
       <span id="undoButton" extends="ToolbarButton" icon="/images/undo.gif" alt="Undo" clickEvent='=: editorModel.ctx.undo()' tipMinWidth="4em" disabled=":= !editorModel.ctx.canUndo"/>
       <span id="redoButton" extends="ToolbarButton" icon="/images/redo.gif" alt="Redo" clickEvent='=: editorModel.ctx.redo()'  tipMinWidth="4em" disabled=":= !editorModel.ctx.canRedo"/>
       <span id="refreshButton" extends="ToolbarButton" icon=':= editorModel.system != null && editorModel.system.staleCompiledModel ? "/images/needsrestart.gif" : "/images/refresh.gif"' clickEvent='=: editorModel.system.rebuild()' alt="Refresh"/>
-
-      <span id="mergedViewButton" visible=":= windowOpen" extends="ToolbarToggleButton" icon=':= isMerged ? "/images/sepview.png" : "/images/mergeview.png"' style="margin-left: 50px;"
-            alt=':= isMerged ? "Show only the current layer of the selected types" : "Show the merged view of the selected types"' selected=":=: isMerged" tipMinWidth="20em"/>
-
-      <span id="inheritButton" visible=":= windowOpen" extends="ToolbarToggleButton" icon=':= isInherited ? "/images/noinherit.png" : "/images/inherit.png"' alt=':= isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type."' selected=":=: isInherited" tipMinWidth="20em"/>
 
       <span id="ViewTypeRadioButton" abstract="true" extends="RadioButton" tipMinWidth="4em" alignRight="true">
 
@@ -80,9 +73,12 @@
 
    <div id="viewPanel" visible=":= windowState != 0">
       <div id="layerScroll">
+         <span id="layersLabel" visible=":= editorModel.typeLayers.size() > 0">Layers</span>
          <span id="layers" repeat=":= editorModel.typeLayers" repeatVarName="typeLayer" extends="RadioButton" 
-               icon=':= typeLayer.dynamic ? "/images/layerDyn.gif" : "/images/layer.gif"' alt=":= typeLayer.toDetailString()" 
-               selected=":= editorModel.currentLayer == typeLayer"
+               icon=':= typeLayer.dynamic ? "/images/layerDyn.gif" : "/images/layer.gif"' alt=":= typeLayer.toDetailString()"
+               size="16"
+               normalClass="layerSelectButton"
+               selected=":= editorModel.ctx.currentLayers.contains(typeLayer)"
                clickEvent="=: selected ? editorModel.currentLayer = typeLayer : null">
             <%= typeLayer.layerName %>
          </span>

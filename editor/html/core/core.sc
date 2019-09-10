@@ -9,4 +9,5 @@ public editor.html.core extends html.core, html.schtml, gui.util.html, editor.co
 
   // Set this to true for refresh when changing the editor files
   liveDynamicTypes = layeredSystem.options.editEditor;
+  hidden = !layeredSystem.options.editEditor; 
 }

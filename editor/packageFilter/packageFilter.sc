@@ -4,4 +4,5 @@ editor.packageFilter extends modelImpl {
    // in the IDE. It will closely follow modelImpl keeping it in front of
    // platform specific customizations.
    configLayer = true;
+   hidden = !layeredSystem.options.editEditor; 
 }
