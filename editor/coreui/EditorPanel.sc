@@ -55,6 +55,9 @@ class EditorPanel {
       List<InstanceWrapper> selectedInstances :=: editorModel.selectedInstances;
       ArrayList<TypeTree.TreeEnt> selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
 
+      String[] lastSelectedTypeNames;
+      List<InstanceWrapper> lastSelectedInstances;
+
       public void clearSelection() {
          if (selectedTreeNodes != null) {
             for (Object selEnt:selectedTreeNodes) {
@@ -108,7 +111,6 @@ class EditorPanel {
                treeEnt.createModeSelected = true;
             else
                treeEnt.selected = true;
-            System.out.println("*** type name: " + treeEnt.typeName + " is selected");
             if (selectedTreeNodes == null) {
                System.err.println("*** Null treeEnts!");
                selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
@@ -257,6 +259,9 @@ class EditorPanel {
                   selectedTypeNames = newSelTypes;
                   typeChanged = true;
                }
+               if (!typeChanged && !Arrays.equals(lastSelectedTypeNames, newSelTypes))
+                  typeChanged = true;
+
                if (!DynUtil.equalObjects(editorModel.selectedInstances, newInstances)) {
                   int newSize = newInstances.size();
                   int oldSize = editorModel.selectedInstances == null ? 0 : editorModel.selectedInstances.size();
@@ -288,6 +293,10 @@ class EditorPanel {
              typeTreeModel.byLayerTypeTree == null || 
              typeTreeModel.byLayerTypeTree.rootDirEnt == null)
             return;
+
+         lastSelectedTypeNames = selectedTypeNames;
+         lastSelectedInstances = selectedInstances == null ? null : new ArrayList<InstanceWrapper>(selectedInstances);
+
          boolean needsRefresh = typeTreeModel.typeTree.rootDirEnt.updateSelected(false);
          if (typeTreeModel.byLayerTypeTree.rootDirEnt.updateSelected(false))
             needsRefresh = true;

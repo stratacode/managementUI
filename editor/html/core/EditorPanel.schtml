@@ -74,12 +74,12 @@
    <div id="viewPanel" visible=":= windowState != 0">
       <div id="layerScroll">
          <span id="layersLabel" visible=":= editorModel.typeLayers.size() > 0">Layers</span>
-         <span id="layers" repeat=":= editorModel.typeLayers" repeatVarName="typeLayer" extends="RadioButton" 
+         <span id="layers" repeat=":= editorModel.typeLayers" repeatVarName="typeLayer" extends="ToolbarToggleButton"
                icon=':= typeLayer.dynamic ? "/images/layerDyn.gif" : "/images/layer.gif"' alt=":= typeLayer.toDetailString()"
                size="16"
                normalClass="layerSelectButton"
                selected=":= editorModel.ctx.currentLayers.contains(typeLayer)"
-               clickEvent="=: selected ? editorModel.currentLayer = typeLayer : null">
+               clickEvent="=: editorModel.ctx.layerSelected(typeLayer, clickEvent.shiftKey)">
             <%= typeLayer.layerName %>
          </span>
       </div>

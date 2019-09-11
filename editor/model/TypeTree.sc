@@ -606,9 +606,10 @@ class TypeTree {
 
             boolean newSel = instance != null && editorModel.selectedInstances != null && editorModel.selectedInstances.contains(instance);
             if (newSel != selected) {
-               if (newSel || !setOnly)
+               if (newSel || !setOnly) {
                   selected = newSel;
-
+                  return true;
+               }
             }
             return false;
          }

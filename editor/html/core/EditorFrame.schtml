@@ -15,6 +15,7 @@
       <img class="logoImage"
            style=':= SyncManager.defaultSyncManager.numSendsInProgress == 0 ? "opacity: 1;" : "opacity: 0.5;"'
            src=':= syncDest.client ? clearedErrorCount == Window.window.errorCount ? syncDest.connected ? "/images/scLogo.png" : "/images/scLogoInactive.png" : "/images/scLogoError.png" : "/images/scLogo.png"'/>
+      <!-- prefetch these images -->
       <img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/><img src="/images/scLogoInactive.png" width="1" height="1" style="position:absolute"/>
    </a>
    <ul id="navMenu" visible=":= windowState != 0">

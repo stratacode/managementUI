@@ -92,10 +92,8 @@ InstanceEditor {
 
          boolean anyChanges = super.refreshList();
 
-         // Because the child bindings all chain off of 'prev' which is set in updateCell, it's necessary to update
-         // all prev values in the list before sending any change events. Otherwise, it's possible there will be
-         // an intermediate state which causes an infinite binding loop because of how we reuse and incrementally update
-         // repeatCompoennts.
+         // TODO: is this necessary? It seems like it might be more efficient if the entire chain is set up before
+         // we start delivering the change events.
          BindingContext oldCtx = BindingContext.queueEvents();
          try {
             if ((gridChanged || anyChanges)) {

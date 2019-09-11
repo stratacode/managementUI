@@ -81,12 +81,9 @@ body {
 }
 
 #navMenu {
-   padding-left: <%= leftPad %>px;
-   padding-left: 38px;
    padding-bottom: 0px;
    padding-top: 3px;
    list-style: none;
-   float: left;
    width: 100%;
    margin-top: 0px;
    margin-bottom: 0px;
@@ -188,6 +185,7 @@ body {
    padding: 3px 5px 3px 5px;
    border-radius: 3px;
    background: #fff;
+   user-select: none;
 }
 
 .layerSelectButton img {

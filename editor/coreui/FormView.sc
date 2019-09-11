@@ -17,8 +17,8 @@ class FormView extends BaseView {
    int instanceModeChanged := editorModel.instanceModeChanged;
    instanceModeChanged =: rebuildForm();
 
-   int mergeLayerCt := editorModel.mergeLayerCt;
-   mergeLayerCt =: updateFormProperties();
+   List<Layer> currentLayers := editorModel.ctx.currentLayers;
+   currentLayers =: updateFormProperties();
 
    abstract List<IElementEditor> getChildViews();
 
@@ -61,6 +61,13 @@ class FormView extends BaseView {
                   // There's a pending event to refresh the instances so our instances may not be valid. Need them to be valid so that we can find the selected instance in the UI.
                   if (!editorModel.refreshInstancesValid)
                      Bind.refreshBinding(childForm, "instancesOfType");
+                  if (newInst != null) {
+                     Object dt = DynUtil.getType(newInst);
+                     if (dt != childForm.type && !ModelUtil.sameTypes(dt, childForm.type)) {
+                        System.out.println("*** type and instance are not in sync");
+                        return;
+                     }
+                  }
                   childForm.instance = newInst;
                   childForm.wrapper = newWrapper;
                   childForm.operatorChanged();
@@ -87,8 +94,8 @@ class FormView extends BaseView {
 
    void validateSize() {}
 
-   // Changing the mergeLayers/inherit flags will invalidate the model but since the type does not change, FormView
-   // needs to list to this event on its own with this method
+   // Changing the current layers will invalidate the model but since the type does not change, FormView
+   // propagates this event down to the children to update the properties.
    void updateFormProperties() {
       if (childViews != null) {
          for (IElementEditor child:childViews) {
@@ -111,7 +118,6 @@ class FormView extends BaseView {
             validateEditorTree();
          }
       }, 0);
-
    }
 
    boolean validateSizeScheduled = false;
@@ -127,6 +133,21 @@ class FormView extends BaseView {
             }
          }, 0);
 
+   }
+
+   boolean rebuildFormScheduled = false;
+
+   // Called when a child element's size has changed, or in general to refresh the lists and sizes of all tree components
+   void scheduleRebuildForm() {
+      if (rebuildFormScheduled)
+         return;
+      rebuildFormScheduled = true;
+         DynUtil.invokeLater(new Runnable() {
+            public void run() {
+               rebuildFormScheduled = false;
+               rebuildForm();
+            }
+         }, 0);
    }
 
    abstract void rebuildForm();

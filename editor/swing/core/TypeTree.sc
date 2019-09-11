@@ -125,14 +125,14 @@ TypeTree {
       TreePath tp = new TreePath(paths);
 
       String childKey = childEnt.type == EntType.Instance ? childEnt.typeName + ":" + childEnt.instance.toString() : childEnt.typeName;
+      String secondKey = (childEnt.type == EntType.ParentObject || childEnt.type == EntType.Object) && childEnt.instance != null ?
+                              childEnt.typeName + ":" + childEnt.instance.toString() : null;
 
       if (childEnt.isSelectable()) {
          List<TreePath> l = rootPathIndex.get(childKey);
          if (l == null) {
             l = new ArrayList<TreePath>();
 
-            // For Instances, use a key which is unique to that instance so when we select the instance
-            // in one view, it will show up in the others
             if (childEnt.type != EntType.LayerDir)
                rootPathIndex.put(childKey, l);
 
@@ -140,6 +140,15 @@ TypeTree {
                rootPathIndex.put(TypeTreeModel.PKG_INDEX_PREFIX + childEnt.value, l);
          }
          l.add(tp);
+
+         if (secondKey != null) {
+            l = rootPathIndex.get(secondKey);
+            if (l == null) {
+               l = new ArrayList<TreePath>();
+               rootPathIndex.put(secondKey, l);
+            }
+            l.add(tp);
+         }
       }
 
       return tp;

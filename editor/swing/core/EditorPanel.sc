@@ -155,18 +155,20 @@ EditorPanel extends JPanel implements EditorPanelStyle {
    }
 
    object editorToolBar extends JToolBar {
-      location := SwingUtil.point(globalToolBar.location.x + globalToolBar.size.width + xpad, toolBarY);
+      location := SwingUtil.point(globalToolBar.location.x + globalToolBar.size.width + editorWidth - 30*3, toolBarY);
       size := SwingUtil.dimension(editorWidth, toolBarHeight);
 
       floatable = false;
       rollover = true;
 
+      // TODO: remove these as they are not used
       int mergeLayerCt :=: editorModel.mergeLayerCt;
       boolean isMerged := mergeLayerCt > 0;
 
       int inheritTypeCt :=: editorModel.inheritTypeCt;
       boolean isInherited = inheritTypeCt > 0;
 
+      /*
       object mergedViewButton extends ToolBarToggleButton {
          toolTipText := !isMerged ? "Show only the current layer of the selected types" : "Merge " + (mergeLayerCt+1) + " layers of the selected types";
          selected := isMerged;
@@ -182,10 +184,13 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          icon := !isInherited ? new ImageIcon(EditorPanel.class.getResource("images/noinherit.png"), "No Inherit") :
                                 new ImageIcon(EditorPanel.class.getResource("images/inherit.png"), "Inherit");
       }
+      */
 
+      /*
       object sep extends JSeparator {
          orientation = SwingConstants.VERTICAL;
       }
+      */
 
       object dataViewButton extends ToolBarToggleButton {
          toolTipText = "Show data view of selected instances";
@@ -228,8 +233,6 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       int openRoot := typeTreeModel.openRoot;
       openRoot =: openRootNode();
 
-      String[] lastSelectedTypeNames;
-      List<InstanceWrapper> lastSelectedInstances;
       boolean lastCreateMode = true;
       String lastPackageNode = null;
 
@@ -318,11 +321,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             return;
          updateSelectionCount++;
          String[] selTypeNames = selectedTypeNames;
-         lastSelectedTypeNames = selTypeNames;
          lastCreateMode = typeTreeModel.createMode;
          lastPackageNode = currentPackageNode;
-         lastSelectedInstances = selectedInstances == null ? null : new ArrayList<InstanceWrapper>(selectedInstances);
-
          List<TreePath> paths = new ArrayList<TreePath>(selectedTypeNames.length);
 
          // In create mode, we immediately clear the selection because it just temporarily copies the value into the
@@ -404,10 +404,18 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       size := SwingUtil.dimension(editorWidth, buttonPanelHeight);
       object viewTabs extends JPanel {
          location := SwingUtil.point(0, 0);
-         override @sc.bind.NoBindWarn
          preferredSize := SwingUtil.dimension(lastComponent == null ? 300 : lastComponent.location.x + lastComponent.size.width + 2*xpad, buttonPanelHeight - 20);
 
          int centerY := (int) ((size.height - preferredSize.height) / 2);
+
+         int layersLabelHeight := horizontalScrollBarVisible ? 6 : 12;
+
+         object layerLabel extends JLabel {
+            location := SwingUtil.point(xpad, layersLabelHeight);
+            size := preferredSize;
+            text = "Layers";
+            visible := editorModel.typeLayers.size() > 0;
+         }
 
          class LayerToggle extends TextBevelToggle {
             Layer layer;
@@ -419,7 +427,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             override @sc.bind.NoBindWarn
             location := SwingUtil.point((prev != null ? prev.location.x + prev.size.width : 0) + xpad, centerY);
 
-            selected =: selected ? selectedLayer = layer : null;
+            userSelected =: editorModel.ctx.layerSelected(layer, mouseEvent != null && mouseEvent.isShiftDown());
          }
 
 /*
@@ -443,18 +451,20 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          }
 */
 
-         Layer selectedLayer :=: editorModel.currentLayer;
-         selectedLayer =: validateSelected();
+         List<Layer> currentLayers := editorModel.ctx.currentLayers;
+         currentLayers =: validateSelected();
          JComponent lastComponent = null; // allToggle;
 
+         /*
          object buttonGroup extends ButtonGroup {
             //buttons = Arrays.asList(new AbstractButton[]{allToggle});
             buttons = Arrays.asList(new AbstractButton[]{});
          }
+         */
 
          void removeTabs() {
             // Leave the allToggle but remove the rest from bottom to top
-            JComponent lastComp = null; // allToggle;
+            JComponent lastComp = layerLabel;
             int stop = 0;
             if (lastComp != null) {
                while (getComponent(stop++) != lastComp)
@@ -462,7 +472,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             }
             for (int i = getComponentCount()-1; i >= stop; i--) {
                AbstractButton button = (AbstractButton) getComponent(i);
-               buttonGroup.remove(button);
+               //buttonGroup.remove(button);
                remove(i);
 
                // Remove bindings from the toggles and unregister them from the instance list
@@ -473,7 +483,7 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          void validateTabs() {
             removeTabs();
 
-            JComponent lastComp = null; // allToggle;
+            JComponent lastComp = layerLabel;
 
             if (editorModel != null && editorModel.typeLayers != null) {
                for (int i = 0; i < editorModel.typeLayers.size(); i++) {
@@ -483,13 +493,14 @@ EditorPanel extends JPanel implements EditorPanelStyle {
                    if (editorModel.ctx.currentLayers.contains(tog.layer))
                       tog.selected = true;
                    add(tog);
-                   buttonGroup.add(tog);
+                   //buttonGroup.add(tog);
                    lastComp = tog;
                }
                lastComponent = lastComp;
             }
             else
-               lastComponent = null; // allToggle
+               lastComponent = layerLabel;
+
             //if (model.currentLayer == null)
             //   allToggle.selected = true;
             viewTabsScroll.this.invalidate();
@@ -498,17 +509,21 @@ EditorPanel extends JPanel implements EditorPanelStyle {
             doLayout();
             viewTabsScroll.super.validate();
             validate();
+
             viewTabsScroll.repaint();
          }
 
          void validateSelected() {
             // Leave the all toggle, remove the rest from bottom to top
             for (int i = 0; i < getComponentCount(); i++) {
-               JToggleButton button = (JToggleButton) getComponent(i);
-               Layer buttonLayer;
-               if (button instanceof LayerToggle) {
-                  buttonLayer = ((LayerToggle) button).layer;
-                  button.selected = buttonLayer == selectedLayer;
+               java.awt.Component comp = getComponent(i);
+               if (comp instanceof LayerToggle) {
+                  LayerToggle button = (LayerToggle) comp;
+                  Layer buttonLayer;
+                  buttonLayer = button.layer;
+                  boolean sel = editorModel.ctx.currentLayers.contains(buttonLayer);
+                  if (sel != button.selected)
+                     button.selected = sel;
                }
                //else if (button == allToggle) {
                //   button.selected = selectedLayer == null;

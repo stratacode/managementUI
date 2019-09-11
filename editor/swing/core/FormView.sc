@@ -216,4 +216,11 @@ FormView {
       super.validateSize();
       contentPanel.childList.validateSize();
    }
+
+   void updateFormProperties() {
+      scheduleRebuildForm();
+      // TODO: for some reason, this more incremental approach does not work
+      //super.updateFormProperties();
+      //scheduleValidateTree();
+   }
 }
