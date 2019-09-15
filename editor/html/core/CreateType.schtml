@@ -22,7 +22,7 @@
       Name
       <input id="nameField" keyUpEvent="=: keyUpEvent.key.equals("Enter") ? doSubmit() : null" class="statusInputField"/>
       extends
-      <span id="objExtendsTypeField" extends="CompletionTextField"/>
+      <span id="objExtendsTypeField" extends="CompletionTextField" ctx=":= editorModel.ctx" completionType="= CompletionTypes.ApplicationType"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span>
 </span>

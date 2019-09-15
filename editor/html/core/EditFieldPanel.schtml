@@ -8,7 +8,9 @@
 
    <span id="currentTypeTextField" extends="CompletionTextField"
          inputValue=':= editorModel.currentPropertyType == null ? "" : ModelUtil.getInnerTypeName(editorModel.currentPropertyType)'
-         enteredText="=: editorModel.currentTypeSearch">
+         enteredText="=: editorModel.currentTypeSearch"
+         ctx=":= editorModel.ctx"
+         completionType="= CompletionTypes.ApplicationType">
        <input id="inputField"/>
    </span>
 

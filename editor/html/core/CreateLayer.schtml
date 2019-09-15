@@ -23,7 +23,9 @@
       Layer Name
       <span id="addLayerField" extends="CompletionTextField"/>
       <span id="extendsLabel" visible=":= !addLayerMode">extends</span>
-      <span id="extendsTypeField" extends="CompletionTextField" visible=":= !addLayerMode"/>
+      <span id="extendsTypeField" extends="CompletionTextField" visible=":= !addLayerMode"
+            ctx=":= editorModel.ctx"
+            completionType="= CompletionTypes.ExistingLayer"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span>
 </span>

@@ -1,12 +1,79 @@
 <span extends="InputField">
    <%!
-       List suggestions;
+      @sc.obj.Sync
+      ArrayList<String> suggestions = new ArrayList<String>();
+      @sc.obj.Sync
+      String suggestPrefix;
+      @sc.obj.Sync
+      int relPos = -1;
+
+      // This follows only the value the user enters. The inputValue property may be set externally, like changing the type
+      userText =: updateSuggestPrefix();
+
+      long lastUpdateTime = -1;
+      Object updateJob;
+      EditorContext ctx;
+      sc.lang.CompletionTypes completionType;
+
+      List<String> matchingSuggestions;
+
+      suggestions =: updateSuggestions();
+
+      // This will only run on the server and populate 'suggestions' which gets sync'd back to the client
+      override @Exec(serverOnly=true)
+      suggestPrefix =: relPos = ctx.completeText(suggestPrefix, completionType, suggestions, null, null);
+
+      void updateSuggestPrefix() {
+         // Value is coming from outside - not the user typing
+         if (userText == null || !userText.equals(inputValue))
+            return;
+         // If the user is typing quickly don't start the suggestion process
+         if (updateJob != null) {
+            PTypeUtil.cancelScheduledJob(updateJob, false);
+         }
+         if (userText.length() == 0) {
+            matchingSuggestions = new ArrayList<String>();
+         }
+         else if (suggestPrefix != null && suggestPrefix.length() > 0) {
+            int inputLen = userText.length();
+            int suggestLen = suggestPrefix.length();
+            if (inputLen < suggestLen || !userText.startsWith(suggestPrefix) || suggestions.size() == EditorContext.MaxCompletions) {
+               suggestPrefix = userText;
+            }
+            else
+               updateSuggestions();
+         }
+         else {
+            updateJob = PTypeUtil.addScheduledJob(new Runnable() {
+                void run() {
+                   // This will get sync'd to the server which will then populate the suggestions
+                   suggestPrefix = userText;
+                   updateJob = null;
+                }
+            }, 1500, false);
+         }
+      }
+
+      void updateSuggestions() {
+         if (suggestions == null || suggestPrefix == null) {
+            matchingSuggestions = new ArrayList<String>();
+         }
+         else {
+            ArrayList<String> newSuggestions = new ArrayList<String>();
+            for (String suggest:suggestions) {
+               if (suggest.startsWith(inputValue))
+                  newSuggestions.add(suggest);
+            }
+            matchingSuggestions = newSuggestions;
+         }
+      }
     %>
+
      
    <input id="inputField" type="text" value=":=: inputValue" class="statusInputField"
-          changeEvent="=: enteredText = inputValue"/>
-   <ul class="suggestionBox" visible=":= suggestions != null && suggestions.size() > 0">
-     <li repeat=":= suggestions" repeatVarName="suggestion"><%= suggestion %></li>
-   </ul>
+          changeEvent="=: enteredText = value" keyUpEvent="=: userText = value" list="suggestionList"/>
+   <datalist id="suggestionList">
+     <option repeat=":= matchingSuggestions" repeatVarName="suggestion" value=":= suggestion"/>
+   </datalist>
 
 </span>

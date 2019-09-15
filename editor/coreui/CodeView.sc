@@ -55,7 +55,7 @@ class CodeView extends BaseView {
       //@sc.obj.Sync(syncMode=sc.obj.SyncMode.Disabled)
       EditorModel.SelectedFile file;
 
-      // Using TextUtil.length works around a bug in data binding.  It's not listening on the object for the .length() object.
+      // TODO: change to errorText.size() now that it works in a binding
       int errorsHeight := TextUtil.length(errorText) == 0 ? 0 : 50;
       String errorText;
 

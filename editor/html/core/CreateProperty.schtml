@@ -24,7 +24,7 @@
       <select id="opChoice"
               optionDataSource="= sc.editor.EditorModel.operatorList"
               style="margin-left: 5px; margin-right: 5px" selectedIndex="0"/>
-      <span id="valueField" extends="ValueFieldInput"/>
+      <span id="valueField" extends="ValueFieldInput" ctx=":= editorModel.ctx"/>
       <span id="confirmButtons" extends="PanelConfirmButtons"/>
    </span>
 </span>

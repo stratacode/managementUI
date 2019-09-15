@@ -24,6 +24,7 @@ import sc.bind.AbstractListener;
 
 import sc.obj.Sync;
 import sc.obj.SyncMode;
+import sc.obj.Exec;
 
 import sc.lang.java.JavaModel;
 import sc.lang.template.Template;
@@ -33,8 +34,9 @@ import sc.lang.java.IVariableInitializer;
 import sc.lang.java.TypeDeclaration;
 import sc.lang.java.ClientTypeDeclaration;
 import sc.lang.EditorContext;
+import sc.lang.CompletionTypes;
 
-@sc.obj.Sync(syncMode=sc.obj.SyncMode.Automatic)
+@Sync(syncMode=sc.obj.SyncMode.Automatic)
 public editor.model extends util, gui.util.core, sys.layeredSystem {
    //defaultSyncMode = sc.obj.SyncMode.Automatic;
    codeType = CodeType.Model;

@@ -46,7 +46,7 @@
    double layerScrollPix = 50; 
    double editorViewHeightPix := viewPanelHeightPix - layerScrollPix - 20;
    double editorViewHeightPer := editorViewHeightPix * 100.0 / viewPanelHeightPix;
-   double codeViewHeightPix := editorViewHeightPix - 47;
+   double codeViewHeightPix := editorViewHeightPix - 32;
    double codeViewHeightPer := codeViewHeightPix * 100.0 / editorViewHeightPix;
    double treePanePix := (treeHeightPix - splitThumbHeight - panePadding) * 0.5;
    double treePanePer := treePanePix / treeHeightPix * 100.0;
@@ -543,11 +543,12 @@ a.tooltip:hover span {
 }
 
 .fullEditPanel {
-   height: 100%;
+   //height: 93%;
+   height: <%= codeViewHeightPer %>%;
 }
 
 .codeView {
-   height: <%= codeViewHeightPer %>%;
+   height: 100%;
 }
 
 .elementIcon {

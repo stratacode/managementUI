@@ -23,7 +23,30 @@
             }, 0);
       }
 
-      enum CodeViewMode {
+     void scheduleCodeMirror() {
+        if (!DynUtil.isEvalSupported())
+           return;
+        DynUtil.invokeLater(new Runnable() {
+           public void run() {
+              Object[] children = codeEditors_Repeat.getObjChildren(false);
+              if (children != null) {
+                 for (Object child:children) {
+                    if (child instanceof codeEditors_Repeat.codeEditors) {
+                       codeEditors_Repeat.codeEditors codeEditor = (codeEditors_Repeat.codeEditors) child;
+                       if (codeEditor.editPanel.sourceView.visible) {
+                          String tid = codeEditor.editPanel.sourceView.sourceTextArea.getId();
+                          Object cmEditor = DynUtil.evalScript(
+                              "CodeMirror.fromTextArea(document.getElementById(\"" + tid + "\"), " +
+                              " { lineNumbers: true, mode: \"text/x-java\", matchBrackets: true, keyMap: \"vim\"})");
+                       }
+                    }
+                 }
+              }
+           }
+        }, 0);
+     }
+
+     enum CodeViewMode {
          Source, 
          StrataCode {
             boolean isAvailable(JavaModel model) {
@@ -72,7 +95,7 @@
 
           void updateNeedsModelText() {
              if (codeViewMode == CodeViewMode.Source) 
-                file.model.needsModelText = true; 
+                file.model.needsModelText = true;
              else if (codeViewMode == CodeViewMode.Java || codeViewMode == CodeViewMode.Javascript || codeViewMode == CodeViewMode.StrataCode || codeViewMode == CodeViewMode.ClientJava)
                 file.model.needsGeneratedText = true; 
           }
@@ -95,7 +118,13 @@
         repeatVarName="selectedFile" file=":= selectedFile">
       <div id="editPanel" class=':= numEditors == 1 ? "fullEditPanel" : "splitEditPanel"'>
          <div id="sourceView" class="codeView" visible=":= codeViewMode == CodeViewMode.Source">
-            <pre class="code" ><%= selectedFile.model.cachedModelText %></pre>
+            <%!
+               String modelText := selectedFile.model.cachedModelText;
+               String cmOptions = "{ \"lineNumbers\": true, \"mode\": \"text/x-java\", \"matchBrackets\": true, \"keyMap\": \"vim\"}";
+               CodeMirror cm = CodeMirror.createFromTextArea(sourceTextArea.getId(), cmOptions);
+               modelText =: cm.updateContent(modelText, selectedFile.file.relFileName);
+            %>
+            <textarea id="sourceTextArea" style="width: 95%; height: 95%;" changedCount="=: cm.updateContent(modelText, selectedFile.file.relFileName)"><%= modelText %></textarea>
          </div>
 
          <div id="javaView" class="codeView" visible=":= codeViewMode == CodeViewMode.Java" >
