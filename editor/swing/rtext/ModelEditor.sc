@@ -36,7 +36,7 @@ ModelEditor extends RTextScrollPane {
          }
       }
       int saveCaretPos = textArea.caretPosition;
-      textArea.text = ctx.getModelText(model);
+      textArea.text = ctx.getModelText(model, model.modelText);
       caretPosition = saveCaretPos;
    }
 

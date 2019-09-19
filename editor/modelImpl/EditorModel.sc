@@ -1282,4 +1282,15 @@ EditorModel {
    void stop() {
       removeCurrentListener();
    }
+
+   int[] getTypeOffsets(SelectedFile file) {
+      ArrayList<Integer> arr = new ArrayList<Integer>();
+      for (int i = 0; i < file.types.size(); i++) {
+         arr.add(ModelUtil.getTypeOffset(file.types.get(i)));
+      }
+      int[] res = new int[arr.size()];
+      for (int i = 0; i < res.length; i++)
+         res[i] = arr.get(i);
+      return res;
+   }
 }

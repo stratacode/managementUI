@@ -1,7 +1,8 @@
 CodeView {
    CodeEditor {
       object confirmButtons extends ConfirmButtons {
-         enabled := editorModel.ctx.hasAnyMemoryEditSession(editorModel.ctx.memorySessionChanged); // Need modelChanged param to fire hasAnyMemoryEditSessions change event
+         enabled := editorHasChanges;
+         cancelEnabled := enabled;
          x := (int) (CodeEditor.this.size.width - width);
          y = 0;
          cancelButton {

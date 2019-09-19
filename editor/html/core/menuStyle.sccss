@@ -551,6 +551,10 @@ a.tooltip:hover span {
    height: 100%;
 }
 
+.codeViewConfirm {
+   float: right;
+}
+
 .elementIcon {
    vertical-align: text-top;
 }
@@ -647,4 +651,15 @@ a.tooltip:hover span {
 
 #layersLabel {
    padding-left: <%= leftPad %>px;
+}
+
+.syntaxError {
+   /* color: #f00; */
+   text-decoration-line: underline;
+   text-decoration-style: wavy;
+   text-decoration-color: red;
+}
+
+.notFound {
+   color: #f00;
 }

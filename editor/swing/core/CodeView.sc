@@ -5,6 +5,11 @@ CodeView {
    int codeViewHeight := (int) (contentPanel.size.height - 2*ypad);
    int maxChildWidth := (int) size.width-4*xpad, maxChildHeight;
 
+   List<CodeEditor> editors = new ArrayList<CodeEditor>();
+   List<CodeEditor> getEditors() {
+      return editors;
+   }
+
    boolean removed = false;
 
    class CodeSplitPane extends JSplitPane {
@@ -50,6 +55,7 @@ CodeView {
       }
 
       /** Retrieve the line numbers for any type we can find in the file */
+      /*
       int[] getLineNumbers() {
          ArrayList<Integer> arr = new ArrayList<Integer>();
 
@@ -62,19 +68,7 @@ CodeView {
 
          return res;
       }
-
-      int[] getTypeOffsets() {
-         ArrayList<Integer> arr = new ArrayList<Integer>();
-
-         for (int i = 0; i < file.types.size(); i++)
-            arr.add(ModelUtil.getTypeOffset(file.types.get(i)));
-
-         int[] res = new int[arr.size()];
-         for (int i = 0; i < res.length; i++)
-            res[i] = arr.get(i);
-
-         return res;
-      }
+      */
 
       int getFileHeight() {
          // Get the lines in the file multiplied by the fontHeight plus sep space
@@ -212,7 +206,7 @@ CodeView {
    void updateCaretPositions() {
       for (CodeEditor editor:editors) {
          // Set the cursor position to the start of the first selected type in the file
-         int[] typeOffsets = editor.getTypeOffsets();
+         int[] typeOffsets = editor.typeOffsets;
          if (typeOffsets != null && typeOffsets.length > 0 && typeOffsets[0] != -1) {
             editor.editPanel.caretPosition = typeOffsets[0];
             editor.editPanel.centerLineInView();

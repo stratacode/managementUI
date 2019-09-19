@@ -11,6 +11,18 @@
       void updateCaretPositions() {
       }
 
+      List<CodeEditor> getEditors() {
+         Object[] children = codeEditors_Repeat.getObjChildren(false);
+         ArrayList<CodeEditor> res = new ArrayList<CodeEditor>();
+         if (children != null) {
+            for (Object child:children) {
+               if (child instanceof CodeEditor)
+                  res.add((CodeEditor) child);
+            }
+         }
+         return res;
+      }
+
       void schedulePrettify() {
          if (!DynUtil.isEvalSupported())
             return;
@@ -23,30 +35,7 @@
             }, 0);
       }
 
-     void scheduleCodeMirror() {
-        if (!DynUtil.isEvalSupported())
-           return;
-        DynUtil.invokeLater(new Runnable() {
-           public void run() {
-              Object[] children = codeEditors_Repeat.getObjChildren(false);
-              if (children != null) {
-                 for (Object child:children) {
-                    if (child instanceof codeEditors_Repeat.codeEditors) {
-                       codeEditors_Repeat.codeEditors codeEditor = (codeEditors_Repeat.codeEditors) child;
-                       if (codeEditor.editPanel.sourceView.visible) {
-                          String tid = codeEditor.editPanel.sourceView.sourceTextArea.getId();
-                          Object cmEditor = DynUtil.evalScript(
-                              "CodeMirror.fromTextArea(document.getElementById(\"" + tid + "\"), " +
-                              " { lineNumbers: true, mode: \"text/x-java\", matchBrackets: true, keyMap: \"vim\"})");
-                       }
-                    }
-                 }
-              }
-           }
-        }, 0);
-     }
-
-     enum CodeViewMode {
+      enum CodeViewMode {
          Source, 
          StrataCode {
             boolean isAvailable(JavaModel model) {
@@ -85,21 +74,20 @@
 
    <div id="CodeEditor" abstract="true">  
       <%! 
-          int codeViewIndex = 0;
-          List<CodeViewMode> codeViewModes = Arrays.asList(CodeViewMode.values());
-          CodeViewMode codeViewMode := codeViewModes.get(codeViewIndex); 
+         int codeViewIndex = 0;
+         List<CodeViewMode> codeViewModes = Arrays.asList(CodeViewMode.values());
+         CodeViewMode codeViewMode := codeViewModes.get(codeViewIndex);
 
-          // When either of these change we might need to fetch the model text
-          codeViewMode =: updateNeedsModelText();
-          file =: updateNeedsModelText();
+         // When either of these change we might need to fetch the model text
+         codeViewMode =: updateNeedsModelText();
+         file =: updateNeedsModelText();
 
-          void updateNeedsModelText() {
-             if (codeViewMode == CodeViewMode.Source) 
-                file.model.needsModelText = true;
-             else if (codeViewMode == CodeViewMode.Java || codeViewMode == CodeViewMode.Javascript || codeViewMode == CodeViewMode.StrataCode || codeViewMode == CodeViewMode.ClientJava)
-                file.model.needsGeneratedText = true; 
-          }
-
+         void updateNeedsModelText() {
+            if (codeViewMode == CodeViewMode.Source)
+               file.model.needsModelText = true;
+            else if (codeViewMode == CodeViewMode.Java || codeViewMode == CodeViewMode.Javascript || codeViewMode == CodeViewMode.StrataCode || codeViewMode == CodeViewMode.ClientJava)
+               file.model.needsGeneratedText = true;
+         }
       %>
       <div id="fileLabel" class="fileLabel" style="height: 15px">
          <span style="margin-right: 4px; height: 4%;">
@@ -108,6 +96,10 @@
             </select>
          </span>
          <%= fileText %>
+         <span id="codeViewConfirm" class="codeViewConfirm" extends="ConfirmButtons" enabled=":= editorHasChanges" cancelEnabled=":= enabled">
+            <a id="okButton" clickEvent="=: editorModel.commitMemorySessionChanges()"/>
+            <a id="cancelButton" clickEvent="=: editorModel.ctx.cancelMemorySessionChanges()"/>
+         </span>
       </div>
       <div style="clear: right; height: 0.1%"/>
    </div>
@@ -117,17 +109,36 @@
    <div id="codeEditors" extends="CodeEditor" repeat=":= editorModel.selectedFileList" style=':= "height: " + outerHeight + "%"'
         repeatVarName="selectedFile" file=":= selectedFile">
       <div id="editPanel" class=':= numEditors == 1 ? "fullEditPanel" : "splitEditPanel"'>
+         <%! void modelTextEdited() {
+            editorModel.ctx.changeMemoryEditSession(sourceView.cm.content, model, sourceView.cm.cursorIndex);
+         } %>
          <div id="sourceView" class="codeView" visible=":= codeViewMode == CodeViewMode.Source">
             <%!
-               String modelText := selectedFile.model.cachedModelText;
+               String modelText := ctx.getModelText(selectedFile.model, selectedFile.model.cachedModelText);
                String cmOptions = "{ \"lineNumbers\": true, \"mode\": \"text/x-java\", \"matchBrackets\": true, \"keyMap\": \"vim\"}";
-               CodeMirror cm = CodeMirror.createFromTextArea(sourceTextArea.getId(), cmOptions);
+               CodeMirror cm = CodeMirror.createFromTextArea(sourceTextArea.getId(), cmOptions, new CodeMirror.IEditorEventListener() {
+                                  void contentChanged() {
+                                     modelTextEdited();
+                                  }
+                               });
                modelText =: cm.updateContent(modelText, selectedFile.file.relFileName);
+               List<ModelError> modelErrors := codeEditors.this.modelErrors;
+               modelErrors =: updateErrors();
+
+               void updateErrors() {
+                  cm.clearErrors();
+                  if (modelErrors != null) {
+                     for (ModelError modelError:modelErrors) {
+                        cm.addError(modelError.error, modelError.startIndex, modelError.endIndex, modelError.notFound);
+                     }
+                  }
+                  cm.refresh();
+               }
             %>
             <textarea id="sourceTextArea" style="width: 95%; height: 95%;" changedCount="=: cm.updateContent(modelText, selectedFile.file.relFileName)"><%= modelText %></textarea>
          </div>
 
-         <div id="javaView" class="codeView" visible=":= codeViewMode == CodeViewMode.Java" >
+         <div id="javaView" class="codeView" visible=":= codeViewMode == CodeViewMode.Java">
             <%= selectedFile.model.cachedGeneratedText %>
          </div>
 

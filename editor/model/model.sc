@@ -35,6 +35,7 @@ import sc.lang.java.TypeDeclaration;
 import sc.lang.java.ClientTypeDeclaration;
 import sc.lang.EditorContext;
 import sc.lang.CompletionTypes;
+import sc.lang.ModelError;
 
 @Sync(syncMode=sc.obj.SyncMode.Automatic)
 public editor.model extends util, gui.util.core, sys.layeredSystem {

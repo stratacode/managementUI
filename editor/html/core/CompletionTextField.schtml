@@ -7,6 +7,8 @@
       @sc.obj.Sync
       int relPos = -1;
 
+      Object currentType;
+
       // This follows only the value the user enters. The inputValue property may be set externally, like changing the type
       userText =: updateSuggestPrefix();
 
@@ -21,7 +23,7 @@
 
       // This will only run on the server and populate 'suggestions' which gets sync'd back to the client
       override @Exec(serverOnly=true)
-      suggestPrefix =: relPos = ctx.completeText(suggestPrefix, completionType, suggestions, null, null);
+      suggestPrefix =: relPos = ctx.completeText(suggestPrefix, completionType, suggestions, null, currentType);
 
       void updateSuggestPrefix() {
          // Value is coming from outside - not the user typing
@@ -37,7 +39,9 @@
          else if (suggestPrefix != null && suggestPrefix.length() > 0) {
             int inputLen = userText.length();
             int suggestLen = suggestPrefix.length();
-            if (inputLen < suggestLen || !userText.startsWith(suggestPrefix) || suggestions.size() == EditorContext.MaxCompletions) {
+            // Optimization - if we are in the middle of an identifier and we've already matched the complete set of identifiers, we can avoid the updateSuggetions call.
+            // But if we have a space or other operator in the new section, we need to match again.
+            if (inputLen < suggestLen || !userText.startsWith(suggestPrefix) || suggestions.size() == EditorContext.MaxCompletions || !userText.substring(suggestPrefix.length()).matches("^[a-zA-Z]*$")) {
                suggestPrefix = userText;
             }
             else
@@ -55,14 +59,16 @@
       }
 
       void updateSuggestions() {
-         if (suggestions == null || suggestPrefix == null) {
+         if (suggestions == null || suggestPrefix == null || relPos == -1) {
             matchingSuggestions = new ArrayList<String>();
          }
          else {
             ArrayList<String> newSuggestions = new ArrayList<String>();
+            String preMatchStr = inputValue.substring(0, relPos);
+            String matchStr = inputValue.substring(relPos);
             for (String suggest:suggestions) {
-               if (suggest.startsWith(inputValue))
-                  newSuggestions.add(suggest);
+               if (suggest.startsWith(matchStr))
+                  newSuggestions.add(preMatchStr + suggest);
             }
             matchingSuggestions = newSuggestions;
          }
@@ -71,7 +77,7 @@
 
      
    <input id="inputField" type="text" value=":=: inputValue" class="statusInputField"
-          changeEvent="=: enteredText = value" keyUpEvent="=: userText = value" list="suggestionList"/>
+          changeEvent="=: enteredText = value" keyUpEvent="=: userText = value" list="= suggestionList.getId()"/>
    <datalist id="suggestionList">
      <option repeat=":= matchingSuggestions" repeatVarName="suggestion" value=":= suggestion"/>
    </datalist>
