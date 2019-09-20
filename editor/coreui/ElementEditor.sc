@@ -24,6 +24,10 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue);
    Object propType;
 
+   // List for changes made to the code behind the initializer string and refresh the view (for type view mainly)
+   String initExprStr := varInit.initializerExprStr;
+   initExprStr =: changeCt = changeCt + 1;
+
    boolean instanceMode;
    boolean constantProperty;
    boolean setFromBinding;

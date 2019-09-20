@@ -58,6 +58,12 @@ EditorModel {
    List<Object> addModifiedProperties(BodyTypeDeclaration td, List<Object> props) {
       BodyTypeDeclaration modTD = td.getModifiedType();
       if (modTD != null) {
+      /*
+      if (modTD == td || modTD.getModifiedType() == td || (modTD.getModifiedType() != null && modTD.getModifiedType().getModifiedType() == td)) {
+         System.err.println("*** Modified type loop!");
+         return props;
+      }
+      */
          props = addModifiedProperties(modTD, props);
       }
       List<Object> tdProps = td.getDeclaredProperties();

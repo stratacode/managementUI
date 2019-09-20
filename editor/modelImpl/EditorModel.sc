@@ -1284,6 +1284,8 @@ EditorModel {
    }
 
    int[] getTypeOffsets(SelectedFile file) {
+      if (file == null)
+         return null;
       ArrayList<Integer> arr = new ArrayList<Integer>();
       for (int i = 0; i < file.types.size(); i++) {
          arr.add(ModelUtil.getTypeOffset(file.types.get(i)));
