@@ -3,6 +3,7 @@ class EditFieldOp {
    String valueStr;
    //int updateValueCount;
    int updateTypeCount;
+   @Sync(syncMode=SyncMode.Disabled)
    EditorModel editorModel;
    String errorText;
 

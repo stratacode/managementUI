@@ -13,10 +13,12 @@
    </select>
    <span id="valueField" extends="ValueFieldInput" inputValue=":=: valueStr" ctx=":= editorModel.ctx" currentType=":= editorModel.currentPropertyType"/>
 
-   <span class="errorText"><%= errorText %></span>
-
    <span id="confirmButtons" extends="ConfirmButtons">
       <a id="okButton" clickCount="=: updateTypeCount "/>
       <a id="cancelButton" clickCount="=: cancelPropertyEdit() "/>
    </span>
+
+   <br/>
+   <div class="errorText"><%= errorText %></div>
+
 </form>

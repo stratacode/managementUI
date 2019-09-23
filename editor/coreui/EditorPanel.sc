@@ -47,15 +47,19 @@ class EditorPanel {
       // When a package is selected, stores the name of that package
       String currentPackageNode;
 
+      @Sync(syncMode=SyncMode.Disabled)
       TypeTree myTypeTree;
 
+      @Sync(syncMode=SyncMode.Disabled)
       boolean byLayer = false;
 
       String[] selectedTypeNames :=: editorModel.typeNames;
       List<InstanceWrapper> selectedInstances :=: editorModel.selectedInstances;
       ArrayList<TypeTree.TreeEnt> selectedTreeNodes = new ArrayList<TypeTree.TreeEnt>();
 
+      @Sync(syncMode=SyncMode.Disabled)
       String[] lastSelectedTypeNames;
+      @Sync(syncMode=SyncMode.Disabled)
       List<InstanceWrapper> lastSelectedInstances;
 
       public void clearSelection() {
@@ -68,9 +72,12 @@ class EditorPanel {
          }
       }
 
+      @Sync(syncMode=SyncMode.Disabled)
       int updateSelectionCount = 0;
+      @Sync(syncMode=SyncMode.Disabled)
       int lastUpdateSelectionCount = 0;
 
+      @Sync(syncMode=SyncMode.Disabled)
       boolean updateListSelectionScheduled = false;
 
       // The updateListSelection needs to run after includeInstances has been set and the tree has been rebuilt or

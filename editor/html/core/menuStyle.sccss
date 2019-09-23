@@ -656,7 +656,7 @@ a.tooltip:hover span {
 .syntaxError {
    /* color: #f00; */
    text-decoration-line: underline;
-   text-decoration-style: wavy;
+   text-decoration-style: dotted;
    text-decoration-color: red;
 }
 

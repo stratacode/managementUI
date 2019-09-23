@@ -91,22 +91,32 @@ abstract class InstanceEditor extends TypeEditor {
       updateParentPropListener(add);
    }
 
+   void removeListeners() {
+      super.removeListeners();
+      updateParentPropListener(false);
+   }
+
    // When our instance changes, what do we need to do for the child views?
    void updateChildInsts() {
    }
 
    void updateParentPropListener(boolean add) {
-      if (oldParentProperty == parentProperty)
+      Object parentInst;
+      if (!(parentEditor instanceof InstanceEditor) || parentProperty instanceof CustomProperty)
+         parentInst = null;
+      else
+         parentInst = ((InstanceEditor)parentEditor).instance;
+
+      // No changes to the listener
+      if (oldParentProperty == parentProperty && oldParentInst == parentInst && add)
          return;
 
       if (oldParentProperty != null && oldParentInst != null) {
          Bind.removeDynamicListener(oldParentInst, ModelUtil.getPropertyName(oldParentProperty), parentPropListener, IListener.VALUE_CHANGED);
+         oldParentProperty = null;
+         oldParentInst = null;
       }
 
-      if (!(parentEditor instanceof InstanceEditor) || parentProperty instanceof CustomProperty)
-         return;
-
-      Object parentInst = ((InstanceEditor)parentEditor).instance;
       if (add && parentProperty != null && parentInst != null) {
          Bind.addDynamicListener(parentInst, ModelUtil.getPropertyName(parentProperty), parentPropListener, IListener.VALUE_CHANGED);
          oldParentProperty = parentProperty;

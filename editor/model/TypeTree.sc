@@ -23,14 +23,16 @@ import sc.dyn.DynUtil;
 import sc.sync.SyncManager;
 
 class TypeTree {
+   @Sync(syncMode=SyncMode.Disabled)
    TypeTreeModel treeModel;
+   @Sync(syncMode=SyncMode.Disabled)
    boolean byLayer = false;
 
    // Define the rootDirEnt in the model here so that rootTreeNode is never null for the the TreeView's tree property (now a
    // constructor property. This avoids null checks for the tree node. Need to set initDefault=true so that this value is synchronized to the client
    // when the TypeTree is initialized. Because it's initialized in both client and server layers, the default is to
    // not init it by default which means we are not listening for changes to the children.
-   @sc.obj.Sync(initDefault=true)
+   @Sync(initDefault=true)
    TreeEnt rootDirEnt = new TreeEnt(EntType.Root, "All Types", this, null, null);
 
    transient TypeTreeSelectionListener selectionListener;

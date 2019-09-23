@@ -115,13 +115,15 @@
          <div id="sourceView" class="codeView" visible=":= codeViewMode == CodeViewMode.Source">
             <%!
                String modelText := ctx.getModelText(selectedFile.model, selectedFile.model.cachedModelText);
-               String cmOptions = "{ \"lineNumbers\": true, \"mode\": \"text/x-java\", \"matchBrackets\": true, \"keyMap\": \"vim\"}";
-               CodeMirror cm = CodeMirror.createFromTextArea(sourceTextArea.getId(), cmOptions, new CodeMirror.IEditorEventListener() {
+               CodeMirror cm = CodeMirror.createFromTextArea(sourceTextArea.getId(), new CodeMirror.IEditorEventListener() {
                                   void contentChanged() {
                                      modelTextEdited();
                                   }
                                   void cursorChanged() {
                                      ctx.setMemoryEditCaretPosition(model, cm.cursorIndex);
+                                  }
+                                  sc.dyn.RemoteResult getSuggestionsForPos(int cursorPos) {
+                                     return DynUtil.invokeRemote(null, null, null, ctx, DynUtil.resolveRemoteMethod(ctx, "getSuggestionsForPos", Object.class, "Lsc/layer/SrcEntry;I"), selectedFile.file, cursorPos);
                                   }
                                });
                modelText =: cm.updateContent(modelText, selectedFile.file.relFileName, editorModel.ctx.getMemoryEditCaretPosition(selectedFile.file));
