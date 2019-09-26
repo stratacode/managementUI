@@ -233,10 +233,34 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
                         prop = null;
                         break;
                      }
-                     prop = prevProp;
-                     propLayer = ModelUtil.getPropertyLayer(prop);
-                     if (propLayer == null)
+
+                     // TODO: should we ensure that getPreviousDefinition does not return a reverse only binding instead so it can find the real overriden property in this layer?
+                     if (ModelUtil.isReverseBinding(prevProp)) {
                         prop = null;
+                        break;
+                     }
+
+                     // Make sure the prev prop is not already in the list
+                     boolean inList = false;
+                     for (Object newProp:newProps) {
+                        if (newProp == prevProp) {
+                           inList = true;
+                           break;
+                        }
+                     }
+                     if (!inList) {
+                        propLayer = ModelUtil.getPropertyLayer(prop);
+                        if (propLayer != null)
+                           prop = prevProp;
+                        else {
+                           prop = null;
+                           break;
+                        }
+                     }
+                     else {
+                        prop = null;
+                        break;
+                     }
                   }
                   if (prop == null)
                      continue;
