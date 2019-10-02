@@ -1,4 +1,4 @@
-package sc.html.tag;
+package sc.html;
 
 public editor.html.mixin extends editor.html.core {
    hidden = !layeredSystem.options.editEditor;  

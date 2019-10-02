@@ -1,6 +1,4 @@
-<%@ 
-@sc.js.JSSettings(jsModuleFile="js/sceditor.js") %>
-<html>
+<html abstract="true">
 
 <head>
   <!-- for javascript pretty printing -->
