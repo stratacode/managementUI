@@ -94,7 +94,7 @@ InstanceEditor {
 
          // TODO: is this necessary? It seems like it might be more efficient if the entire chain is set up before
          // we start delivering the change events.
-         BindingContext oldCtx = BindingContext.queueEvents();
+         BindingContext oldCtx = BindingContext.queueEvents(false);
          try {
             if ((gridChanged || anyChanges)) {
                int ix = 0;

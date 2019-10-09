@@ -39,11 +39,9 @@ import sc.lang.ModelError;
 
 @Sync(syncMode=sc.obj.SyncMode.Automatic)
 public editor.model extends util, gui.util.core, sys.layeredSystem {
-   //defaultSyncMode = sc.obj.SyncMode.Automatic;
    codeType = CodeType.Model;
 
-   // This layer depends on both JS and Java but we do not want extending layers to pick up 
-   // these dependencies
+   // This layer depends on both JS and Java but we do not want extending layers to inherit these dependencies
    exportRuntime = false;
    inheritRuntime = false;
 
