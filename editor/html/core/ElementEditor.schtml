@@ -5,7 +5,7 @@
    // method - it will set errorText when the remote result is received.
    elementSubmitCount =: instanceMode && !editorModel.pendingCreate ?
       errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue) :
-      errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !instanceMode, instanceMode, formEditor.instance == null);
+      errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !instanceMode, true, formEditor.instance == null);
    String elemClass;
 
    repeatIndex =: listIndex;
