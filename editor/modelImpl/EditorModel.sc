@@ -24,7 +24,7 @@ import sc.parser.ParseUtil;
 
 EditorModel {
    /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
-   @Bindable(crossScope=true)
+   @Bindable(crossScope=true, sameValueCheck=true)
    BodyTypeDeclaration currentCtxType := ctx.currentType;
 
    override @Bindable(crossScope=true)
@@ -304,6 +304,10 @@ EditorModel {
 
       currentType = filteredType;
 
+      // currentCtxType is how we receive changes from the EditorContext - the command line usually so keep it in sync
+      if (filteredType instanceof BodyTypeDeclaration)
+         setCurrentCtxTypeNoEvent((BodyTypeDeclaration) filteredType);
+
 // Clear out any selected property.
       currentProperty = null;
       currentPropertyType = currentType;
@@ -356,6 +360,11 @@ EditorModel {
    @sc.obj.ManualGetSet
    private void setVisibleTypesNoEvent(ArrayList<Object> visTypes) {
       visibleTypes = visTypes;
+   }
+
+   @sc.obj.ManualGetSet
+   private void setCurrentCtxTypeNoEvent(BodyTypeDeclaration type) {
+      currentCtxType = type;
    }
 
    private void addInterfaceLayerTypes(BodyTypeDeclaration rootTD, ArrayList<Layer> newFilteredLayers, List<Object> inheritedTypes) {
@@ -1177,12 +1186,13 @@ EditorModel {
                      currentInstance = inst;
                      ArrayList<InstanceWrapper> selInsts = new ArrayList<InstanceWrapper>();
                      Map<String,Object> pendingValues = currentWrapper.pendingValues;
+
+                     currentWrapper.pendingCreate = false;
+
                      // Currently we don't serialize changes made to the InstanceWrapper... they get created on either side so maybe it's simpler just to create a new one
                      currentWrapper = currentWrapper.copyWithInstance(inst);
                      selInsts.add(currentWrapper);
                      selectedInstances = selInsts; // NOTE: make sure the value is defined before setting because it's bound to another property
-
-                     currentWrapper.pendingCreate = false;
 
                      // Register the instance with the dynamic type system so it is returned by getInstancesOfType
                      DynUtil.addDynInstance(currentWrapper.typeName, inst);
