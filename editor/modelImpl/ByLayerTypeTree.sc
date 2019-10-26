@@ -2,7 +2,7 @@ import sc.layer.LayerIndexInfo;
 
 ByLayerTypeTree {
    rootDirEnt = new TreeEnt(EntType.Root, "By Layer", this, null, null);
-   rootTreeNode = new TreeNode(rootDirEnt);
+   rootTreeNode = createTreeNode(rootDirEnt);
 
    TreeEnt addModel(ILanguageModel m, boolean prependPackage) {
       Layer layer = m.layer;
