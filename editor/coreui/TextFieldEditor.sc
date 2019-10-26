@@ -2,6 +2,9 @@ class TextFieldEditor extends ElementEditor {
     abstract String getElementStringValue();
 
     public Object getElementValue() {
-        return sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), elementStringValue);
+       if (instanceMode)
+          return sc.type.Type.propertyStringToValue(ModelUtil.getPropertyType(propC), elementStringValue);
+       else
+          return elementStringValue;
     }
 }
