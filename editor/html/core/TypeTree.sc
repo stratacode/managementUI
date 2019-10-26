@@ -156,4 +156,9 @@ TypeTree {
        //updatePackageContents(ents, treeNode, !isTypeTree());
    }
 
+   TreeNode createTreeNode(TreeEnt ent) {
+      return new TreeNode(ent);
+   }
+
+
 }

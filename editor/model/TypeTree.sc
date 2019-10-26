@@ -41,7 +41,7 @@ class TypeTree {
 
    // These are transient so they are not synchronized from client to the server.  That's
    // because we will build these data structures on the server or client
-   transient TreeNode rootTreeNode = new TreeNode(rootDirEnt);
+   transient TreeNode rootTreeNode = createTreeNode(rootDirEnt);
 
    transient Map<String, List<TreeNode>> rootTreeIndex = new HashMap<String, List<TreeNode>>();
 
@@ -78,6 +78,8 @@ class TypeTree {
    EditorModel getEditorModel() {
       return treeModel.editorModel;
    }
+
+   abstract TreeNode createTreeNode(TreeEnt ent);
 
    // Disabling because this type is not sync'd to the client in this configuration.  Instead we sync the TreeEnt's
    // and then filter then on the client to produce the TreeNodes.  The TreeNodes correspond to UI objects and so

@@ -213,4 +213,8 @@ TypeTree {
       }
       return -1;
    }
+
+   TreeNode createTreeNode(TreeEnt ent) {
+      return new TreeNode(ent);
+   }
 }
