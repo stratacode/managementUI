@@ -9,7 +9,8 @@
 
       Object currentType;
 
-      // This follows only the value the user enters. The inputValue property may be set externally, like changing the type
+      // This follows only the value the user enters and only runs on the client. The inputValue property may be set externally, like changing the type
+      override @Exec(clientOnly=true)
       userText =: updateSuggestPrefix();
 
       long lastUpdateTime = -1;
