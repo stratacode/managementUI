@@ -32,7 +32,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    int windowState = 0; // 0 = iconified, 1 = open, 2 = maximized
 
    /** Set to the current layer */
-   @Bindable(crossScope=true)
+   @Bindable(crossScope=true, sameValueCheck=true)
    Layer currentLayer :=: ctx.currentLayer;
 
    /** The current type */
@@ -153,6 +153,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    ArrayList<CodeType> codeTypes = new ArrayList(CodeType.allSet);
 
+   @Bindable(sameValueCheck=true)
    EditorContext ctx;
 
    boolean triggeredByUndo; // When a type change occurs because of an undo operation we do not want to record that op in the redo list again.
