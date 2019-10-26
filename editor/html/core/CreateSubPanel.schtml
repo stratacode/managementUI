@@ -4,8 +4,8 @@
       }
    %>
    <span abstract="true" id="PanelConfirmButtons" extends="ConfirmButtons" enabled=":= createPanel.confirmButtonsEnabled">
-      <a id="okButton" clickCount="=: doSubmit() "/>
-      <a id="cancelButton" clickCount="=: createPanel.clearForm() "/>
+      <a id="okButton" clickEvent="=: doSubmit() "/>
+      <a id="cancelButton" clickEvent="=: createPanel.clearForm() "/>
    </span>
    <span id="row1"/>
    <span id="row2"/>
