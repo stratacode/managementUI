@@ -1,19 +1,21 @@
 <%@
    @sc.obj.CompilerSettings(constructorProperties="tree")
 %>
-<li class=':= tree.hasChildren ? (tree.ent.open ? "sctTreeNode sctParentOpen" : "sctTreeNode sctParentClosed") : "sctTreeNode sctLeaf"'>
+<li class=':= "sctTreeNode " + (tree.hasChildren ? (tree.ent.open ? "sctParentOpen" : "sctParentClosed") : "sctLeaf")'>
    <%! TypeTree.TreeNode tree; %>
 
    <span class=':= tree.ent.selected ? "selectedItem" : ""'>
       <a href="#" clickEvent="=: tree.ent.toggleOpen()">
-         <img height="18" width="18" src=':= tree.ent.open ? "/images/listClose.png" : "/images/listOpen.png"' visible=':= tree.needsOpenClose' style="vertical-align:-4px">
+         <img height="18" width="18" src=':= tree.ent.open ? "/images/listClose.png" : "/images/listOpen.png"'
+              visible=':= tree.needsOpenClose' style="vertical-align:-4px">
       </a>
       <a href="#" clickEvent="=: tree.ent.selectType(false)">
-         <img src='= tree.ent.icon == null ? "" : tree.ent.icon.path' visible=":= tree.ent.icon != null" style="vertical-align:-3px">
+         <img src='= tree.ent.icon == null ? "" : tree.ent.icon.path' visible=":= tree.ent.icon != null"
+              style="vertical-align:-3px">
          <%= tree.ent.nodeId %>
       </a>
    </span>
    <ol visible=":= tree.hasChildren" class=':= tree.ent.open ? "sctOpen" : "sctClosed"'>
-      <li repeat=":= tree.children"  repeatVarName="childTree" extends="TreeView" tree=":= childTree"/>
+      <li repeat=":= tree.children" repeatVarName="childTree" extends="TreeView" tree=":= childTree"/>
    </ol>
 </li>
