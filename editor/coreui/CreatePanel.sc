@@ -58,13 +58,13 @@ class CreatePanel {
       }
       else if (createSubPanel != null) {
          removeSubPanel(createSubPanel);
-         createSubPanel = null;
       }
       modeChangeComplete();
    }
 
    void removeSubPanel(CreateSubPanel panel) {
       DynUtil.disposeLater(createSubPanel, true);
+      createSubPanel = null;
    }
 
    void addSubPanel(CreateSubPanel panel) {
@@ -118,4 +118,6 @@ class CreatePanel {
       opComplete++;
    }
 
+   // This method is overridden in a context where EditorPanel is available.
+   void ensureViewType(ViewType type) {}
 }

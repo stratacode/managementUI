@@ -146,7 +146,8 @@ class TypeTreeModel {
       if (refreshInProgress || valid)
          return;
 
-      includeInstances = !propertyMode && !createMode && !addLayerMode && !createLayerMode && viewType == ViewType.DataViewType;
+      //includeInstances = !propertyMode && !createMode && !addLayerMode && !createLayerMode == ViewType.DataViewType;
+      includeInstances = true;
 
       refreshInProgress = true;
       valid = true;

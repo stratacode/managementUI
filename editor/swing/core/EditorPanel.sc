@@ -583,6 +583,10 @@ EditorPanel extends JPanel implements EditorPanelStyle {
          size := SwingUtil.dimension(statusPanel.size.width - editStart, statusPanelHeight);
 
          opComplete =: editFieldPanel.currentTypeTextField.requestFocus();
+
+         void ensureViewType(ViewType type) {
+            EditorPanel.this.ensureViewType(type);
+         }
       }
    }
 

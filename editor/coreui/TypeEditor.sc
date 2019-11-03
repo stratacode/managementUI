@@ -291,6 +291,9 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       type = newType;
       updateClassViewLayer();
       setElemToEdit(newType);
+
+      // For object instances that are defined directly by source, edit the type, not the instance
+      editInstances = instanceMode && !ModelUtil.isObjectType(newType);
    }
 
    void updateClassViewLayer() {
@@ -340,6 +343,7 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    }
 
    boolean instanceMode := parentView.instanceMode;
+   boolean editInstances;
 
    String getEditorType(Object prop, Object propType, Object propInst, boolean instMode) {
       // When editing the type, things are simple - it's just forms for sub-types and text fields for properties for the init expr
@@ -446,11 +450,14 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    }
 
    int getDefaultCellWidth(String editorType, Object prop, Object propType) {
+      // TODO: add an EditorSetting for cellWidth on the property so this is configurable
       if (editorType.equals("text") || editorType.equals("textArea") || editorType.equals("list")) {
          if (propType instanceof Class) {
             if (sc.type.Type.get((Class)propType).isANumber())
                return 100;
          }
+         if (editorType.equals("text"))
+            return 200;
          return 400;
       }
       else if (editorType.equals("ref") || editorType.equals("form") || editorType.equals("choice"))

@@ -293,8 +293,10 @@ EditorModel {
          if (ctxCurrentType == null || layer == null || !newFilteredLayers.contains(layer)) {
             if (currentInstance != null)
                ctx.setDefaultCurrentObj((BodyTypeDeclaration) filteredType, currentInstance);
-            else if (ctxCurrentType == null || !ModelUtil.isAssignableFrom(filteredType, ctxCurrentType))
+            else if (ctxCurrentType == null || !ModelUtil.sameTypes(filteredType, ctxCurrentType)) {
                ctx.currentType = (BodyTypeDeclaration) filteredType;
+               setCurrentCtxTypeNoEvent((BodyTypeDeclaration) filteredType);
+            }
             else {
                // there was a more specific type in the context so we'll use that here
             }
@@ -303,10 +305,6 @@ EditorModel {
       // else - we are not updating ctx.currentType here - so these two are not in sync when it's a compiled class or the matched type is not in a visible layer.  TODO: not sure this is right.
 
       currentType = filteredType;
-
-      // currentCtxType is how we receive changes from the EditorContext - the command line usually so keep it in sync
-      if (filteredType instanceof BodyTypeDeclaration)
-         setCurrentCtxTypeNoEvent((BodyTypeDeclaration) filteredType);
 
 // Clear out any selected property.
       currentProperty = null;
@@ -477,14 +475,16 @@ EditorModel {
                      f.model = javaModel;
                      f.layer = currentLayer;
                      selectedFileIndex.put(ent.absFileName, f);
-                     selectedFileList.add(f);
+
+                     if (editAllFiles || selectedFileList.size() == 0)
+                        selectedFileList.add(f);
                   }
                   if (!f.types.contains(type))
                      f.types.add(type);
                }
             }
          }
-      } 
+      }
    }
 
    private void addInterfaceNewTypeLayers(BodyTypeDeclaration rootTD, ArrayList<Layer> newTypeLayers) {
@@ -690,12 +690,16 @@ EditorModel {
          if (fullTypeName != null)
             return null;
 
+         Object type = findType(typeName);
          if (!instType) {
-            if (findType(typeName) != null) {
+            if (type != null) {
                return null;
             }
          }
-         return "No type named: " + typeName;
+         if (instType && type != null)
+            return "Type: " + typeName + " missing EditorCreate annotation";
+         else
+            return "No type named: " + typeName;
       }
    }
 
@@ -978,9 +982,9 @@ EditorModel {
       if (StringUtil.isEmpty(propertyTypeName)) {
          return "Select a data type for the new property";
       }
-      Object ownerType = findType(ownerTypeName);
+      Object ownerType = findTypeWithClassName(ownerTypeName);
       if (ownerType == null) {
-         return "No type: " + ownerTypeName;
+         return "No owner type for property: " + ownerTypeName;
       }
       String err = ctx.addProperty(ownerType, propertyTypeName, name, operator, propertyValue, addBefore, relPropertyName);
       return err;
@@ -1011,6 +1015,13 @@ EditorModel {
             return null;
          }
       }
+   }
+
+   private Object findTypeWithClassName(String classOrTypeName) {
+      String fullTypeName = ctx.getCreateInstFullTypeName(classOrTypeName);
+      if (fullTypeName != null)
+         return DynUtil.findType(fullTypeName);
+      return DynUtil.findType(classOrTypeName);
    }
 
    public String createInstance(String typeName) {
@@ -1068,7 +1079,7 @@ EditorModel {
          outerType = null;
       }
       else {
-         outerType = findType(outerTypeName);
+         outerType = findTypeWithClassName(outerTypeName);
          if (outerType == null) {
             return "No outer type: " + outerTypeName;
          }

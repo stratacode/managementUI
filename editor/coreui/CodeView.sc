@@ -24,6 +24,7 @@ class CodeView extends BaseView {
          List<CodeEditor> editors = getEditors();
 
          Collection<EditorModel.SelectedFile> col = editorModel.selectedFileList;
+
          int sz = col.size();
          int edSz = editors == null ? 0 : editors.size();
          if (sz == edSz) {
@@ -106,10 +107,6 @@ class CodeView extends BaseView {
       */
 
       int[] typeOffsets := editorModel.getTypeOffsets(file);
-
-      int fileHeight;
-
-      int defaultHeight;
 
       void removeEditor() {
          DynUtil.dispose(this);

@@ -13,12 +13,21 @@
 
    boolean twoColumns := pageWidthPix > 500;
    double treeWidthPer := twoColumns ? 35.0 : 95.0;
-   double currentTypeFieldWidthPer = treeWidthPer - 5;
 
    int editorFrameWidth = -1;
-   int splitThumbWidth = 8; // percentage of the splitBarWidth
-   int splitThumbHeight = 6;
-   int splitBarWidth = 20; // percentage of the treeWidth
+
+   // Horizontal thumb for the tree splitter
+   int horizSplitThumbWidthPer = 8; // percentage of the splitBarWidth
+   int horizSplitThumbWidth = 8; // pixels for splitBarWidth
+   int horizSplitThumbHeight = 6;
+   int horizSplitBarWidth = 20; // percentage of the treeWidth
+
+   // Vertical thumb for the tree/view splitter
+   int vertSplitThumbHeightPer = 8;
+   int vertSplitThumbHeight = 8;
+   int vertSplitThumbWidth = 4;
+   int vertSplitBarHeight = 30; // pixels
+
    int leftPad = 3;
    int leftPad2 = 2;
    int buttonLeftPad := windowState == 0 ? 4 : leftPad2;
@@ -33,14 +42,13 @@
    double panePadding = 12; // pane margin and padding
    
    String editorViewWidth := twoColumns ? "63.7%" : "99%";
-   String editorViewLeft := (twoColumns ? treeWidthPer + 0.5 : 0.3) + "%";
    double bodyHeightPer := 100 - 2*bodyMarginHPer;
-   double editorPanelWidthPer = 99;
+   double editorPanelWidthPer = 99.7;
    double editorPanelHeightPix := pageHeightPix - menubarHeightPix;
    double editorPanelHeightPer := editorPanelHeightPix / (double) pageHeightPix * 100.0;
    double viewPanelHeightPix := (editorPanelHeightPix - toolbarHeightPix - statusBarHeightPix) / (twoColumns ? 1.0 : 2.0);;
    double viewPanelHeightPer := viewPanelHeightPix / editorPanelHeightPix * 100.0;
-   double viewPanelWidthPer := 100.0 - (twoColumns ? treeWidthPer : 0) - 1;
+   double viewPanelWidthPer := 100.0 - (twoColumns ? treeWidthPer : 0) - 2;
    double treeHeightPix := viewPanelHeightPix - 12;
    double treeHeightPer := treeHeightPix / editorPanelHeightPix * 100.0;
    double layerScrollPix = 50; 
@@ -48,7 +56,7 @@
    double editorViewHeightPer := editorViewHeightPix * 100.0 / viewPanelHeightPix;
    double codeViewHeightPix := editorViewHeightPix - 32;
    double codeViewHeightPer := codeViewHeightPix * 100.0 / editorViewHeightPix;
-   double treePanePix := (treeHeightPix - splitThumbHeight - panePadding) * 0.5;
+   double treePanePix := (treeHeightPix - horizSplitThumbHeight - panePadding) * 0.5;
    double treePanePer := treePanePix / treeHeightPix * 100.0;
    String editorViewHeight := editorViewHeightPer + "%";;
    String treeHeight := treeHeightPer + "%"; 
@@ -171,6 +179,7 @@ body {
    border: 1px solid <%= borderColor %>;
    margin: <%= leftPad2 %>px <%= leftPad2 %>px <%= leftPad2 %>px <%= buttonLeftPad %>px;
    display: inline-block;
+   font-size: smaller;
 }
 
 .toolbarButton {
@@ -182,7 +191,7 @@ body {
 }
 
 .layerSelectButton {
-   padding: 3px 5px 3px 5px;
+   padding: 2px 2px 2px 2px;
    border-radius: 3px;
    background: #fff;
    user-select: none;
@@ -232,33 +241,57 @@ body {
    border: 1px solid #000;
 }
 
-.horizSplitBar, #dragSplitter {
+.horizSplitBar, #horizDragSplitter {
    margin-top: 1px;
    margin-bottom: 1px;
-   height: <%= splitThumbHeight %>px;
+   height: <%= horizSplitThumbHeight %>px;
    cursor: row-resize;
    background-color: #ccc;
 }
 
 .horizSplitThumb {
-   margin-left: <%= (100 - splitThumbWidth) / 2 %>%;
-   width: <%= splitThumbWidth %>px;
+   margin-left: <%= (100 - horizSplitThumbWidthPer) / 2 %>%;
+   width: <%= horizSplitThumbWidth %>px;
    background-color: #aaa;
    margin-top: 1px;
    height: 5px;
    margin-bottom: 1px;
 }
 
-.dragSplitter {
+.horizDragSplitter {
    width: <%= treeWidthPer %>%;
 }
 
 .horizSplitBar {
-   margin-left: <%= (100 - splitBarWidth) / 2 %>%;
-   width: <%= splitBarWidth %>%;
+   margin-left: <%= (100 - horizSplitBarWidth) / 2 %>%;
+   width: <%= horizSplitBarWidth %>%;
 }
 
-.splitList div {
+.vertSplitBar, #vertDragSplitter {
+   float: left;
+   margin-left:  1px;
+   margin-right: 1px;
+   width: <%= vertSplitThumbWidth+2 %>px;
+   cursor: col-resize;
+   background-color: #ccc;
+}
+
+.vertSplitThumb {
+   margin-top: <%= (vertSplitBarHeight - vertSplitThumbHeight)/2 %>px;
+   height: <%= vertSplitThumbHeight %>px;
+   background-color: #aaa;
+   margin-left: 1px;
+   width: 4px;
+   margin-right: 1px;
+}
+
+.vertDragSplitter {
+   height: <%= treeHeightPer %>%;
+}
+
+.vertSplitBar {
+   margin-top: <%= treePanePix + (horizSplitThumbHeight)/2 + 6 - vertSplitBarHeight / 2 %>px;
+   height: <%= vertSplitBarHeight %>px;
 }
 
 #editorPanel {
@@ -317,7 +350,7 @@ a.tooltip:hover span {
 }
 
 .appFrame {
-   <%= windowState == 1 ? "float:left; padding-right: 10px; height: auto; " : windowState == 2 ? "height: 50%; padding-right: 0px" : "height: auto; padding-right: 0px" %>
+   <%= windowState == 1 ? "float:left; padding-right: 10px; padding-bottom: 10px; height: auto; " : windowState == 2 ? "height: 50%; padding-right: 0px" : "height: auto; padding-right: 0px" %>
 }
 
 #trees {
@@ -328,7 +361,7 @@ a.tooltip:hover span {
 }
 
 #viewPanel {
-   margin-left: <%= editorViewLeft %>;
+   float: left;
    height: <%= viewPanelHeightPer %>%;
    width: <%= viewPanelWidthPer %>%;
 }
@@ -388,11 +421,18 @@ a.tooltip:hover span {
 
 
 .fileLabel {
-   height: 10%;
    min-height: 20px;
+   padding: 5px 5px 5px 5px;
+}
+
+.fileLabelText {
+   font-size: smaller;
+   display: inline-block;
    white-space: nowrap;
    overflow: hidden;
-   padding: 5px 5px 5px 5px;
+   text-overflow: ellipsis;
+   width: 68%;
+   vertical-align: middle;
 }
 
 .classView {
@@ -461,7 +501,7 @@ a.tooltip:hover span {
 }
 
 .formFieldValue {
-   width: <%= 100 - formLabelPer - 3 %>%;
+   width: <%= 100 - formLabelPer - 1.8 %>%;
 }
 
 .formScroll {
@@ -472,14 +512,17 @@ a.tooltip:hover span {
 }
 
 .formEditor, .listEditor {
-   clear: both;
-   margin-left: 17px;
-   margin-bottom: 15px;
-   margin-top: 5px;
-   margin-right: 20px;
    border: 2px solid #fff;
    border-style: groove;
-   padding: 8px 0px 8px 8px;
+}
+
+.formEditor, .listEditor, .refEditor {
+   clear: both;
+   margin-left: 2px;
+   margin-bottom: 2px;
+   margin-top: 2px;
+   margin-right: 2px;
+   padding: 3px 0px 3px 3px;
 }
 
 .listScroll {
@@ -507,7 +550,7 @@ a.tooltip:hover span {
 .elementEditor {
    clear: both;
    padding-top: 2px;
-   padding-bottom: 6px;
+   padding-bottom: 3px;
 }
 
 #fieldValueEditor input {
@@ -601,10 +644,10 @@ a.tooltip:hover span {
    border-bottom: 1px solid #000;
    overflow: hidden;
    text-overflow: ellipsis;
-   padding-left: 5px;
-   padding-right: 5px;
-   padding-top: 5px;
-   padding-bottom: 5px;
+   padding-left: 2px;
+   padding-right: 2px;
+   padding-top: 2px;
+   padding-bottom: 2px;
 }
 
 .textCell {
@@ -662,4 +705,8 @@ a.tooltip:hover span {
 
 .notFound {
    color: #f00;
+}
+
+.instanceSelect {
+   max-width: 200px;
 }

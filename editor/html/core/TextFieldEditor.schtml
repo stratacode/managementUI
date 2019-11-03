@@ -12,6 +12,8 @@
       if (!textFieldForm.textField.value.equals(currentStringValue)) {
          elementSubmitCount++;
       }
+      else if (!DynUtil.equalObjects(currentStringValue, errorStringValue))
+         errorText = "";
    }
 %>
    <form id="textFieldForm" submitEvent="=: elementSubmitCount = elementSubmitCount + 1" style="display:inline">

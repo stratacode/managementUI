@@ -149,6 +149,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    }
 
    LinkedHashMap<String, SelectedFile> selectedFileIndex; // Groups selected, filtered types by the files they live in for the code view
+
+   // The selected files can contain merged base types - we have the option of editing them all or just the main one
+   boolean editAllFiles = false;
+
    ArrayList<SelectedFile> selectedFileList;
 
    ArrayList<CodeType> codeTypes = new ArrayList(CodeType.allSet);
@@ -346,6 +350,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          return true;
       if (prop instanceof CustomProperty)
          return ((CustomProperty) prop).isConstant();
+      // For a getX only method - no way to set it
+      if (prop instanceof VariableDefinition && !(((VariableDefinition) prop).getWritable()))
+         return true;
       return ModelUtil.hasAnnotation(prop, "sc.obj.Constant") || ModelUtil.hasModifier(prop, "final");
    }
 

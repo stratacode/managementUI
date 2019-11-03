@@ -312,4 +312,8 @@ class EditorPanel {
       }
    }
 
+   void ensureViewType(ViewType type) {
+      if (viewType != type)
+         viewType = type;
+   }
 }

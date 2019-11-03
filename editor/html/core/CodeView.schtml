@@ -95,7 +95,7 @@
                <option disabled=":= !((CodeViewMode) optionData).isAvailableList(editorModel.selectedFileList)"><%= optionData %></option>
             </select>
          </span>
-         <%= fileText %>
+         <span id="fileLabelText" class="fileLabelText"><%= fileText %></span>
          <span id="codeViewConfirm" class="codeViewConfirm" extends="ConfirmButtons" enabled=":= editorHasChanges" cancelEnabled=":= enabled">
             <a id="okButton" clickEvent="=: editorModel.commitMemorySessionChanges()"/>
             <a id="cancelButton" clickEvent="=: editorModel.ctx.cancelMemorySessionChanges()"/>

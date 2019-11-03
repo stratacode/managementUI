@@ -71,6 +71,9 @@
       </ul>
    </div>
 
+   <div id="vertSplitBar" class="vertSplitBar" extends="VertSplitBar" splitPercent="=: menuStyle.treeWidthPer"
+         parentWidth=":= EditorPanel.this.offsetWidth" prevWindowWidth=":= trees.offsetWidth" visible=":= menuStyle.twoColumns"/>
+
    <div id="viewPanel" visible=":= windowState != 0">
       <div id="layerScroll">
          <span id="layersLabel" visible=":= editorModel.typeLayers.size() > 0">Layers</span>
@@ -100,10 +103,14 @@
    <div style="clear:both;"/>
 
    <div id="statusPanel" visible=":= windowOpen">
-      <a clickEvent="=: editorModel.createMode = !editorModel.createMode"><img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/></a>
+      <a clickEvent="=: editorModel.createMode = !editorModel.createMode" tabindex=":= editorModel.createMode ? -1 : 0" ><img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/></a>
 
       <span id="editFieldPanel" extends="EditFieldPanel" visible=":= !editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>
-      <span id="createPanel" extends="CreatePanel" visible=":= editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>
+      <span id="createPanel" extends="CreatePanel" visible=":= editorModel.createMode"
+            editorModel=":= EditorPanel.this.editorModel"><%!
+                void ensureViewType(ViewType type) {
+                   EditorPanel.this.ensureViewType(type);
+                } %></span>
    </div>
 
 </div>

@@ -1,0 +1,115 @@
+<div mouseDownMoveUp="=: mouseEvent(mouseDownMoveUp)"  >
+   <%!
+      // Initialize this component either with splitHeight in pixels or splitPercent in % of the parent element.  Both of these are set and can be bound to as well.
+      double splitWidth = 0.0;
+      double splitPercent;
+      // Borders of the parent element determine how much percentage wise belongs to each half.  
+      double maxPercent = 94;
+      boolean pressed = false;
+      double pressX, pressY;
+      double dragLeft, dragTop, dragWidth;
+      double minWidth = 10;
+      double minPercent = 10;
+      // To choose the initial splitter position (when not initialized), we look at the width of the left window minus this padding amount.
+      double splitWindowPadding = -60;
+
+      //double prevWindowHeight := previousElementSibling.offsetHeight;
+      //double parentHeight := enclosingTag.offsetHeight;
+      double prevWindowWidth;
+      double parentWidth;
+
+      boolean smoothSplitter = true;
+
+      void mouseEvent(MouseEvent event) {
+         if (event.button != 0)
+            return;
+         if (event.type.equals("mousedown")) {
+            if (!pressed) {
+               pressed = true;
+               pressX = event.clientX;
+               pressY = event.clientY;
+
+               // Starting position for the splitter icon is the same as the splitter tag itself
+               dragLeft = offsetLeft;
+               dragTop = offsetTop;
+               dragWidth = offsetWidth;
+
+               if (splitWidth == 0.0 && splitPercent != 0)
+                  splitWidth = parentWidth * (splitPercent / maxPercent);
+               // the percentage maps to the height of the containing block
+               //maxPercent = 100 - 100 * splitWindowPadding / parentHeight;
+               System.out.println("Press vertical split bar - press: " + pressX + "," + pressY + " dragStart: " + dragLeft + "," + dragTop + " dragWidth=" + dragWidth + " splitWidth=" + splitWidth);
+            }
+            else if (!smoothSplitter) {
+               dragLeft = offsetLeft + event.clientX - pressX;
+               dragTop = offsetTop;
+            }
+            event.preventDefault();
+         }
+         else if (event.type.equals("mousemove")) {
+            if (pressed) {
+               if (smoothSplitter) {
+                  moveSplitter(event);
+                  pressX = event.clientX;
+                  pressY = event.clientY;
+               }
+               else {
+                  dragTop = offsetTop;
+                  dragLeft = offsetLeft + event.clientX - pressX;
+               }
+               event.preventDefault();
+            }
+         }
+         else if ((event.type.equals("mouseup"))) {
+             if (pressed) {
+                moveSplitter(event);
+                pressed = false;
+                event.preventDefault();
+             }
+         }
+         else
+            System.err.println("*** Error");
+      }
+
+      boolean isUnset() {
+         return splitWidth == 0.0 && splitPercent == 0;
+      }
+
+      void moveSplitter(MouseEvent event) {
+         Element prevSib = this.previousElementSibling;
+         // Something messed up in the DOM for this tree.
+         if (prevSib == null) {
+            return;
+         }
+         if (isUnset())
+            System.out.println("*** Unset using - prevWindowWidth: " + prevWindowWidth);
+         else
+            System.out.println("*** Using - splitWidth: " + splitWidth);
+
+         double oldW = isUnset() ? prevWindowWidth - splitWindowPadding : splitWidth;
+          //double oldH = splitHeight == 0.0 ? 0 : splitHeight;
+         double newWidth = oldW + (event.clientX - pressX);
+         double midWidth = parentWidth / 2;
+         double min = Math.min(minWidth, midWidth);
+         if (newWidth < min) {
+            splitWidth = min;
+         }
+         else if (newWidth > parentWidth - min)
+            splitWidth = parentWidth - min;
+         else
+            splitWidth = newWidth;
+         splitPercent = splitWidth / (parentWidth - 2*splitWindowPadding) * maxPercent;
+         if (splitPercent > maxPercent)
+            splitPercent = maxPercent - minPercent;
+         else if (splitPercent < 0)
+            splitPercent = minPercent;
+         System.out.println("Setting splitWidth=" + newWidth + " splitPercent=" + splitPercent + " parentWidth=" + parentWidth);
+      }
+
+    %>
+
+    <div class="vertSplitThumb"></div>
+    <div id="vertDragSplitter" style=':= "z-index: 99; position: absolute; left: " + dragLeft + "px; top: " + dragTop + "px; width: " + dragWidth + "px;"' visible=":= pressed && !smoothSplitter">
+       <div class="vertSplitThumb"></div>
+    </div>
+</div>

@@ -22,7 +22,7 @@ class ListEditor extends InstanceEditor {
    ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
       instList = insts;
-      componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayComponentType(type));
+      componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayOrListComponentType(type));
       componentTypeChanged();
       refreshVisibleList();
    }
@@ -51,7 +51,7 @@ class ListEditor extends InstanceEditor {
 
    @sc.obj.ManualGetSet // NOTE: get/set conversion not performed when this annotation is used
    void updateEditor(Object elem, Object prop, Object propType, Object inst, int ix, InstanceWrapper wrapper) {
-      Object compType = resolveSrcTypeDeclaration(ModelUtil.getArrayComponentType(elem));
+      Object compType = resolveSrcTypeDeclaration(ModelUtil.getArrayOrListComponentType(propType));
       setTypeNoChange(prop, compType);
       componentType = compType;
       componentTypeChanged();

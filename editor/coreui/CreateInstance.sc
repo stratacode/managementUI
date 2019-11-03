@@ -14,6 +14,7 @@ class CreateInstance extends CreateSubPanel {
 
    newTypeSelected =: propertyTypeName;
 
+   submitCount =: createPanel.ensureViewType(ViewType.DataViewType);
    submitCount =: displayCreateError(editorModel.startOrCompleteCreate(propertyTypeName), editorModel.pendingCreate);
 
    row2Visible = false;
@@ -33,8 +34,9 @@ class CreateInstance extends CreateSubPanel {
 
    void displayCreateError(String err, boolean pendingCreate) {
       if (err == null || err.length() == 0) {
-         if (pendingCreate)
+         if (pendingCreate) {
             createPanel.clearTextFields();
+         }
          else {
             createPanel.clearForm();
          }

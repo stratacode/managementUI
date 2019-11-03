@@ -22,7 +22,7 @@ class CreateProperty extends CreateSubPanel {
          createPanel.displayCreateError("Select a type for the new instance");
       }
       else {
-         ownerTypeName = editorModel.typeNames[0];
+         ownerTypeName = CTypeUtil.getClassName(editorModel.typeNames[0]);
       }
    }
 

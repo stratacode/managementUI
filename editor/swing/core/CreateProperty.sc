@@ -43,7 +43,7 @@ CreateProperty {
 
    object inTypeCombo extends JComboBox {
    // TODO: should we add another type group for this - extendable types?
-      items := editorModel.ctx.getCreateInstTypeNames();
+      items := editorModel.ctx.getCreateInstClassNames();
       location := SwingUtil.point(inLabel.location.x + inLabel.size.width + xpad, ypad);
       size := preferredSize;
       selectedItem =: editorModel.updateCurrentType((String)selectedItem);

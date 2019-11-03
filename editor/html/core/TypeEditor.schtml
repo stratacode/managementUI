@@ -1,6 +1,7 @@
 <div id="TypeEditor" class=':= elemClass'>
    <%!
       String elemClass;
+      String formEditorClass = "formEditor";
 
       void setParentView(FormView fv) {
          this.parentView = fv;
@@ -25,7 +26,7 @@
          else if (rowMode)
             edClass = "rowEditor";
          else
-            edClass = "formEditor";
+            edClass = formEditorClass;
          elemClass = edClass;
       }
    %>

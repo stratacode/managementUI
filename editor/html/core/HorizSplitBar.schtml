@@ -102,7 +102,7 @@
     %>
 
     <div class="horizSplitThumb"></div>
-    <div id="dragSplitter" style=':= "z-index: 99; position: absolute; left: " + dragLeft + "px; top: " + dragTop + "px; width: " + dragWidth + "px;"' visible=":= pressed && !smoothSplitter">
+    <div id="horizDragSplitter" style=':= "z-index: 99; position: absolute; left: " + dragLeft + "px; top: " + dragTop + "px; width: " + dragWidth + "px;"' visible=":= pressed && !smoothSplitter">
        <div class="horizSplitThumb"></div>
     </div>
 </div>

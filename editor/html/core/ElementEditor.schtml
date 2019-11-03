@@ -3,9 +3,9 @@
    int elementSubmitCount;
    // The code to submit a change made directly to a form in this element editor.  This is done in a binding because setElementValue is a remote
    // method - it will set errorText when the remote result is received.
-   elementSubmitCount =: instanceMode && !editorModel.pendingCreate ?
+   elementSubmitCount =: formEditor.editInstances && !editorModel.pendingCreate ?
       errorText = editorModel.updateInstanceProperty(propC, propertyName, formEditor.instance, formEditor.wrapper, elementValue) :
-      errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !instanceMode, true, formEditor.instance == null);
+      errorText = parentView.editorModel.setElementValue(formEditor.type, formEditor.instance, propC, String.valueOf(elementValue), !formEditor.editInstances, true, formEditor.instance == null);
    String elemClass;
 
    repeatIndex =: listIndex;

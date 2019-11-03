@@ -1,11 +1,12 @@
 <div id="ReferenceFieldEditor">
+   <%! formEditorClass = "refEditor"; %>
    <span class="formFieldLabel" style="position: relative; left: -8px">
       <span visible=":= parentList != null">[ <%= listIndex %> ]</span>
       <img class="elementIcon" visible=":= icon != null" src=':= iconPath' alt=':= iconAlt'/>
       <%= displayName %>
    </span>
    <a class="textLink" disabled=":= !referenceable" clickEvent="=: gotoReference()"><%= referenceId %></a>
-   <select id="instanceSelect" optionDataSource=":= instancesOfType"
+   <select id="instanceSelect" class="instanceSelect" optionDataSource=":= instancesOfType"
            selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
            selectedValue="=: instance = ((InstanceWrapper) selectedValue).instance"
            selectedValue="=: editorModel.updateInstanceProperty(parentProperty, propertyName, formEditor.instance, formEditor.wrapper, instance)"/>

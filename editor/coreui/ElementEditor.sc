@@ -15,7 +15,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    IVariableInitializer varInit := propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
    UIIcon icon;
-   String errorText;
+   String errorText; // An error message for this form field
    String oldPropName;
    int changeCt = 0;
    Object oldListenerInstance = null;
@@ -30,8 +30,11 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
    boolean instanceMode;
    boolean constantProperty;
+   boolean writable;
    boolean setFromBinding;
-   boolean editable := !instanceMode || (!constantProperty && !setFromBinding);
+   // Should this value be editable in the UI?  In instance mode - if it's not a constant value or set in a binding
+   // In type mode though, we can set bindings and constant properties but if it's a getX with no setX we cannot set it.
+   boolean editable := (!instanceMode && writable) || (instanceMode && !constantProperty && !setFromBinding);
 
    boolean propertyInherited := editorModel.getPropertyInherited(propC, formEditor.classViewLayer);
 
@@ -89,6 +92,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       varInit = propC instanceof IVariableInitializer ? (IVariableInitializer) propC : null;
       visible = getPropVisible();
       constantProperty = EditorModel.isConstantProperty(propC);
+      writable = !(propC instanceof VariableDefinition) || ((VariableDefinition) propC).writable;
       icon = propC == null ? null : GlobalResources.lookupUIIcon(propC, ModelUtil.isDynamicType(formEditor.type));
       String operator = propC instanceof IVariableInitializer ? ModelUtil.getOperator(propC) : null;
       setFromBinding = operator != null && operator.startsWith(":=");
