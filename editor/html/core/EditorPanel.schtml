@@ -1,7 +1,4 @@
-<div>
-
-
-<%!
+<div><%!
    @Component
    BaseTypeTree extends TreeView {}
    @Component
@@ -29,9 +26,11 @@
       viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
    }
 
+   createPanel = statusPanel.createPanel;
+
    String editorViewStyle := %>
-       width: 100%; 
-       height: <%= menuStyle.editorViewHeight %>; 
+       flex-grow: 1;
+       height: <%= menuStyle.editorViewHeight %>;
        border: 1px solid <%= menuStyle.borderColor %>;
        <%;
 %>
@@ -57,22 +56,22 @@
    <div style="clear:both;"/>
           
    <div id="trees" visible=":= windowOpen">
-      <ul id="typeList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
+      <ul id="typeList" class="splitList topList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
          <li id="typeTree" extends="BaseTypeTree" myTypeTree=":= typeTreeModel.typeTree" tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreePercent == -1 ? "99.5%" : "99.5%") + ";"'/>
       </ul>
 
-      <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: topTreePercent = splitPercent" 
+      <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: topTreePercent = splitPercent" splitWindowPadding="= 12"
            maxPercent=":= menuStyle.treePanePer * 2" parentHeight=":= trees.offsetHeight" prevWindowHeight=":= typeList.offsetHeight"/>
 
-      <ul id="layerList" class="splitList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
+      <ul id="layerList" class="splitList bottomList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
          <li id="layerTree" extends="BaseTypeTree" byLayer="true" myTypeTree="= typeTreeModel.byLayerTypeTree" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreeHeight == -1 ? "99.5%" : (100 - topTreePercent - 1) + "%") + ";"'/>
       </ul>
    </div>
 
-   <div id="vertSplitBar" class="vertSplitBar" extends="VertSplitBar" splitPercent="=: menuStyle.treeWidthPer"
-         parentWidth=":= EditorPanel.this.offsetWidth" prevWindowWidth=":= trees.offsetWidth" visible=":= menuStyle.twoColumns"/>
+   <div id="vertSplitBar" class="vertSplitBar" extends="VertSplitBar" splitPercent="=: menuStyle.treeWidthPer" splitWindowPadding="= -60"
+         maxPercent="= 94" parentWidth=":= EditorPanel.this.offsetWidth" prevWindowWidth=":= trees.offsetWidth" visible=":= menuStyle.twoColumns"/>
 
    <div id="viewPanel" visible=":= windowState != 0">
       <div id="layerScroll">

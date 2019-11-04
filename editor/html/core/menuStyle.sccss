@@ -5,7 +5,9 @@
    boolean absolute := windowState == 0;
 
    double windowHeight := Window.window.innerHeight;
-   double frameHeightPer := windowState == 2 ? 100 / 2: 100;
+   double appFrameWidth := windowState == 1 ? 50 : 100;
+   double appFrameHeight := windowState == 2 ? 50 : 100;
+   double frameHeightPer := windowState == 1 ? 100 : windowState == 0 ? -1 : 100 - appFrameHeight;
    double pageHeightPix := (Window.window.innerHeight - 2 * bodyMarginPix) * frameHeightPer / 100.0;
    // Use the global Window object to get the window's innerWidth.  
    int pageWidthPix := windowState == 2 || windowState == 3 ? Window.window.innerWidth : 
@@ -15,18 +17,6 @@
    double treeWidthPer := twoColumns ? 35.0 : 95.0;
 
    int editorFrameWidth = -1;
-
-   // Horizontal thumb for the tree splitter
-   int horizSplitThumbWidthPer = 8; // percentage of the splitBarWidth
-   int horizSplitThumbWidth = 8; // pixels for splitBarWidth
-   int horizSplitThumbHeight = 6;
-   int horizSplitBarWidth = 20; // percentage of the treeWidth
-
-   // Vertical thumb for the tree/view splitter
-   int vertSplitThumbHeightPer = 8;
-   int vertSplitThumbHeight = 8;
-   int vertSplitThumbWidth = 4;
-   int vertSplitBarHeight = 30; // pixels
 
    int leftPad = 3;
    int leftPad2 = 2;
@@ -39,24 +29,23 @@
    int bodyMarginPix = 8;
    double bodyMarginHPer := bodyMarginPix / Window.window.innerHeight * 100.0;
    double bodyMarginWPer := bodyMarginPix / Window.window.innerWidth * 100.0;
-   double panePadding = 12; // pane margin and padding
+   double panePadding = 9; // pane margin and padding
    
-   String editorViewWidth := twoColumns ? "63.7%" : "99%";
+   String editorViewWidth := twoColumns ? "64.0%" : "99%";
    double bodyHeightPer := 100 - 2*bodyMarginHPer;
-   double editorPanelWidthPer = 99.7;
    double editorPanelHeightPix := pageHeightPix - menubarHeightPix;
    double editorPanelHeightPer := editorPanelHeightPix / (double) pageHeightPix * 100.0;
    double viewPanelHeightPix := (editorPanelHeightPix - toolbarHeightPix - statusBarHeightPix) / (twoColumns ? 1.0 : 2.0);;
    double viewPanelHeightPer := viewPanelHeightPix / editorPanelHeightPix * 100.0;
    double viewPanelWidthPer := 100.0 - (twoColumns ? treeWidthPer : 0) - 2;
-   double treeHeightPix := viewPanelHeightPix - 12;
+   double treeHeightPix := viewPanelHeightPix;
    double treeHeightPer := treeHeightPix / editorPanelHeightPix * 100.0;
    double layerScrollPix = 50; 
    double editorViewHeightPix := viewPanelHeightPix - layerScrollPix - 20;
    double editorViewHeightPer := editorViewHeightPix * 100.0 / viewPanelHeightPix;
    double codeViewHeightPix := editorViewHeightPix - 32;
    double codeViewHeightPer := codeViewHeightPix * 100.0 / editorViewHeightPix;
-   double treePanePix := (treeHeightPix - horizSplitThumbHeight - panePadding) * 0.5;
+   double treePanePix := (treeHeightPix - panePadding) * 0.5;
    double treePanePer := treePanePix / treeHeightPix * 100.0;
    String editorViewHeight := editorViewHeightPer + "%";;
    String treeHeight := treeHeightPer + "%"; 
@@ -91,10 +80,12 @@ body {
 #navMenu {
    padding-bottom: 0px;
    padding-top: 3px;
+   padding-left: 8px;
    list-style: none;
-   width: 100%;
+   /* width: 100%; */
    margin-top: 0px;
    margin-bottom: 0px;
+   display: inline-block;
 }
 
 #navMenu ul {
@@ -172,7 +163,7 @@ body {
 
 #toolbar {
    line-height: 32px;
-   <%= windowState == 0 ? " padding: 18px 2px 2px 0px; width: 46px; margin-left: 0px" : "padding: 5px 9px 6px 0px; width: 98.5%; margin-left: 4px;" %>
+   <%= windowState == 0 ? " padding: 18px 2px 2px 0px; width: 46px; margin-left: 0px" : "padding: 5px 9px 6px 0px; margin-left: 4px;" %>
 }
 
 .toolbarButton, .layerSelectButton {
@@ -233,71 +224,60 @@ body {
 
 .splitList {
    list-style:none;
-   padding: 2px;
+   padding: 1px;
    overflow:auto;
    margin-top: 0px;
    margin-bottom: 0px;
-   margin-left: <%= leftPad %>px;
-   border: 1px solid #000;
+ /*  border: 1px solid #777; */
+}
+
+.topList {
+   border-top: 1px solid #777;
+}
+
+.bottomList {
+   border-bottom: 1px solid #777;
 }
 
 .horizSplitBar, #horizDragSplitter {
-   margin-top: 1px;
-   margin-bottom: 1px;
-   height: <%= horizSplitThumbHeight %>px;
+   height: 3px;
    cursor: row-resize;
    background-color: #ccc;
 }
 
 .horizSplitThumb {
-   margin-left: <%= (100 - horizSplitThumbWidthPer) / 2 %>%;
-   width: <%= horizSplitThumbWidth %>px;
-   background-color: #aaa;
-   margin-top: 1px;
-   height: 5px;
-   margin-bottom: 1px;
-}
-
-.horizDragSplitter {
-   width: <%= treeWidthPer %>%;
 }
 
 .horizSplitBar {
-   margin-left: <%= (100 - horizSplitBarWidth) / 2 %>%;
-   width: <%= horizSplitBarWidth %>%;
+   width: 100%;
 }
 
-.vertSplitBar, #vertDragSplitter {
+.vertSplitBar, #vertDragSplitter, .frameVertSplitBar {
    float: left;
-   margin-left:  1px;
-   margin-right: 1px;
-   width: <%= vertSplitThumbWidth+2 %>px;
+   flex: 0 0 3px;
+   width: 3px;
    cursor: col-resize;
    background-color: #ccc;
 }
 
 .vertSplitThumb {
-   margin-top: <%= (vertSplitBarHeight - vertSplitThumbHeight)/2 %>px;
-   height: <%= vertSplitThumbHeight %>px;
-   background-color: #aaa;
-   margin-left: 1px;
-   width: 4px;
-   margin-right: 1px;
 }
 
-.vertDragSplitter {
-   height: <%= treeHeightPer %>%;
+.frameVertSplitBar {
+   height: 99.7%;
+   margin-top: 32px;
+   border-left: 1px solid <%= borderColor %>;
+   border-top: 1px solid <%= borderColor %>;
 }
 
 .vertSplitBar {
-   margin-top: <%= treePanePix + (horizSplitThumbHeight)/2 + 6 - vertSplitBarHeight / 2 %>px;
-   height: <%= vertSplitBarHeight %>px;
+   height: <%= viewPanelHeightPix - 1 %>px;
+   border-bottom: 1px solid <%= borderColor %>;
 }
 
 #editorPanel {
-   margin-top: 4px;
+   margin-top: 3px;
    background-color: #ededed;
-   width: <%= editorPanelWidthPer %>%;
    border: 1px solid <%= borderColor %>;
    <%= windowState != 0 ? "height: " + editorPanelHeightPer + "%; padding-top: 0px;" : "height: auto; padding-top: 5px" %>
 }
@@ -350,7 +330,8 @@ a.tooltip:hover span {
 }
 
 .appFrame {
-   <%= windowState == 1 ? "float:left; padding-right: 10px; padding-bottom: 10px; height: auto; " : windowState == 2 ? "height: 50%; padding-right: 0px" : "height: auto; padding-right: 0px" %>
+   <%= windowState == 1 ? "float:left; padding-right: 10px; padding-bottom: 10px; height: auto; width: " + appFrameWidth + "%" :
+       windowState == 2 ? "height: " + appFrameHeight + "%; padding-right: 0px" : "height: auto; padding-right: 0px" %>
 }
 
 #trees {
@@ -364,10 +345,11 @@ a.tooltip:hover span {
    float: left;
    height: <%= viewPanelHeightPer %>%;
    width: <%= viewPanelWidthPer %>%;
+   display: flex;
+   flex-direction: column;
 }
 
 #layerScroll {
-   width: 100%;
    height: <%= layerScrollPix %>px;
    padding-top: 6px;
    white-space: nowrap;
@@ -452,12 +434,19 @@ a.tooltip:hover span {
    <% : "position: static; top: auto; left: auto; right: auto;" %>
    <%= windowState == 2 || windowState == 3 ? "width: 100%;" : (windowState == 0 ? "width: 46px;" : "width: auto; overflow: hidden;") %>
    <%= frameHeightPer == -1 ? "" : "height: " + frameHeightPer + "%;" %>
-   <%= windowState == 1 ? "border: 0px; border-left: 2px solid #aaa; margin-top: 0px;" : windowState == 2 ? "border: 0px; border-top: 2px solid #aaa; margin-top: 12px;" : "border: 0px; margin-top: 0px;" %>
+   <%= windowState == 1 ? "border: 1px solid " + borderColor + "; padding-top: 2px; flex-direction: row;" : windowState == 2 ? "border: 1px solid " + borderColor + "; flex-direction: column; padding-top: 0px;" : "border: 0px; padding-top: 0px;" %>
+
+   display: flex;
 }
 
 #editorFrame {
    width: 100%;
    height: 100%;
+}
+
+#frameBody {
+   display: inline-block;
+   flex-grow: 1;
 }
 
 .textLink {
@@ -501,14 +490,12 @@ a.tooltip:hover span {
 }
 
 .formFieldValue {
-   width: <%= 100 - formLabelPer - 1.8 %>%;
+   /* width: <%= 100 - formLabelPer - 1.8 %>%; */
 }
 
 .formScroll {
    height: 100%;
-   width: 100%;
    overflow: auto;
-   //padding-top: 12px;
 }
 
 .formEditor, .listEditor {
@@ -603,8 +590,17 @@ a.tooltip:hover span {
 }
 
 .logoImage {
+/*
    position: absolute;
    <%= windowState == 0 ? "padding-left: 12px; top: 7px;" : "padding-left: 8px; top: auto;" %>
+*/
+}
+
+.logoButton {
+   padding-top: 4px;
+   padding-left: 4px;
+   display: inline-block;
+   <%= windowState == 0 ? "position: absolute; top: 2px; left: 8px" : "" %>
 }
 
 .rowContainer, .rowHeader {

@@ -1,8 +1,8 @@
 <%@ import sc.sync.SyncManager;
     import sc.sync.SyncDestination; %>
 <div class="editorFrame">
-
 <%!
+   editorPanel = frameBody.editorPanel;
    int windowState :=: editorModel.windowState;
    windowState =: menuStyle.windowState;
    // Once we know the browser window's width in pixels, update the stylesheet's editorFrameWidth so it adjust the styling
@@ -10,62 +10,70 @@
    int clearedErrorCount = 0;
    SyncDestination syncDest = SyncManager.defaultSyncManager.syncDestination;
 %>
+   <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: menuStyle.appFrameHeight = splitPercent"
+        parentHeight=":= Window.window.innerHeight" prevWindowHeight=":= parentHeight / 2"
+        visible=":= windowState == 2"/>
 
-   <a clickEvent="=: clearedErrorCount = Window.window.errorCount">
-      <img class="logoImage"
-           style=':= SyncManager.defaultSyncManager.numSendsInProgress == 0 ? "opacity: 1;" : "opacity: 0.5;"'
-           src=':= syncDest.client ? clearedErrorCount == Window.window.errorCount ? syncDest.connected ? "/images/scLogo.png" : "/images/scLogoInactive.png" : "/images/scLogoError.png" : "/images/scLogo.png"'/>
-      <!-- prefetch these images -->
-      <img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/><img src="/images/scLogoInactive.png" width="1" height="1" style="position:absolute"/>
-   </a>
-   <ul id="navMenu" visible=":= windowState != 0">
-      <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0'
-                alt='Iconify editor' tipMinWidth="8em" size="= 12"/></li>
-      <li><a class="level1Menu" href="#">File</a>
-         <ul id="fileMenu">
-            <li><a class="level2Menu">Add...</a>
-               <ul>
-                  <li><a clickEvent='=: enableCreateMode("Instance")'>Instance</a></li>
-                  <li><a clickEvent="=: enableCreateMode("Layer")">Layer</a></li>
-                  <li><a clickEvent='=: enableCreateMode("Class")'>Class</a></li>
-                  <li><a clickEvent='=: enableCreateMode("Object")'>Object</a></li>
-                  <li><a clickEvent='=: enableCreateMode("Property")'>Property</a></li>
-               </ul>
-            </li>
-         </ul>
-      </li>
+   <div id="vertSplitBar" class="frameVertSplitBar" extends="VertSplitBar" splitPercent="=: menuStyle.appFrameWidth = splitPercent"
+         parentWidth=":= Window.window.innerWidth" prevWindowWidth=":= parentWidth / 2"
+         visible=":= windowState == 1" splitWindowPadding="= 0" />
 
-      <li><a href="#" class="level1Menu">Edit</a>
-         <ul id="editMenu">
-            <li><a disabled=":= !editorModel.editSelectionEnabled" clickEvent="=: doDeleteCurrentSelection()">Delete <%= editorModel.currentSelectionName %></a></li>
-            <li><a disabled="true">Merge...</a></li>
-         </ul>
-      </li>
+   <div id="frameBody" class="frameBody">
+      <div id="logoButton" class="logoButton" clickEvent="=: clearedErrorCount = Window.window.errorCount">
+         <img class="logoImage"
+              style=':= SyncManager.defaultSyncManager.numSendsInProgress == 0 ? "opacity: 1;" : "opacity: 0.5;"'
+              src=':= syncDest.client ? clearedErrorCount == Window.window.errorCount ? syncDest.connected ? "/images/scLogo.png" : "/images/scLogoInactive.png" : "/images/scLogoError.png" : "/images/scLogo.png"'/>
+         <!-- prefetch these images -->
+         <img src="/images/scLogoError.png" width="1" height="1" style="position:absolute"/><img src="/images/scLogoInactive.png" width="1" height="1" style="position:absolute"/>
+      </div>
+      <ul id="navMenu" visible=":= windowState != 0">
+         <li><span id="openButton" extends="MenubarButton" icon="/images/close.png" clickEvent='=: windowState = 0'
+                   alt='Iconify editor' tipMinWidth="8em" size="= 12"/></li>
+         <li><a class="level1Menu" href="#">File</a>
+            <ul id="fileMenu">
+               <li><a class="level2Menu">Add...</a>
+                  <ul>
+                     <li><a clickEvent='=: enableCreateMode("Instance")'>Instance</a></li>
+                     <li><a clickEvent="=: enableCreateMode("Layer")">Layer</a></li>
+                     <li><a clickEvent='=: enableCreateMode("Class")'>Class</a></li>
+                     <li><a clickEvent='=: enableCreateMode("Object")'>Object</a></li>
+                     <li><a clickEvent='=: enableCreateMode("Property")'>Property</a></li>
+                  </ul>
+               </li>
+            </ul>
+         </li>
 
-      <li><a href="#" class="level1Menu">View</a>
-         <ul id="viewMenu">
-         <%!
-            ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
-         %>
-            <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""'
-                   clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
-            <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""'
-                   clickEvent="=: codeTypes = new ArrayList(CodeType.nonFrameworkSet)">Hide Framework Code</a></li>
-            <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""'
-                   clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Model))">Show Declarative Only</a></li>
-            <li><hr></li>
-            <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
-            <li><a class=':= editorModel.debugHTMLEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugHTMLEnabled()">Trace HTML</a></li>
-            <li><a class=':= editorModel.debugSyncEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugSyncEnabled()">Trace Sync</a></li>
-            <li><a clickEvent="=: sc.bind.Bind.printAllBindings()">Print Bindings</a></li>
-            <li><a clickEvent="=: sc.sync.SyncManager.printAllSyncInsts()">Print Sync</a></li>
-         </ul>
-      </li>
-      <li><span id="maximizeButton" extends="MenubarButton" icon=':= windowState == 2 ? "/images/minus.png" : "/images/add.png"'
-                clickEvent='=: windowState = windowState == 2 ? 1 : 2'
-                alt='Maximize or restore editor' tipMinWidth="10em"/></li>
-   </ul>
-   <div visible=":= windowState != 0"><br></div>
-   <div id="editorPanel" extends="EditorPanel">
+         <li><a href="#" class="level1Menu">Edit</a>
+            <ul id="editMenu">
+               <li><a disabled=":= !editorModel.editSelectionEnabled" clickEvent="=: doDeleteCurrentSelection()">Delete <%= editorModel.currentSelectionName %></a></li>
+               <li><a disabled="true">Merge...</a></li>
+            </ul>
+         </li>
+
+         <li><a href="#" class="level1Menu">View</a>
+            <ul id="viewMenu">
+            <%!
+               ArrayList<CodeType> codeTypes :=: editorModel.codeTypes;
+            %>
+               <li><a class=':= codeTypes.size() == 3 ? "checkedMenuItem" : ""'
+                      clickEvent="=: codeTypes = new ArrayList(CodeType.allSet)">Show All Types of Code</a></li>
+               <li><a class=':= codeTypes.size() == 2 ? "checkedMenuItem" : ""'
+                      clickEvent="=: codeTypes = new ArrayList(CodeType.nonFrameworkSet)">Hide Framework Code</a></li>
+               <li><a class=':= codeTypes.size() == 1 ? "checkedMenuItem" : ""'
+                      clickEvent="=: codeTypes = new ArrayList(EnumSet.of(CodeType.Model))">Show Declarative Only</a></li>
+               <li><hr></li>
+               <li><a class=':= editorModel.debugBindingEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugBindingEnabled()">Trace Bindings</a></li>
+               <li><a class=':= editorModel.debugHTMLEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugHTMLEnabled()">Trace HTML</a></li>
+               <li><a class=':= editorModel.debugSyncEnabled ? "checkedMenuItem" : ""' clickEvent="=: editorModel.toggleDebugSyncEnabled()">Trace Sync</a></li>
+               <li><a clickEvent="=: sc.bind.Bind.printAllBindings()">Print Bindings</a></li>
+               <li><a clickEvent="=: sc.sync.SyncManager.printAllSyncInsts()">Print Sync</a></li>
+            </ul>
+         </li>
+         <li><span id="maximizeButton" extends="MenubarButton" icon=':= windowState == 2 ? "/images/minus.png" : "/images/add.png"'
+                   clickEvent='=: windowState = windowState == 2 ? 1 : 2'
+                   alt='Maximize or restore editor' tipMinWidth="10em"/></li>
+      </ul>
+      <div id="editorPanel" extends="EditorPanel">
+      </div>
    </div>
 </div>

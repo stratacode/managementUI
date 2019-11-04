@@ -1,6 +1,6 @@
-<div mouseDownMoveUp="=: mouseEvent(mouseDownMoveUp)"  >
+<div mouseDownMoveUp="=: mouseEvent(mouseDownMoveUp)">
    <%!
-      // Initialize this component either with splitHeight in pixels or splitPercent in % of the parent element.  Both of these are set and can be bound to as well.
+      // Initialize this component either with splitWidth in pixels or splitPercent in % of the parent element.  Both of these are set and can be bound to as well.
       double splitWidth = 0.0;
       double splitPercent;
       // Borders of the parent element determine how much percentage wise belongs to each half.  
@@ -11,14 +11,18 @@
       double minWidth = 10;
       double minPercent = 10;
       // To choose the initial splitter position (when not initialized), we look at the width of the left window minus this padding amount.
-      double splitWindowPadding = -60;
+      double splitWindowPadding = 0;
 
       //double prevWindowHeight := previousElementSibling.offsetHeight;
       //double parentHeight := enclosingTag.offsetHeight;
       double prevWindowWidth;
       double parentWidth;
 
+      double lastParentWidth = 0.0;
+
       boolean smoothSplitter = true;
+
+      String splitClass = "vertSplitBar";
 
       void mouseEvent(MouseEvent event) {
          if (event.button != 0)
@@ -34,8 +38,11 @@
                dragTop = offsetTop;
                dragWidth = offsetWidth;
 
-               if (splitWidth == 0.0 && splitPercent != 0)
+               // First time or if our width changed, update the current width in pixels from splitPercent
+               if ((splitWidth == 0.0 || lastParentWidth != parentWidth) && splitPercent != 0) {
                   splitWidth = parentWidth * (splitPercent / maxPercent);
+                  lastParentWidth = parentWidth;
+               }
                // the percentage maps to the height of the containing block
                //maxPercent = 100 - 100 * splitWindowPadding / parentHeight;
                System.out.println("Press vertical split bar - press: " + pressX + "," + pressY + " dragStart: " + dragLeft + "," + dragTop + " dragWidth=" + dragWidth + " splitWidth=" + splitWidth);
@@ -77,10 +84,12 @@
 
       void moveSplitter(MouseEvent event) {
          Element prevSib = this.previousElementSibling;
+         /* Remove this test?  In the TypeTree, it was a simple parent { s1 splitter s2 } arrangement but in EditorFrame it's  appFrame editorMixin { splitter editorPanel }
          // Something messed up in the DOM for this tree.
          if (prevSib == null) {
             return;
          }
+         */
          if (isUnset())
             System.out.println("*** Unset using - prevWindowWidth: " + prevWindowWidth);
          else

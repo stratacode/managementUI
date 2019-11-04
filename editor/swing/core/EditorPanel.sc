@@ -590,6 +590,8 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       }
    }
 
+   createPanel = statusPanel.createPanel;
+
    // When viewType changes, update the visible status of each view
    viewType =: validateViewType();
 

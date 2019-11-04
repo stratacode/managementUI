@@ -4,18 +4,20 @@
       double splitHeight = 0.0;
       double splitPercent;
       // Borders of the parent element determine how much percentage wise belongs to each half.  
-      double maxPercent = 94;
+      double maxPercent = 100;
       boolean pressed = false;
       double pressX, pressY;
       double dragLeft, dragTop, dragWidth;
       double minHeight = 10;
       double minPercent = 10;
-      double splitWindowPadding = 12; // To choose the initial splitter position (when not initialized), we look at the height of the top window minus this padding amount.
+      double splitWindowPadding = 0; // To choose the initial splitter position (when not initialized), we look at the height of the top window minus this padding amount to dial it in
 
       //double prevWindowHeight := previousElementSibling.offsetHeight;
       //double parentHeight := enclosingTag.offsetHeight;
       double prevWindowHeight;
       double parentHeight;
+
+      double lastParentHeight = 0.0;
 
       boolean smoothSplitter = true;
 
@@ -33,8 +35,11 @@
                dragTop = offsetTop;
                dragWidth = offsetWidth;
 
-               if (splitHeight == 0.0 && splitPercent != 0)
+               // First time or if our height changed, update the current height in pixels from splitPercent
+               if ((splitHeight == 0.0 || lastParentHeight != parentHeight) && splitPercent != 0) {
                   splitHeight = parentHeight * (splitPercent / maxPercent);
+                  lastParentHeight = parentHeight;
+               }
                // the percentage maps to the height of the containing block
                //maxPercent = 100 - 100 * splitWindowPadding / parentHeight;
             }
@@ -75,10 +80,12 @@
 
       void moveSplitter(MouseEvent event) {
             Element prevSib = this.previousElementSibling;
+            /* Remove this test?  In the TypeTree, it was a simple parent { s1 splitter s2 } arrangement but in EditorFrame it's  appFrame editorMixin { splitter editorPanel }
             // Something messed up in the DOM for this tree.
             if (prevSib == null) {
                return;
             }
+            */
             double oldH = isUnset() ? prevWindowHeight - splitWindowPadding : splitHeight;
              //double oldH = splitHeight == 0.0 ? 0 : splitHeight;
             double newHeight = oldH + (event.clientY - pressY); 

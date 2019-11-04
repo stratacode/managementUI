@@ -12,6 +12,8 @@ class EditorPanel {
    object editorModel extends EditorModel {
    }
 
+   CreatePanel createPanel;
+
    @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object typeTreeModel extends TypeTreeModel {
       editorModel = EditorPanel.this.editorModel;
@@ -28,10 +30,9 @@ class EditorPanel {
    String newTypeNameField :=: editorModel.createModeTypeName;  // Set on selection to a value to pre-populate the 'extends' form field
    String newLayerNameField;           // Set to populate the new layer field properties
 
-   // TODO: statusPanel.createPanel is defined in each of the sub-layers but not in this layer so this will show as a syntax error sometimes in the IDE...
    // Should define an abstract implementation here that is overridden in each of the sub-layers
-   newTypeNameField =: statusPanel.createPanel.newTypeSelected;
-   newLayerNameField =: statusPanel.createPanel.newLayerSelected;
+   newTypeNameField =: createPanel.newTypeSelected;
+   newLayerNameField =: createPanel.newLayerSelected;
 
    @Sync(syncMode=SyncMode.Disabled)
    boolean staleSelection = false;
