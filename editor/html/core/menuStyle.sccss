@@ -163,7 +163,7 @@ body {
 
 #toolbar {
    line-height: 32px;
-   <%= windowState == 0 ? " padding: 18px 2px 2px 0px; width: 46px; margin-left: 0px" : "padding: 5px 9px 6px 0px; margin-left: 4px;" %>
+   <%= windowState == 0 ? " padding: 18px 2px 2px 0px; width: 46px; margin-left: 0px" : "padding: 5px 9px 6px 0px; width: auto; margin-left: 4px;" %>
 }
 
 .toolbarButton, .layerSelectButton {
@@ -490,7 +490,7 @@ a.tooltip:hover span {
 }
 
 .formFieldValue {
-   /* width: <%= 100 - formLabelPer - 1.8 %>%; */
+    width: <%= 100 - formLabelPer - 1.8 %>%;
 }
 
 .formScroll {
@@ -600,7 +600,7 @@ a.tooltip:hover span {
    padding-top: 4px;
    padding-left: 4px;
    display: inline-block;
-   <%= windowState == 0 ? "position: absolute; top: 2px; left: 8px" : "" %>
+   <%= windowState == 0 ? "position: absolute; top: 2px; left: 8px" : "position: static; top: 0px; left: 0px" %>
 }
 
 .rowContainer, .rowHeader {

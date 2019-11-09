@@ -103,7 +103,7 @@
                splitPercent = maxPercent - minPercent;
             else if (splitPercent < 0)
                splitPercent = minPercent;
-            System.out.println("Setting splitHeight=" + newHeight + " splitPercent=" + splitPercent + " parentHeight=" + parentHeight);
+            //System.out.println("Setting splitHeight=" + newHeight + " splitPercent=" + splitPercent + " parentHeight=" + parentHeight);
       }
 
     %>

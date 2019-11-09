@@ -3,9 +3,7 @@ import java.util.Arrays;
 import sc.obj.Sync;
 import sc.obj.SyncMode;
 
-// Comment before
 @Sync(syncMode=SyncMode.Automatic)
-// Comment after
 class EditorPanel {
 
    @Sync(syncMode=SyncMode.Automatic, includeSuper=true)

@@ -1,4 +1,6 @@
 import sc.type.Type;
+import java.util.Arrays;
+import java.util.Collections;
 
 class ListEditor extends InstanceEditor {
    List<Object> instList;
@@ -19,12 +21,22 @@ class ListEditor extends InstanceEditor {
 
    ArrayList<SortProp> sortProps = null;
 
-   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
-      instList = insts;
+   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
+      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper);
+      instList = convertInstToList(inst);
       componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayOrListComponentType(type));
       componentTypeChanged();
       refreshVisibleList();
+   }
+
+   List<Object> convertInstToList(Object inst) {
+      if (inst instanceof List)
+         instList = (List) inst;
+      else if (inst instanceof Object[])
+         instList = Arrays.asList((Object[]) inst);
+      else if (inst != null)
+         throw new IllegalArgumentException("Bad instance type to ListEditor");
+      return Collections.emptyList();
    }
 
    Object findCommonBaseType(List<Object> insts, Object defaultType) {
@@ -56,7 +68,7 @@ class ListEditor extends InstanceEditor {
       componentType = compType;
       componentTypeChanged();
       updateListIndex(ix);
-      this.instList = (List<Object>)inst;
+      this.instList = convertInstToList(inst);
       // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
       Bind.sendInvalidate(this, "instList", inst);
       // This both invalidates and validates for type

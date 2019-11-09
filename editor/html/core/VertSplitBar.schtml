@@ -90,10 +90,12 @@
             return;
          }
          */
+         /*
          if (isUnset())
             System.out.println("*** Unset using - prevWindowWidth: " + prevWindowWidth);
          else
             System.out.println("*** Using - splitWidth: " + splitWidth);
+         */
 
          double oldW = isUnset() ? prevWindowWidth - splitWindowPadding : splitWidth;
           //double oldH = splitHeight == 0.0 ? 0 : splitHeight;
@@ -112,7 +114,7 @@
             splitPercent = maxPercent - minPercent;
          else if (splitPercent < 0)
             splitPercent = minPercent;
-         System.out.println("Setting splitWidth=" + newWidth + " splitPercent=" + splitPercent + " parentWidth=" + parentWidth);
+         //System.out.println("Setting splitWidth=" + newWidth + " splitPercent=" + splitPercent + " parentWidth=" + parentWidth);
       }
 
     %>
