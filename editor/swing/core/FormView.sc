@@ -1,12 +1,6 @@
-import sc.lang.java.ModelUtil;
 import sc.lang.java.ExecutionContext;
-import sc.lang.java.BodyTypeDeclaration;
-import sc.lang.java.TypeDeclaration;
-import sc.lang.java.JavaModel;
 import sc.lang.java.JavaSemanticNode;
 import sc.lang.sc.PropertyAssignment;
-import sc.lang.EditorContext;
-import sc.lang.InstanceWrapper;
 import sc.type.RTypeUtil;
 import sc.util.StringUtil;
 

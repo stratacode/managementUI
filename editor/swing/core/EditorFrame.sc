@@ -1,9 +1,3 @@
-import sc.layer.CodeType;
-import sc.bind.Bind;
-import sc.dyn.DynUtil;
-
-import java.util.EnumSet;
-
 EditorFrame extends AppFrame implements EditorPanelStyle {
    EditorPanel editorPanel;
 
@@ -58,7 +52,7 @@ EditorFrame extends AppFrame implements EditorPanelStyle {
          object deleteItem extends JMenuItem {
             text := "Delete" + selectionName;
             enabled := editorModel.editSelectionEnabled;
-            clickCount =: doDeleteCurrentSelection();
+            clickCount =: opErrorText = editorModel.deleteCurrentSelection();
          }
          object mergeItem extends JMenuItem {
             text = "Merge...";

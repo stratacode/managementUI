@@ -1,16 +1,3 @@
-import sc.bind.Bind;
-import sc.sync.SyncManager;
-import sc.obj.Sync;
-import sc.obj.SyncMode;
-import sc.lang.html.Element;
-import sc.lang.java.BodyTypeDeclaration;
-import sc.lang.InstanceWrapper;
-import sc.lang.java.ModelUtil;
-import sc.lang.java.AbstractMethodDefinition;
-import sc.lang.java.Parameter;
-import sc.type.IResponseListener;
-
-import sc.layer.CodeType;
 
 /** 
    The main view model object for viewing and editing of the program model or instances.  It exposes
@@ -18,18 +5,26 @@ import sc.layer.CodeType;
    */
 @sc.obj.Component
 class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
-   /** Specifies the current LIST of types for the model */
-   String[] typeNames = new String[0];
-
-   List<InstanceWrapper> selectedInstances = null;
-
-   String[] oldTypeNames; // Last time model was rebuilt
-
-   String createModeTypeName; // Set when in createMode and a type is selected
-
+   /** Access to the system which stores the list of layers, provides access to type lookup */
    LayeredSystem system;
 
-   int windowState = 0; // 0 = iconified, 1 = open, 2 = maximized
+   /**
+    * Access to the EditorContext that Manages the dynamic runtime,
+    * current type, instance and features for updating code on the fly.
+    * This can be a reference to the command line interpreter to keep the UI
+    * and commands/scripts in sync or another EditorContext not connected to
+    * the command line.
+    */
+   @Bindable(sameValueCheck=true)
+   EditorContext ctx;
+
+   /** The array of absolute type names of the current types */
+   String[] typeNames = new String[0];
+
+   /** List of wrappers around the currently selected instances */
+   List<InstanceWrapper> selectedInstances = null;
+    /** 0 = iconified, 1 = open, 2 = maximized */
+   int windowState = 0;
 
    /** Set to the current layer */
    @Bindable(crossScope=true, sameValueCheck=true)
@@ -116,12 +111,16 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** True when we the current property is an editable one. */
    boolean editSelectionEnabled = false;
 
-   /** List of type names that can be created from the 'Add' panel. */
+   /** List of type names that can be created from the 'Add instance' panel. */
    String[] currentInstTypeNames;
+
+   /** Set when in createMode and a type is selected */
+   String createModeTypeName;
 
    /** Generated values, kept in sync when you change typeNames and currentLayer */
    ArrayList<Object> types;                 // The current list of just the selected types
    ArrayList<Object> inheritedTypes;        // Like types only includes any inherited types as well when inherit is true
+
    @Sync(syncMode=SyncMode.Disabled)
    ArrayList<Object> filteredTypes;         // The merged list of the most specific type in the current selected set of types/layers
    ArrayList<Layer> typeLayers;             // The list of layers which define the types
@@ -132,6 +131,9 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    @Sync(syncMode=SyncMode.Disabled)
    Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
    ArrayList<Object> visibleTypes = new ArrayList<Object>();     // The list of types used to create the form view - removes types filtered by the merge and inherited flags
+
+   /** Set when the model is rebuilt, used to detect changes */
+   String[] oldTypeNames;
 
    @sc.obj.Constant
    static List<String> operatorList = {"=", ":=", "=:", ":=:"};
@@ -156,16 +158,14 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    ArrayList<SelectedFile> selectedFileList;
 
    ArrayList<CodeType> codeTypes = new ArrayList(CodeType.allSet);
-
-   @Bindable(sameValueCheck=true)
-   EditorContext ctx;
-
    boolean triggeredByUndo; // When a type change occurs because of an undo operation we do not want to record that op in the redo list again.
 
    @Sync(syncMode=SyncMode.Disabled)
    int refreshInstancesCt = 0;
    @Sync(syncMode=SyncMode.Disabled)
    boolean refreshInstancesValid = true;
+
+   boolean confirmDeleteAllLayers = false;
 
    void init() {
       SyncManager.initStandardTypes();
@@ -269,23 +269,6 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          return getTypeSelectionName();
       else
          return null;
-   }
-
-   // These should all be removed when remote methods are implemented.
-   void deleteCurrentProperty() {
-      System.err.println("*** ERROR: remote method not implemented");
-   }
-
-   void deleteCurrentLayer() {
-      System.err.println("*** ERROR: remote method not implemented");
-   }
-
-   void deleteCurrentType() {
-      System.err.println("*** ERROR: remote method not implemented");
-   }
-
-   void removeLayers(ArrayList<String> layers) {
-      System.err.println("*** Implement as a remote method");
    }
 
    boolean getDebugBindingEnabled() {
@@ -551,5 +534,4 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       }
       return null;
    }
-
 }

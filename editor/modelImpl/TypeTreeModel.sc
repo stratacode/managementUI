@@ -1,18 +1,11 @@
-import sc.layer.LayeredSystem;
 import sc.layer.IModelListener;
 import sc.layer.LayerIndexInfo;
 
 import sc.type.Type;
 
-import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.java.ITypeDeclaration;
-import sc.lang.java.TypeDeclaration;
-import sc.lang.java.ModelUtil;
-import sc.lang.java.JavaModel;
 
 import sc.lang.ILanguageModel;
-
-import java.util.Collections;
 
 TypeTreeModel {
 

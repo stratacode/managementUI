@@ -1,5 +1,4 @@
 import sc.layer.LayerIndexInfo;
-import sc.lang.java.BodyTypeDeclaration;
 
 TypeTree {
    TreeEnt {

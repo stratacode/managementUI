@@ -1,26 +1,7 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.EnumSet;
-import java.util.Collections;
 
-import sc.layer.Layer;
-import sc.layer.SrcEntry;
-
+import sc.util.HashMap;
 import sc.util.ArrayList;
 import sc.util.LinkedHashMap;
-import sc.type.CTypeUtil;
-
-import sc.obj.Constant;
-
-import sc.lang.java.ModelUtil;
-import sc.lang.InstanceWrapper;
-
-import sc.layer.CodeType;
-
-import sc.dyn.DynUtil;
-
-import sc.sync.SyncManager;
 
 class TypeTree {
    @Sync(syncMode=SyncMode.Disabled)

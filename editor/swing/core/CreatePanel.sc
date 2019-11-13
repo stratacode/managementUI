@@ -1,4 +1,3 @@
-import sc.lang.java.ModelUtil;
 import sc.lang.JavaLanguage;
 import sc.util.StringUtil;
 import sc.layer.Layer;

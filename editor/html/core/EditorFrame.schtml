@@ -52,7 +52,7 @@
 
          <li><a href="#" class="level1Menu">Edit</a>
             <ul id="editMenu">
-               <li><a disabled=":= !editorModel.editSelectionEnabled" clickEvent="=: doDeleteCurrentSelection()">Delete <%= editorModel.currentSelectionName %></a></li>
+               <li><a disabled=":= !editorModel.editSelectionEnabled" clickEvent="=: opErrorText = editorModel.deleteCurrentSelection()">Delete <%= editorModel.currentSelectionName %></a></li>
                <li><a disabled="true">Merge...</a></li>
             </ul>
          </li>
@@ -81,6 +81,13 @@
                    alt='Maximize or restore editor' tipMinWidth="10em"/></li>
       </ul>
       <div id="editorPanel" extends="EditorPanel">
+      </div>
+      <div id="opErrorDialog" class="modalDialog" visible=":= opErrorText != null && opErrorText.length() > 0">
+         <div class="modalBody">
+            <%= opErrorText %>
+            <p>
+            <input type="button" value="Ok" clickEvent="=: opErrorText = null"/>
+         </div>
       </div>
    </div>
 </div>

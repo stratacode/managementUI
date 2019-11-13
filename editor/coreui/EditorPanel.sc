@@ -6,13 +6,9 @@ import sc.obj.SyncMode;
 @Sync(syncMode=SyncMode.Automatic)
 class EditorPanel {
 
-   @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object editorModel extends EditorModel {
    }
 
-   CreatePanel createPanel;
-
-   @Sync(syncMode=SyncMode.Automatic, includeSuper=true)
    object typeTreeModel extends TypeTreeModel {
       editorModel = EditorPanel.this.editorModel;
       viewType := EditorPanel.this.viewType;
@@ -22,8 +18,9 @@ class EditorPanel {
       currentCreateMode := editorModel.currentCreateMode;
    }
 
-   @Sync
    ViewType viewType = ViewType.DataViewType;
+
+   CreatePanel createPanel;
 
    String newTypeNameField :=: editorModel.createModeTypeName;  // Set on selection to a value to pre-populate the 'extends' form field
    String newLayerNameField;           // Set to populate the new layer field properties

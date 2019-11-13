@@ -12,13 +12,7 @@ import javax.swing.ToolTipManager;
 
 import java.util.Arrays;
 
-import sc.layer.Layer;
-import sc.layer.LayeredSystem;
-import sc.lang.java.ModelUtil;
-
-import sc.type.CTypeUtil;
 import sc.util.StringUtil;
-import sc.dyn.DynUtil;
 
 EditorPanel extends JPanel implements EditorPanelStyle {
    LayeredSystem system = LayeredSystem.getCurrent();

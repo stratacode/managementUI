@@ -4,16 +4,10 @@ import sc.type.IBeanMapper;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
-import sc.layer.LayeredSystem;
-
-import sc.lang.java.TypeDeclaration;
 import sc.lang.java.JavaSemanticNode;
-import sc.lang.java.BodyTypeDeclaration;
 import sc.lang.java.DeclarationType;
 import sc.lang.java.InterfaceDeclaration;
-import sc.lang.java.VariableDefinition;
 import sc.lang.java.ConstructorDefinition;
-import sc.lang.java.ModelUtil;
 import sc.lang.JavaLanguage;
 import sc.lang.sc.PropertyAssignment;
 
@@ -23,25 +17,10 @@ import sc.type.Type;
 import sc.parser.ParseUtil;
 
 EditorModel {
-   /** Among the typeNames, set to the "currentCtxType" - i.e. the type which has focus. */
-   @Bindable(crossScope=true, sameValueCheck=true)
-   BodyTypeDeclaration currentCtxType := ctx.currentType;
-
-   override @Bindable(crossScope=true)
-   currentCtxType =: !pendingCreate ? changeCurrentType(currentCtxType, ctx.currentObject, null) : null;
-
-   currentProperty =: validateCurrentProperty();
-
    system = LayeredSystem.getCurrent();
-
-   typeNames =: invalidateModel();
-   currentLayer =: invalidateModel();
-   mergeLayerCt =: invalidateModel();
-   inheritTypeCt =: invalidateModel();
 
    /** Set this to true so the command line interpreter and UI do not share the same current type, etc. */
    boolean separateContext = false;
-
    private EditorContext theSeparateCtx = null;
    private EditorContext getTheSeparateContext() {
       if (theSeparateCtx == null)
@@ -50,19 +29,23 @@ EditorModel {
    }
    ctx := separateContext ? getTheSeparateContext() : system.getDefaultEditorContext();
 
-   boolean modelsValid = true; // start out true so the first invalidate kicks in.... when nothing is selected, we are valid
+   typeNames =: invalidateModel();
+   currentLayer =: invalidateModel();
+   currentProperty =: validateCurrentProperty();
+   currentProperty =: currentPropertyIcon = GlobalResources.lookupUIIcon(currentProperty);
+
+   mergeLayerCt =: invalidateModel();
+   inheritTypeCt =: invalidateModel();
 
    importedPropertyType := ctx.getImportedPropertyType(currentProperty);
 
-   currentProperty =: currentPropertyIcon = GlobalResources.lookupUIIcon(currentProperty);
+   boolean modelsValid = true; // start out true so the first invalidate kicks in.... when nothing is selected, we are valid
+   boolean modelValidating = false;
 
-   // When the currentTypeSearch field is changed, this will look for a type matching that pattern, and if found change the current type.  this gets pushed to the client.
-   currentTypeSearch =: findCurrentType(currentTypeSearch);
-
-   void invalidateModel() {  // OVERRIDE in your framework to so rebuildModel is run in a doLater
+   void invalidateModel() {
       if (modelValidating) {
          return; // in rebuildModel, we change currentLayer which may call this when we are in the midst of updating the model so just ignore it
-       }
+      }
 
       if (modelsValid) {
          modelsValid = false;
@@ -74,8 +57,6 @@ EditorModel {
       }
    }
 
-   boolean modelValidating = false;
-
    // TODO: rename to refreshModel?
    void rebuildModel() {
       if (modelsValid)
@@ -83,11 +64,9 @@ EditorModel {
 
       modelValidating = true;
 
-      //System.out.println("*** in refreshModel: " + StringUtil.arrayToString(oldTypeNames) + " -> " + StringUtil.arrayToString(typeNames) + " on: " + sc.type.PTypeUtil.getThreadName());
-
       if (!triggeredByUndo) {
+         // Add a type navigation to the undo stack if the type changed
          boolean typesChanged = !StringUtil.arraysEqual(oldTypeNames,typeNames);
-
 
          if (oldTypeNames != null && typesChanged) {
             ctx.addOp(new IUndoOp() {
@@ -306,7 +285,6 @@ EditorModel {
 
       currentType = filteredType;
 
-// Clear out any selected property.
       currentProperty = null;
       currentPropertyType = currentType;
       savedPropertyValue = currentPropertyValue = null;
@@ -354,6 +332,15 @@ EditorModel {
 
       //System.out.println("*** finished sending events in - refreshModel: " + StringUtil.arrayToString(oldTypeNames) + " -> " + StringUtil.arrayToString(typeNames) + " currentType: " + currentType + " thread: " + sc.type.PTypeUtil.getThreadName());
    }
+
+   @Bindable(crossScope=true, sameValueCheck=true)
+   BodyTypeDeclaration currentCtxType := ctx.currentType;
+
+   override @Bindable(crossScope=true)
+   currentCtxType =: !pendingCreate ? changeCurrentType(currentCtxType, ctx.currentObject, null) : null;
+
+   // Match and change the current type from the value entered in the search box
+   currentTypeSearch =: findCurrentType(currentTypeSearch);
 
    @sc.obj.ManualGetSet
    private void setVisibleTypesNoEvent(ArrayList<Object> visTypes) {
@@ -852,43 +839,64 @@ EditorModel {
          return null;
    }
 
-   public void deleteCurrentProperty() {
+   public String deleteCurrentProperty() {
       if (currentType != null && currentProperty != null && currentType instanceof BodyTypeDeclaration && currentProperty instanceof JavaSemanticNode) {
          ctx.removeProperty((BodyTypeDeclaration) currentType, (JavaSemanticNode) currentProperty, true);
          clearCurrentProperty();
+         return null;
       }
       else
-         System.err.println("*** Can't delete current property");
+         return "Unable to delete current property";
    }
 
-   public void deleteCurrentLayer() {
+
+   final String NeedsConfirmDeleteLayers = "Layer is in use";
+
+   public String deleteCurrentLayer() {
       if (currentLayer != null) {
-         ctx.removeLayer(currentLayer, true);
-         clearCurrentType();
+         List<String> usedByLayerNames = currentLayer.getUsedByLayerNames();
+         if (usedByLayerNames.size() == 0) {
+            ctx.removeLayer(currentLayer, true);
+            clearCurrentType();
+         }
+         else if (confirmDeleteAllLayers) {
+            ctx.removeLayers(usedByLayerNames.toArray(new String[0]));
+            confirmDeleteAllLayers = false;
+         }
+         else
+            return NeedsConfirmDeleteLayers;
+
+         return null;
       }
       else
-         System.err.println("*** no current layer to delete");
+         return "No current layer to delete";
    }
 
-   public void deleteCurrentType() {
+   public String deleteCurrentType() {
       if (currentType != null || !(currentType instanceof BodyTypeDeclaration)) {
          ctx.removeType((BodyTypeDeclaration) currentType, true);
          clearCurrentType();
+         return null;
       }
       else
-         System.err.println("*** no current type to delete");
+         return "*** no current type to delete";
    }
 
-   public void deleteCurrentSelection() {
+   public String deleteCurrentSelection() {
+      String error = null;
       if (currentProperty != null) {
-         deleteCurrentProperty();
+          error = deleteCurrentProperty();
       }
       else if (currentTypeIsLayer) {
-         deleteCurrentLayer();
+         error = deleteCurrentLayer();
       }
       else if (currentType != null) {
-         deleteCurrentType();
+         error = deleteCurrentType();
       }
+      else
+         error = "No current selection";
+      return error;
+
    }
 
    public Object findType(String typeName) {
@@ -1316,4 +1324,5 @@ EditorModel {
          res[i] = arr.get(i);
       return res;
    }
+
 }

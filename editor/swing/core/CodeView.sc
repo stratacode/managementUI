@@ -1,4 +1,3 @@
-import sc.lang.java.ModelUtil;
 import sc.util.StringUtil;
 
 CodeView {

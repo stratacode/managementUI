@@ -1,6 +1,5 @@
 import sc.util.StringUtil;
 import sc.lang.TemplateLanguage;
-import sc.lang.java.ModelUtil;
 
 class FieldValueEditor extends JPanel implements EditorPanelStyle {
 

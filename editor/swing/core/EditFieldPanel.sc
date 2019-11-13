@@ -1,4 +1,3 @@
-import sc.lang.java.ModelUtil;
 import sc.util.StringUtil;
 
 class EditFieldPanel extends JPanel implements EditorPanelStyle {
