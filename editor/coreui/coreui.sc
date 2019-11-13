@@ -7,7 +7,7 @@ package sc.editor;
  *  modelImpl is excluded, runtimes still inherit those types. 
 */
 @sc.js.JSSettings(jsModuleFile="js/sceditor.js")
-public editor.coreui extends modelImpl, model, gui.util.core {
+public editor.coreui extends modelImpl, model {
    // This is one of those layers which could go either way...
    //defaultSyncMode = sc.obj.SyncMode.Automatic;
    codeType = CodeType.UI;

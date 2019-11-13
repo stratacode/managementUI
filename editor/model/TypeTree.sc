@@ -153,9 +153,10 @@ class TypeTree {
       ArrayList<TreeEnt> childList;
       @sc.obj.Sync(onDemand=true)
       HashMap<String,TreeEnt> childEnts;
-      ArrayList<TreeEnt> removed = null;
 
       childList =: childrenAvailable();
+
+      ArrayList<TreeEnt> removed = null;
 
       boolean imported;
       boolean hasSrc;

@@ -4,6 +4,7 @@
 <div>
    <%!
        List<IElementEditor> getChildViews() {
+          // formList_Repeat is the id of the parent or wrapper class of the repeated elements
           Object[] children = formScroll.formList_Repeat.getObjChildren(false);
           ArrayList<IElementEditor> res = new ArrayList<IElementEditor>();
           if (children != null) {
@@ -51,7 +52,9 @@
       %>
    </div>
    <div id="formScroll" class="formScroll" >
-      <div id="formList" repeat=":= editorModel.visibleTypes" repeatVarName="typeObj" repeatWrapper="elementRepeatBuilder">
+      <div id="formList"
+           repeat=":= editorModel.visibleTypes" repeatVarName="typeObj"
+           repeatWrapper="elementRepeatBuilder">
       </div>
    </div>
 

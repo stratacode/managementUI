@@ -28,6 +28,7 @@
 
    createPanel = statusPanel.createPanel;
 
+   // Styles shared by each view - example of a string being initialized by a template:
    String editorViewStyle := %>
        flex-grow: 1;
        height: <%= menuStyle.editorViewHeight %>;
@@ -35,19 +36,27 @@
        <%;
 %>
    <div id="toolbar">
-      <span id="openWindowButton" extends="ToolbarButton" icon="/images/add.png" clickEvent="=: windowState = 1" visible=":= !windowOpen"/>
-      <span id="saveButton" extends="ToolbarButton" icon="/images/save.gif" alt="Save" clickEvent='=: editorModel.ctx.save()' tipMinWidth="4em" disabled=":= !editorModel.ctx.needsSave"/>
-      <span id="undoButton" extends="ToolbarButton" icon="/images/undo.gif" alt="Undo" clickEvent='=: editorModel.ctx.undo()' tipMinWidth="4em" disabled=":= !editorModel.ctx.canUndo"/>
-      <span id="redoButton" extends="ToolbarButton" icon="/images/redo.gif" alt="Redo" clickEvent='=: editorModel.ctx.redo()'  tipMinWidth="4em" disabled=":= !editorModel.ctx.canRedo"/>
-      <span id="refreshButton" extends="ToolbarButton" icon=':= editorModel.system != null && editorModel.system.staleCompiledModel ? "/images/needsrestart.gif" : "/images/refresh.gif"' clickEvent='=: editorModel.system.rebuild()' alt="Refresh"/>
+      <span id="openWindowButton" extends="ToolbarButton" icon="/images/add.png"
+            clickEvent="=: windowState = 1" visible=":= !windowOpen"/>
+      <span id="saveButton" extends="ToolbarButton" icon="/images/save.gif" alt="Save"
+            clickEvent='=: editorModel.ctx.save()' tipMinWidth="4em" disabled=":= !editorModel.ctx.needsSave"/>
+      <span id="undoButton" extends="ToolbarButton" icon="/images/undo.gif" alt="Undo"
+            clickEvent='=: editorModel.ctx.undo()' tipMinWidth="4em" disabled=":= !editorModel.ctx.canUndo"/>
+      <span id="redoButton" extends="ToolbarButton" icon="/images/redo.gif" alt="Redo"
+            clickEvent='=: editorModel.ctx.redo()'  tipMinWidth="4em" disabled=":= !editorModel.ctx.canRedo"/>
+      <span id="refreshButton" extends="ToolbarButton" icon=':= editorModel.system != null &&
+            editorModel.system.staleCompiledModel ? "/images/needsrestart.gif" : "/images/refresh.gif"'
+            clickEvent='=: editorModel.system.rebuild()' alt="Refresh"/>
 
-      <span id="ViewTypeRadioButton" abstract="true" extends="RadioButton" tipMinWidth="4em" alignRight="true">
+      <span id="ViewTypeRadioButton" abstract="true" extends="RadioButton" tipMinWidth="4em" alignRight="true"/>
 
       <span style="float:right; margin-right: 2px" visible=":= windowOpen" >
          <span id="dataViewButton" extends="ViewTypeRadioButton" icon='/images/dataview.png' alt='Data view'
-                selected=":= viewType == ViewType.DataViewType" selected="=: selected ? viewType = ViewType.DataViewType : null"/>
+                selected=":= viewType == ViewType.DataViewType"
+                selected="=: selected ? viewType = ViewType.DataViewType : null"/>
          <span id="formViewButton" extends="ViewTypeRadioButton" icon='/images/formview.png' alt='Type view'
-                selected=":= viewType == ViewType.FormViewType" selected="=: selected ? viewType = ViewType.FormViewType : null"/>
+                selected=":= viewType == ViewType.FormViewType"
+                selected="=: selected ? viewType = ViewType.FormViewType : null"/>
          <span id="codeViewButton" extends="ViewTypeRadioButton" icon='/images/codeview.png' alt='Code view'
                selected=":= viewType == ViewType.CodeViewType"
                selected="=: selected ? viewType = ViewType.CodeViewType : null"/>
@@ -56,22 +65,28 @@
    <div style="clear:both;"/>
           
    <div id="trees" visible=":= windowOpen">
-      <ul id="typeList" class="splitList topList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
-         <li id="typeTree" extends="BaseTypeTree" myTypeTree=":= typeTreeModel.typeTree" tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+      <ul id="typeList" class="splitList topList"
+          style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : topTreePercent + "%")'>
+         <li id="typeTree" extends="BaseTypeTree" myTypeTree=":= typeTreeModel.typeTree"
+             tree=":= typeTreeModel.typeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreePercent == -1 ? "99.5%" : "99.5%") + ";"'/>
       </ul>
 
-      <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar" splitPercent="=: topTreePercent = splitPercent" splitWindowPadding="= 12"
-           maxPercent=":= menuStyle.treePanePer * 2" parentHeight=":= trees.offsetHeight" prevWindowHeight=":= typeList.offsetHeight"/>
+      <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar"
+           splitPercent="=: topTreePercent = splitPercent" splitWindowPadding="= 12"
+           maxPercent=":= menuStyle.treePanePer * 2" parentHeight=":= trees.offsetHeight"
+           prevWindowHeight=":= typeList.offsetHeight"/>
 
-      <ul id="layerList" class="splitList bottomList" style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
-         <li id="layerTree" extends="BaseTypeTree" byLayer="true" myTypeTree="= typeTreeModel.byLayerTypeTree" tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
+      <ul id="layerList" class="splitList bottomList"
+          style=':= "height:" + (topTreePercent == -1 ? menuStyle.treePanePer + "%" : (horizSplitBar.maxPercent - topTreePercent) + "%")'>
+         <li id="layerTree" extends="BaseTypeTree" byLayer="true" myTypeTree="= typeTreeModel.byLayerTypeTree"
+             tree=":= typeTreeModel.byLayerTypeTree.rootTreeNode" class=':= "sctTreeNode sctTree sctParentOpen"'
              style=':= "min-height:" + (topTreeHeight == -1 ? "99.5%" : (100 - topTreePercent - 1) + "%") + ";"'/>
       </ul>
    </div>
 
    <div id="vertSplitBar" class="vertSplitBar" extends="VertSplitBar" splitPercent="=: menuStyle.treeWidthPer" splitWindowPadding="= -60"
-         maxPercent="= 94" parentWidth=":= EditorPanel.this.offsetWidth" prevWindowWidth=":= trees.offsetWidth" visible=":= menuStyle.twoColumns"/>
+        maxPercent="= 94" parentWidth=":= EditorPanel.this.offsetWidth" prevWindowWidth=":= trees.offsetWidth" visible=":= menuStyle.twoColumns"/>
 
    <div id="viewPanel" visible=":= windowState != 0">
       <div id="layerScroll">
@@ -102,7 +117,9 @@
    <div style="clear:both;"/>
 
    <div id="statusPanel" visible=":= windowOpen">
-      <a clickEvent="=: editorModel.createMode = !editorModel.createMode" tabindex=":= editorModel.createMode ? -1 : 0" ><img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/></a>
+      <a clickEvent="=: editorModel.createMode = !editorModel.createMode" tabindex=":= editorModel.createMode ? -1 : 0" >
+         <img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/>
+      </a>
 
       <span id="editFieldPanel" extends="EditFieldPanel" visible=":= !editorModel.createMode" editorModel=":= EditorPanel.this.editorModel"/>
       <span id="createPanel" extends="CreatePanel" visible=":= editorModel.createMode"
@@ -111,5 +128,4 @@
                    EditorPanel.this.ensureViewType(type);
                 } %></span>
    </div>
-
 </div>
