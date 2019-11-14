@@ -1,8 +1,5 @@
 import java.util.Arrays;
 
-import sc.obj.Sync;
-import sc.obj.SyncMode;
-
 @Sync(syncMode=SyncMode.Automatic)
 class EditorPanel {
 

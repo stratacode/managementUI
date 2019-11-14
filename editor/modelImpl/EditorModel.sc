@@ -31,11 +31,9 @@ EditorModel {
 
    typeNames =: invalidateModel();
    currentLayer =: invalidateModel();
+
    currentProperty =: validateCurrentProperty();
    currentProperty =: currentPropertyIcon = GlobalResources.lookupUIIcon(currentProperty);
-
-   mergeLayerCt =: invalidateModel();
-   inheritTypeCt =: invalidateModel();
 
    importedPropertyType := ctx.getImportedPropertyType(currentProperty);
 
@@ -57,7 +55,6 @@ EditorModel {
       }
    }
 
-   // TODO: rename to refreshModel?
    void rebuildModel() {
       if (modelsValid)
          return;
@@ -400,7 +397,7 @@ EditorModel {
          return;
 
       // Don't show this layer if we have a currentLayer set and depending on the "mergeLayers" flag we should or not
-      if (layer != null && currentLayer != null && !currentLayer.transparentToLayer(layer, mergeLayerCt)) {
+      if (layer != null && currentLayer != null && !currentLayer.transparentToLayer(layer, 0)) {
          isTypeLayer = false;
       }
 
@@ -560,19 +557,11 @@ EditorModel {
          type = ((ClientTypeDeclaration) type).getOriginal();
       Object[] props;
 
-      if (mergeLayerCt == 0) {
-         // Transparent layers need to grab all of the properties so we can filter them in the code
-         if (inheritTypeCt == 0 && (currentLayer == null || !currentLayer.transparent))
-            props = ModelUtil.getDeclaredPropertiesAndTypes(type, "public", system);
-          else
-            props = ModelUtil.getPropertiesAndTypes(type, "public");
-      }
-      else {
-         if (inheritTypeCt == 0 && (currentLayer == null || !currentLayer.transparent))
-            props = ModelUtil.getDeclaredMergedPropertiesAndTypes(type, "public", true);
-         else
-            props = ModelUtil.getMergedPropertiesAndTypes(type, "public", system);
-      }
+      // Transparent layers need to grab all of the properties so we can filter them in the code
+      if ((currentLayer == null || !currentLayer.transparent))
+         props = ModelUtil.getDeclaredPropertiesAndTypes(type, "public", system);
+       else
+         props = ModelUtil.getPropertiesAndTypes(type, "public");
       return props;
    }
 
@@ -1302,7 +1291,7 @@ EditorModel {
 
    BodyTypeDeclaration processVisibleType(Object typeObj) {
       if (typeObj instanceof BodyTypeDeclaration) {
-         return toClientType(((BodyTypeDeclaration) typeObj).getDeclarationForLayer(ctx.currentLayers, inheritTypeCt, mergeLayerCt));
+         return toClientType(((BodyTypeDeclaration) typeObj).getDeclarationForLayer(ctx.currentLayers, 0, 0));
       }
       return null;
    }

@@ -155,37 +155,6 @@ EditorPanel extends JPanel implements EditorPanelStyle {
       floatable = false;
       rollover = true;
 
-      // TODO: remove these as they are not used
-      int mergeLayerCt :=: editorModel.mergeLayerCt;
-      boolean isMerged := mergeLayerCt > 0;
-
-      int inheritTypeCt :=: editorModel.inheritTypeCt;
-      boolean isInherited = inheritTypeCt > 0;
-
-      /*
-      object mergedViewButton extends ToolBarToggleButton {
-         toolTipText := !isMerged ? "Show only the current layer of the selected types" : "Merge " + (mergeLayerCt+1) + " layers of the selected types";
-         selected := isMerged;
-         selected =: isMerged ? mergeLayerCt = 0 : mergeLayerCt = 1; // TODO add mouseEventListener to get shift status and increment mergeLayerCt
-         icon := !isMerged ? new ImageIcon(EditorPanel.class.getResource("images/sepview.png"), "Separate View") :
-                            new ImageIcon(EditorPanel.class.getResource("images/mergeview.png"), "Merged View");
-      }
-
-      object inheritButton extends ToolBarToggleButton {
-         toolTipText := isInherited ? "Show only properties using the current type." : "Include properties inherited from the extends type.";
-         selected := isInherited;
-         selected =: isInherited ? inheritTypeCt = 0 : inheritTypeCt = 1;
-         icon := !isInherited ? new ImageIcon(EditorPanel.class.getResource("images/noinherit.png"), "No Inherit") :
-                                new ImageIcon(EditorPanel.class.getResource("images/inherit.png"), "Inherit");
-      }
-      */
-
-      /*
-      object sep extends JSeparator {
-         orientation = SwingConstants.VERTICAL;
-      }
-      */
-
       object dataViewButton extends ToolBarToggleButton {
          toolTipText = "Show data view of selected instances";
          selected = true;

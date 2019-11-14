@@ -152,15 +152,6 @@ class TypeTreeModel {
       }
    }
 
-   // On the client we can't rebuild these - they get populated from the server on a sync.
-   boolean rebuildTypeDirEnts() {
-      return false;
-   }
-
-   boolean rebuildLayerDirEnts() {
-      return false;
-   }
-
    void updateInstancesForType(String typeName, boolean byLayer) {
       List<TypeTree.TreeNode> typeNodes = (byLayer ? byLayerTypeTree : typeTree).rootTreeIndex.get(typeName);
       if (typeNodes != null) {

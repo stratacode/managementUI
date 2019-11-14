@@ -71,12 +71,10 @@ class TypeTree {
       // Flag used temporarily to do fast and orderly removal of elements that are no longer being used
       boolean marked;
 
+      boolean needsOpenClose := ent.needsOpenClose;
+
       boolean getHasChildren() {
          return ent.hasChildren;
-      }
-
-      boolean getNeedsOpenClose() {
-         return ent.needsOpenClose;
       }
 
       abstract int getNumChildren();
@@ -182,6 +180,10 @@ class TypeTree {
          // These get created on the client so it's best if we just set the icon up front rather than wait for the server to determine it
          if (type == EntType.Instance)
             icon = GlobalResources.instanceIcon;
+         this.needsOpenClose = type != EntType.Root && type != EntType.Instance;
+
+         if (type == EntType.Instance)
+            this.hasChildren = false;
       }
 
       ArrayList<CodeType> entCodeTypes; // Which types and functions is this ent visible?
@@ -209,6 +211,9 @@ class TypeTree {
       boolean closed = false; // Have we explicitly closed this node.  if so, don't reopen it
 
       boolean createModeSelected = false;
+
+      boolean needsOpenClose = true;
+      boolean hasChildren = true;
 
       void setCachedTypeDeclaration(Object ctd) {
          cachedTypeDeclaration = ctd;
@@ -317,10 +322,6 @@ class TypeTree {
 
       int compareTo(TreeEnt c) {
          return value.compareTo(c.value);
-      }
-
-      boolean getNeedsOpenClose() {
-         return type != EntType.Root && hasChildren;
       }
 
       public boolean isVisible(boolean byLayer) {
@@ -505,7 +506,9 @@ class TypeTree {
             return;
          }
          initChildLists();
-
+         hasChildren = true;
+         if (type != EntType.Root)
+            needsOpenClose = true;
          childList.add(ent);
          TreeEnt old = childEnts.put(ent.nodeId, ent);
          if (old != null)
@@ -517,6 +520,8 @@ class TypeTree {
          if (childList != null)
             childList.remove(ent);
          removeEntry(ent);
+         if (childList == null || childList.size() == 0)
+            hasChildren = false;
       }
 
       void removeChildren() {
@@ -524,6 +529,7 @@ class TypeTree {
             childEnts.clear();
          if (childList != null)
             childList.clear();
+         hasChildren = false;
       }
 
       void removeEntry(TreeEnt toRem) {
@@ -541,12 +547,6 @@ class TypeTree {
             }
          }
          return false;
-      }
-
-      boolean getHasChildren() {
-         // Need to assume we have children until they are fetched
-         return getNumChildren() > 0 || childList == null;
-         //return true;
       }
 
       public int getNumChildren() {
@@ -753,9 +753,20 @@ class TypeTree {
                if (anyChanges) {
                   instance = mainInst;
                }
+               needsOpenClose = false;
             }
             else {
                instance = null;
+               if (insts.size() > 0) {
+                  needsOpenClose = true;
+                  hasChildren = true;
+               }
+               /*
+               else if (childList == null || childList.size() == 0) {
+                  hasChildren = false;
+                  needsOpenClose = false;
+               }
+               */
                for (InstanceWrapper inst:insts) {
                    TreeEnt childEnt = null;
                    if (childList != null) {
@@ -780,6 +791,7 @@ class TypeTree {
 
                       if (childEnt.cachedTypeDeclaration == null)
                          childEnt.needsType = true;
+                      childEnt.childList = new ArrayList<TreeEnt>();
                       addChild(childEnt);
                    }
                    anyChanges = true;
@@ -787,6 +799,14 @@ class TypeTree {
                }
             }
          }
+         /*
+         else {
+            if (childList == null || childList.size() == 0) {
+               needsOpenClose = false;
+               hasChildren = false;
+            }
+         }
+            */
          if (removeUnmarkedInstances())
             anyChanges = true;
 

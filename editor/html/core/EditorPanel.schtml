@@ -20,13 +20,14 @@
    viewType =: validateViewType();
 
    void validateViewType() {
-      boolean isDataView = viewType == ViewType.DataViewType;
-      viewPanel.dataView.viewVisible = isDataView;
+      viewPanel.dataView.viewVisible = viewType == ViewType.DataViewType;
       viewPanel.formView.viewVisible = viewType == ViewType.FormViewType;
       viewPanel.codeView.viewVisible = viewType == ViewType.CodeViewType;
    }
 
    createPanel = statusPanel.createPanel;
+
+   boolean systemUpdated;
 
    // Styles shared by each view - example of a string being initialized by a template:
    String editorViewStyle := %>
@@ -46,7 +47,7 @@
             clickEvent='=: editorModel.ctx.redo()'  tipMinWidth="4em" disabled=":= !editorModel.ctx.canRedo"/>
       <span id="refreshButton" extends="ToolbarButton" icon=':= editorModel.system != null &&
             editorModel.system.staleCompiledModel ? "/images/needsrestart.gif" : "/images/refresh.gif"'
-            clickEvent='=: editorModel.system.rebuild()' alt="Refresh"/>
+            clickEvent='=: systemUpdated = editorModel.system.rebuild()' alt="Refresh"/>
 
       <span id="ViewTypeRadioButton" abstract="true" extends="RadioButton" tipMinWidth="4em" alignRight="true"/>
 

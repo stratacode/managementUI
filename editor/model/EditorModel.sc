@@ -21,23 +21,21 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** The array of absolute type names of the current types */
    String[] typeNames = new String[0];
 
-   /** List of wrappers around the currently selected instances */
-   List<InstanceWrapper> selectedInstances = null;
-    /** 0 = iconified, 1 = open, 2 = maximized */
-   int windowState = 0;
-
-   /** Set to the current layer */
-   @Bindable(crossScope=true, sameValueCheck=true)
-   Layer currentLayer :=: ctx.currentLayer;
-
    /** The current type */
    Object currentType;
 
-   /** The current Java model for the type */
-   JavaModel currentJavaModel;
-
    /** When a property has focus, set to the property */
    Object currentProperty;
+
+   /** Used the current layer defined in ctx - needs crossScope because it's set from the command-line/test scripts */
+   @Bindable(crossScope=true, sameValueCheck=true)
+   Layer currentLayer :=: ctx.currentLayer;
+
+   /** List of wrappers around the currently selected instances */
+   List<InstanceWrapper> selectedInstances = null;
+
+   /** The current Java model for the type */
+   JavaModel currentJavaModel;
 
    UIIcon currentPropertyIcon;
 
@@ -59,8 +57,26 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Stores info about the currentInstance - used in particular in the 'pendingCreate' mode - before the instance has been created */
    InstanceWrapper currentWrapper;
 
+   /** Generated values, kept in sync when you change typeNames and currentLayer */
+   ArrayList<Object> visibleTypes = new ArrayList<Object>();     // The list of types used to create the form view - removes types filtered by the merge and inherited flags
+   ArrayList<Object> types;                 // The current list of just the selected types
+   ArrayList<Object> inheritedTypes;        // Like types only includes any inherited types as well when inherit is true
+
+   @Sync(syncMode=SyncMode.Disabled)
+   ArrayList<Object> filteredTypes;         // The merged list of the most specific type in the current selected set of types/layers
+   ArrayList<Layer> typeLayers;             // The list of layers which define the types
+   @Sync(syncMode=SyncMode.Disabled)
+   ArrayList<Layer> filteredTypeLayers;     // The list of layers which define the types based on currentLayer/mergeLayers flags - used for 3d view
+   @Sync(syncMode=SyncMode.Disabled)
+   ArrayList<List<Object>> typesPerLayer;   // For each layer in the current set, the set of types in this layer - used for 3d view
+   @Sync(syncMode=SyncMode.Disabled)
+   Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
+
    /** When the add/minus button is pressed, this gets toggled */
    boolean createMode = false;
+
+    /** 0 = iconified, 1 = open, 2 = maximized */
+   int windowState = 0;
 
    CreateMode currentCreateMode = CreateMode.Instance;
 
@@ -77,14 +93,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Last known value from the model for the property */
    String savedPropertyValue;
 
-   /** Number of layers to merge starting from the current type's layer */
-   int mergeLayerCt = 0;
-
    /** Set to true when the current type is a layer */
    boolean currentTypeIsLayer;
-
-   /** Number of the current type's base type's properties to include in the current view */
-   int inheritTypeCt = 0;
 
    /** Set to true after the user has started a createInstance but not yet completed the create */
    boolean pendingCreate = false;
@@ -116,21 +126,6 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    /** Set when in createMode and a type is selected */
    String createModeTypeName;
-
-   /** Generated values, kept in sync when you change typeNames and currentLayer */
-   ArrayList<Object> types;                 // The current list of just the selected types
-   ArrayList<Object> inheritedTypes;        // Like types only includes any inherited types as well when inherit is true
-
-   @Sync(syncMode=SyncMode.Disabled)
-   ArrayList<Object> filteredTypes;         // The merged list of the most specific type in the current selected set of types/layers
-   ArrayList<Layer> typeLayers;             // The list of layers which define the types
-   @Sync(syncMode=SyncMode.Disabled)
-   ArrayList<Layer> filteredTypeLayers;     // The list of layers which define the types based on currentLayer/mergeLayers flags - used for 3d view
-   @Sync(syncMode=SyncMode.Disabled)
-   ArrayList<List<Object>> typesPerLayer;   // For each layer in the current set, the set of types in this layer - used for 3d view
-   @Sync(syncMode=SyncMode.Disabled)
-   Map<String, List<Object>> filteredTypesByLayer;   // For each selected type, the list of types for each selected layer - used for 3d view
-   ArrayList<Object> visibleTypes = new ArrayList<Object>();     // The list of types used to create the form view - removes types filtered by the merge and inherited flags
 
    /** Set when the model is rebuilt, used to detect changes */
    String[] oldTypeNames;

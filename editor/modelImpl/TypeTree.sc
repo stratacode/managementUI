@@ -236,6 +236,11 @@ TypeTree {
                childEnt.processEntry();
             }
          }
+/*
+         if (childList == null || childList.size() == 0) {
+            needsOpenClose = false;
+            hasChildren = false;
+         } */
 
          // Accumulate the entCodeTypes and Functions from all child nodes so that we know whether or not to
          // show a DirEnt even when it's subDirs and entries are not populated on the client.
