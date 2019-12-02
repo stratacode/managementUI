@@ -388,7 +388,7 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    boolean isVisible(Object prop) {
       if (prop instanceof CustomProperty)
          return true;
-      Boolean vis = (Boolean) ModelUtil.getAnnotationValue(prop, "sc.obj.EditorSettings", "visible");
+      Boolean vis = (Boolean) ModelUtil.getPropertyAnnotationValue(prop, "sc.obj.EditorSettings", "visible");
       if (vis != null && !vis)
          return false;
       return true;
