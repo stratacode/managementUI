@@ -753,7 +753,10 @@ class TypeTree {
                if (anyChanges) {
                   instance = mainInst;
                }
-               needsOpenClose = false;
+               if (childList == null || childList.size() == 0) {
+                  hasChildren = false;
+                  needsOpenClose = false;
+               }
             }
             else {
                instance = null;

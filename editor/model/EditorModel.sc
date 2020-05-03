@@ -375,7 +375,12 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       String name = getDisplayNameAnnotation(prop);
       if (name != null)
          return name;
-      return ModelUtil.getPropertyName(prop);
+      String res = ModelUtil.getPropertyName(prop);
+      if (res == null) {
+         System.err.println("*** Null property name returned for prop: " + prop);
+         res = ModelUtil.getPropertyName(prop);
+      }
+      return res;
    }
 
    static String getClassDisplayName(Object type) {

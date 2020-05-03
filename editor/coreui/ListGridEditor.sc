@@ -87,6 +87,10 @@ class ListGridEditor extends ListEditor {
    int getExplicitWidth(String propName) {
       if (cellWidths == null)
          return -1;
+      if (propName == null) {
+         System.out.println("*** Error - null property name");
+         return -1;
+      }
       Integer cellWidth = cellWidths.get(propName);
       return cellWidth == null ? -1 : cellWidth;
    }
