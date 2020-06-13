@@ -118,7 +118,7 @@
    <div style="clear:both;"/>
 
    <div id="statusPanel" visible=":= windowOpen">
-      <a clickEvent="=: editorModel.createMode = !editorModel.createMode" tabindex=":= editorModel.createMode ? -1 : 0" >
+      <a class="iconLink" clickEvent="=: editorModel.createMode = !editorModel.createMode" tabindex=":= editorModel.createMode ? -1 : 0" >
          <img style="vertical-align: -10px;" src=':= editorModel.createMode ? "/images/minus.png" : "/images/add.png"'/>
       </a>
 
