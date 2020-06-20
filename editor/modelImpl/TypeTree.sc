@@ -1,6 +1,10 @@
 import sc.layer.LayerIndexInfo;
 
 TypeTree {
+   boolean isImplProcess() {
+      return true;
+   }
+
    TreeEnt {
       needsType =: fetchType();
 

@@ -212,7 +212,10 @@ class TypeTree {
 
       boolean createModeSelected = false;
 
+      @Sync(syncMode=SyncMode.ServerToClient)
       boolean needsOpenClose = true;
+
+      @Sync(syncMode=SyncMode.ServerToClient)
       boolean hasChildren = true;
 
       void setCachedTypeDeclaration(Object ctd) {
@@ -224,6 +227,7 @@ class TypeTree {
       @Sync(syncMode=SyncMode.ServerToClient)
       UIIcon icon;
 
+      @Sync(syncMode=SyncMode.ServerToClient)
       boolean hasVisibleChildren;
 
       // When the childEnts property is populated or changes we need to
@@ -459,7 +463,7 @@ class TypeTree {
          return false;
       }
 
-      @Constant
+      @Constant @Sync(syncMode=SyncMode.Disabled)
       String getObjectId() {
          if (objectId != null)
             return objectId;
@@ -753,7 +757,8 @@ class TypeTree {
                if (anyChanges) {
                   instance = mainInst;
                }
-               if (childList == null || childList.size() == 0) {
+               // Only update these on the server since the client may not have fetched childList yet
+               if (isImplProcess() && (childList == null || childList.size() == 0)) {
                   hasChildren = false;
                   needsOpenClose = false;
                }
@@ -937,4 +942,7 @@ class TypeTree {
       return inst == null ? "<null>" : CTypeUtil.getClassName(DynUtil.getInstanceName(inst));
    }
 
+   boolean isImplProcess() {
+      return false;
+   }
 }
