@@ -281,7 +281,7 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       setElemToEdit(newType);
 
       // For object instances that are defined directly by source, edit the type, not the instance
-      editInstances = instanceMode && !ModelUtil.isObjectType(newType);
+      objectType = ModelUtil.isObjectType(newType);
    }
 
    void updateClassViewLayer() {
@@ -331,7 +331,8 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    }
 
    boolean instanceMode := parentView.instanceMode;
-   boolean editInstances;
+   boolean editInstances := instanceMode && !objectType;
+   boolean objectType;
 
    String getEditorType(Object prop, Object propType, Object propInst, boolean instMode) {
       // When editing the type, things are simple - it's just forms for sub-types and text fields for properties for the init expr

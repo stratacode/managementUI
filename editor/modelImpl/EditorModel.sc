@@ -1252,6 +1252,15 @@ EditorModel {
          return updateCustomProperty((CustomProperty) propC, instance, elementValue);
       }
       if (instance != null) {
+         Object propType = ModelUtil.getPropertyType(propC);
+         if (ModelUtil.sameTypes(propType, java.math.BigDecimal.class) && elementValue instanceof String) {
+            try {
+               elementValue = new java.math.BigDecimal((String) elementValue);
+            }
+            catch (Exception exc) {
+               return exc.toString();
+            }
+         }
          try {
             DynUtil.setPropertyValue(instance, propName, elementValue);
          }
