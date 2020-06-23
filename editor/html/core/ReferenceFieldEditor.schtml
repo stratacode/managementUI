@@ -9,5 +9,5 @@
    <select id="instanceSelect" class="instanceSelect" optionDataSource=":= instancesOfType"
            selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
            selectedValue="=: instance = ((InstanceWrapper) selectedValue).instance"
-           selectedValue="=: editorModel.updateInstanceProperty(parentProperty, propertyName, formEditor.instance, formEditor.wrapper, instance)"/>
+           changeEvent="=: editorModel.updateInstanceProperty(parentProperty, propertyName, formEditor.instance, formEditor.wrapper, instance)"/>
 </div>

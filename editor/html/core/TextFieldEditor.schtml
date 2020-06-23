@@ -9,6 +9,8 @@
    }
 
    void onBlurEvent() {
+      if (!editable)
+         return;
       if (!textFieldForm.textField.value.equals(currentStringValue)) {
          elementSubmitCount++;
       }

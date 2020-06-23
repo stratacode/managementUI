@@ -21,7 +21,7 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    Object oldListenerInstance = null;
    Object oldListenerType = null;
    Object currentValue := getPropertyValue(propC, formEditor.instance, changeCt, instanceMode, headerCell);
-   String currentStringValue := currentValue == null ? "" : String.valueOf(currentValue);
+   String currentStringValue := valueToString(currentValue);
    Object propType;
 
    // List for changes made to the code behind the initializer string and refresh the view (for type view mainly)
@@ -70,6 +70,14 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
 
       // The case where we have a type editor (is ReferenceCellEditor the only one?) that's a child of a list that's an element of a cell
       this.cellMode = formEditor instanceof ListCellEditor;
+   }
+
+   String valueToString(Object value) {
+      if (value == null)
+         return "";
+      if (value instanceof java.util.Date)
+         return DynUtil.formatDate((java.util.Date) value);
+      return String.valueOf(value);
    }
 
    void init() {

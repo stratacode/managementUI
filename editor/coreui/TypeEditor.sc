@@ -362,7 +362,8 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
             // If the type is a string, number or if the type is Object we choose the text editor if the instance is a string or number.  This happens for tag objects where we use 'Object' as the type
             // of a property that turns into a string.  I'm not sure why we can't use String type there but remember it caused problems.
             else if ((propType instanceof Class && (PTypeUtil.isANumber((Class) propType) || PTypeUtil.isStringOrChar((Class)propType))) ||
-                      propInst instanceof String || propInst instanceof Number || propInst instanceof StringBuilder) {
+                      propInst instanceof String || propInst instanceof Number || propInst instanceof StringBuilder || propType == java.util.Date.class ||
+                      propType == java.math.BigDecimal.class) {
                if (propInst == null || !(propInst instanceof String) || ((String) propInst).indexOf('\n') == -1) {
                  editorType = "text";
                }

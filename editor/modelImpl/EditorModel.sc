@@ -512,11 +512,16 @@ EditorModel {
       }
    }
 
+   // TODO: this is duplicated in BodyTypeDeclaration - we need to filter the version we serialize to the client - the
+   // declaredProperties property of ClientTypeDeclaration
    private static HashSet<String> filteredProps = new HashSet<String>();
    static {
       filteredProps.add("class");
       filteredProps.add("initState");
       filteredProps.add("serialVersionUID");
+      filteredProps.add("DBTypeDescriptor");
+      filteredProps.add("DBObject");
+      filteredProps.add("DBId");
    }
 
    public boolean filteredProperty(Object type, Object p, boolean perLayer, boolean instanceMode) {
@@ -587,14 +592,11 @@ EditorModel {
          if (prop != null) {
             Object propertyType = ModelUtil.getPropertyType(prop);
             if (propertyType instanceof Class) {
-               Type t = Type.get((Class) propertyType);
-               if (t != null) {
-                  try {
-                     elemValue = t.stringToValue(expr);
-                  }
-                  catch (RuntimeException exc) {
-                     return "Invalid value for: " + prop + ": " + expr + ": " + exc.toString();
-                  }
+               try {
+                  elemValue = Type.propertyStringToValue(propertyType, expr);
+               }
+               catch (RuntimeException exc) {
+                  return "Invalid value for: " + prop + ": " + expr + ": " + exc.toString();
                }
             }
          }
@@ -1247,20 +1249,34 @@ EditorModel {
       return null;
    }
 
+   private Object convertStringPropertyValue(Object propC, String propName, Object elementValue) {
+      Object propType = ModelUtil.getPropertyType(propC);
+      if (ModelUtil.sameTypes(propType, java.math.BigDecimal.class) && elementValue instanceof String) {
+         try {
+            elementValue = new java.math.BigDecimal((String) elementValue);
+         }
+         catch (Exception exc) {
+            return exc.toString();
+         }
+      }
+      if (ModelUtil.sameTypes(propType, java.util.Date.class) && elementValue instanceof String) {
+         try {
+            elementValue = DynUtil.parseDate((String) elementValue);
+         }
+         catch (Exception exc) {
+            System.err.println("*** Error parsing date string: " + elementValue + ": " + exc);
+            return exc.toString();
+         }
+      }
+      return elementValue;
+   }
+
    public String updateInstanceProperty(Object propC, String propName, Object instance, InstanceWrapper wrapper, Object elementValue) {
       if (propC instanceof CustomProperty) {
          return updateCustomProperty((CustomProperty) propC, instance, elementValue);
       }
       if (instance != null) {
-         Object propType = ModelUtil.getPropertyType(propC);
-         if (ModelUtil.sameTypes(propType, java.math.BigDecimal.class) && elementValue instanceof String) {
-            try {
-               elementValue = new java.math.BigDecimal((String) elementValue);
-            }
-            catch (Exception exc) {
-               return exc.toString();
-            }
-         }
+         elementValue = convertStringPropertyValue(propC, propName, elementValue);
          try {
             DynUtil.setPropertyValue(instance, propName, elementValue);
          }
