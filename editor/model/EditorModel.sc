@@ -1,5 +1,7 @@
 
-/** 
+import sc.lang.java.DeclarationType;
+
+/**
    The main view model object for viewing and editing of the program model or instances.  It exposes
    the current selection and provides access to the currently selected property, types and layers. 
    */
@@ -41,6 +43,8 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
 
    /** The enclosing type of the current property */
    Object currentPropertyType;
+
+   String currentTypeName;
 
    /** The name of currentProperty */
    String currentPropertyName;
@@ -130,6 +134,18 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    /** Set when the model is rebuilt, used to detect changes */
    String[] oldTypeNames;
 
+   /** When a type is selected in data view that has more than one instance, show the find editor */
+   boolean showFindEditor = false;
+
+   /** For controlling the search results view */
+   List<String> searchOrderByProps = new ArrayList<String>();
+   int searchStartIx = 0;
+   int searchMaxResults = 2;
+
+   List<Object> searchResults = null;
+   String searchText;
+   String searchTypeName;
+
    @sc.obj.Constant
    static List<String> operatorList = {"=", ":=", "=:", ":=:"};
 
@@ -189,6 +205,17 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
       return createModeTypeName.equals(typeName);
    }
 
+   void changeCurrentInstance(Object newInst) {
+      if (newInst == currentInstance)
+         return;
+      boolean modeChange = currentInstance == null;
+      changeCurrentType(currentType, newInst, null);
+      if (modeChange)
+         instanceModeChanged++;
+      else
+         newInstSelected++;
+   }
+
    void changeCurrentType(Object type, Object inst, InstanceWrapper wrapper) {
       if (type == currentType && inst == currentInstance && wrapper == currentWrapper)
          return;
@@ -199,9 +226,12 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          String[] newTypeNames = new String[1];
          newTypeNames[0] = newTypeName;
          typeNames = newTypeNames;
+         currentTypeName = newTypeName;
       }
-      else
+      else {
          typeNames = new String[0];
+         currentTypeName = null;
+      }
 
       currentType = type;
       currentInstance = inst;
@@ -224,21 +254,33 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          pendingCreate = false;
       else
          pendingCreate = currentWrapper.pendingCreate;
+
+      refreshTypeChanged();
+   }
+
+   void refreshTypeChanged() {
+      showFindEditor = currentType != null && !ModelUtil.isObjectType(currentType) && !createMode;
    }
 
    void clearCurrentType() {
       typeNames = new String[0];
+      currentTypeName = null;
       currentType = null;
       currentInstance = null;
       currentWrapper = null;
       pendingCreate = false;
       pendingCreateError = null;
+      showFindEditor = false;
+      searchResults = null; // TODO: dispose of these?
+      searchText = null;
+      searchTypeName = null;
    }
 
    void changeCurrentTypeName(String typeName) {
       String[] newTypeNames = new String[1];
       newTypeNames[0] = typeName;
       typeNames = newTypeNames;
+      currentTypeName = typeName;
    }
 
    String getPropertySelectionName() {

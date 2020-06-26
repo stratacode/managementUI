@@ -16,6 +16,8 @@ import sc.type.Type;
 
 import sc.parser.ParseUtil;
 
+import sc.db.DBTypeDescriptor;
+
 EditorModel {
    system = LayeredSystem.getCurrent();
 
@@ -35,7 +37,7 @@ EditorModel {
    currentProperty =: validateCurrentProperty();
    currentProperty =: currentPropertyIcon = GlobalResources.lookupUIIcon(currentProperty);
 
-   importedPropertyType := ctx.getImportedPropertyType(currentProperty);
+   importedPropertyType := getImportedPropertyType(currentProperty);
 
    boolean modelsValid = true; // start out true so the first invalidate kicks in.... when nothing is selected, we are valid
    boolean modelValidating = false;
@@ -295,11 +297,13 @@ EditorModel {
             currentPackage = ModelUtil.getPackageName(currentType);
          if (currentInstance != null && !ModelUtil.isInstance(currentType, currentInstance))
             currentInstance = null;
+         currentTypeName = ModelUtil.getTypeName(currentType);
       }
       else {
          currentPackage = "";
          currentTypeIsLayer = false;
          currentInstance = null;
+         currentTypeName = null;
       }
 
       ArrayList newVisibleTypes = new ArrayList();
@@ -312,6 +316,8 @@ EditorModel {
          }
       }
       setVisibleTypesNoEvent(newVisibleTypes);
+
+      refreshTypeChanged();
 
       // Do this at the end in case any of our changes trigger the model
       modelsValid = true;
@@ -704,6 +710,10 @@ EditorModel {
          currentPropertyType = null;
          currentPropertyName = null;
       }
+      else if (prop instanceof CustomProperty) {
+         currentPropertyType = null;
+         currentPropertyName = ((CustomProperty) prop).name;
+      }
       else {
          currentPropertyType = ModelUtil.getEnclosingType(prop);
          savedPropertyValue = currentPropertyValue = ctx.propertyValueString(currentType, null, prop);
@@ -733,6 +743,7 @@ EditorModel {
             // When the type has changed, update the current model which will trigger the rebuilding of the form
             if (newTypeDecl != typeDecl) {
                currentType = newTypeDecl;
+               currentTypeName = newTypeDecl == null ? null : ModelUtil.getTypeName(newTypeDecl);
 
                invalidateModel();
 
@@ -1339,4 +1350,46 @@ EditorModel {
       return res;
    }
 
+   void findEditorSearch(String text) {
+      if (currentTypeName == null) {
+         searchResults = null;
+         return;
+      }
+      DBTypeDescriptor dbType = DBTypeDescriptor.getByName(currentTypeName, true);
+      if (dbType == null) {
+         Object[] insts = DynUtil.getInstancesOfTypeAndSubTypes(currentTypeName);
+         // TODO: filter string properties by text matching
+         if (insts == null)
+            searchResults = null;
+         else
+            searchResults = new ArrayList(java.util.Arrays.asList(insts));
+      }
+      else {
+         if (searchOrderByProps.size() == 0)
+            searchOrderByProps.add("-lastModified");
+         searchResults = new ArrayList<Object>(dbType.searchQuery(null, text, searchOrderByProps, searchStartIx, searchMaxResults));
+      }
+      searchText = text;
+      searchTypeName = currentTypeName;
+   }
+
+   String getImportedPropertyType(Object propType) {
+      if (propType instanceof CustomProperty)
+         return CTypeUtil.getClassName(ModelUtil.getTypeName(((CustomProperty) propType).propertyType));
+      return ctx.getImportedPropertyType(propType);
+   }
+
+   void refreshTypeChanged() {
+      super.refreshTypeChanged();
+
+      if (!StringUtil.equalStrings(currentTypeName, searchTypeName)) {
+         searchResults = null; // TODO: dispose of these here?
+         searchText = null;
+      }
+      else {
+         // This won't refresh the grid - we should be listening in the grid for the layer change and refresh
+         // the properties and redisplay that way
+         //findEditorSearch(searchText);
+      }
+   }
 }

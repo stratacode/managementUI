@@ -1,6 +1,6 @@
 import sc.lang.java.DeclarationType;
 
-/** Editor base class for FormEditor and ReferenceEditor - both need to manage an instance and listen for changes */
+/** Editor base class for FormEditor, RowEditor and ReferenceEditor - they need to manage an instance and listen for changes */
 abstract class InstanceEditor extends TypeEditor {
    Object instance;
    Object oldInstance;

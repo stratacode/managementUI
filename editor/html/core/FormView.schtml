@@ -2,6 +2,7 @@
     import sc.lang.java.BodyTypeDeclaration;
     import sc.lang.InstanceWrapper; %>
 <div>
+   <div id="findEditor"/>
    <%!
        List<IElementEditor> getChildViews() {
           // formList_Repeat is the id of the parent or wrapper class of the repeated elements
@@ -21,7 +22,7 @@
       }
 
    %>
-   <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper">
+   <div id="elementRepeatBuilder" implements="sc.lang.html.IRepeatWrapper" abstract="true">
       <%! Element createElement(Object value, int ix, Element oldTag) {
           FormEditor res;
           BodyTypeDeclaration type = (BodyTypeDeclaration) value;

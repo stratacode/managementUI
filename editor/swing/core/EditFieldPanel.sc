@@ -31,7 +31,7 @@ class EditFieldPanel extends JPanel implements EditorPanelStyle {
       location := SwingUtil.point(xpad + currentTypeTextField.location.x + treeAlignedWidth, ypad + baseline);
       icon := GlobalResources.lookupIcon(currentProperty);
       size := preferredSize;
-      text := currentProperty == null ? "<no property selected>" : editorModel.ctx.getImportedPropertyType(currentProperty) + " " + ModelUtil.getPropertyName(currentProperty);
+      text := currentProperty == null ? "<no property selected>" : editorModel.getImportedPropertyType(currentProperty) + " " + editorModel.getPropertyName(currentProperty);
       visible := editorModel.currentProperty != null;
    }
 

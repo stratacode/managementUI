@@ -2,8 +2,16 @@ class ListGridEditor extends ListEditor {
    boolean showIndex = true;
    boolean showId = true;
 
+   boolean selectRowInstance = false;
+
    ListGridEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
       super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
+   }
+
+   ListGridEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList) {
+      super(view, parentEditor, compType, instList);
+      selectRowInstance = true;
+      showId = false;
    }
 
    void updateProperties() {
@@ -93,5 +101,13 @@ class ListGridEditor extends ListEditor {
       }
       Integer cellWidth = cellWidths.get(propName);
       return cellWidth == null ? -1 : cellWidth;
+   }
+
+   void childSelected(IElementEditor editor) {
+      if (selectRowInstance && editor instanceof RowEditor) {
+         Object inst = ((RowEditor) editor).instance;
+         parentView.editorModel.changeCurrentInstance(inst);
+      }
+      super.childSelected(editor);
    }
 }

@@ -525,4 +525,9 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       return -1;
    }
 
+   void childSelected(IElementEditor child) {
+      if (parentEditor != null)
+         parentEditor.childSelected(this);
+   }
+
 }

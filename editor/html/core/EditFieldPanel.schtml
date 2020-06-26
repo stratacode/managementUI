@@ -16,7 +16,7 @@
 
    <img visible=":= currentIcon != null" src=":= currentIcon.path" style="align-self: baseline; padding-right: 2px"/>
    <span visible=":= editorModel.currentProperty != null">
-       <%= currentProperty == null ? "<no property selected>" : editorModel.importedPropertyType + " " + ModelUtil.getPropertyName(currentProperty) %>
+       <%= currentProperty == null ? "<no property selected>" : editorModel.importedPropertyType + " " + editorModel.getPropertyName(currentProperty) %>
    </span>
 
    <form id="fieldValueEditor" extends="FieldValueEditor" visible=":= currentProperty != null"

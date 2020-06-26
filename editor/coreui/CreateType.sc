@@ -13,7 +13,7 @@ class CreateType extends CreateSubPanel {
    @Sync
    List<String> innerChoiceItems := java.util.Arrays.asList(editorModel == null || editorModel.currentType == null || ModelUtil.isLayerType(editorModel.currentType) ? new String[] {"Top level"} : new String[] {"Top level", "Inside"});
    @Sync
-   String beforeAfterText := editorModel.currentProperty == null ? "the last property" : ModelUtil.getPropertyName(editorModel.currentProperty);
+   String beforeAfterText := editorModel.currentProperty == null ? "the last property" : editorModel.getPropertyName(editorModel.currentProperty);
 
    @Sync
    boolean innerType := !TextUtil.equals(innerChoice, "Top level");

@@ -2,6 +2,7 @@
 import sc.util.HashMap;
 import sc.util.ArrayList;
 import sc.util.LinkedHashMap;
+import sc.db.DBTypeDescriptor;
 
 class TypeTree {
    @Sync(syncMode=SyncMode.Disabled)

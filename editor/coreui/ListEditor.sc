@@ -2,6 +2,7 @@ import sc.type.Type;
 import java.util.Arrays;
 import java.util.Collections;
 
+/** Base class for both ListGridEditor and ListCellEditor */
 class ListEditor extends InstanceEditor {
    List<Object> instList;
    List<Object> visList;
@@ -29,14 +30,25 @@ class ListEditor extends InstanceEditor {
       refreshVisibleList();
    }
 
+   ListEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList) {
+      super(view, parentEditor, null, compType, instList, -1, null);
+      this.instList = convertInstToList(instList);
+      componentType = compType;;
+      componentTypeChanged();
+      refreshVisibleList();
+   }
+
    List<Object> convertInstToList(Object inst) {
+      List<Object> res;
       if (inst instanceof List)
-         instList = (List) inst;
+         res = (List) inst;
       else if (inst instanceof Object[])
-         instList = Arrays.asList((Object[]) inst);
+         res = Arrays.asList((Object[]) inst);
       else if (inst != null)
          throw new IllegalArgumentException("Bad instance type to ListEditor");
-      return Collections.emptyList();
+      else
+         res = null;
+      return res;
    }
 
    Object findCommonBaseType(List<Object> insts, Object defaultType) {
@@ -72,11 +84,50 @@ class ListEditor extends InstanceEditor {
       // Notify any bindings on 'instance' that the value is changed but don't validate those bindings before we've refreshed the children.
       Bind.sendInvalidate(this, "instList", inst);
       // This both invalidates and validates for type
-      Bind.sendChange(this, "type", elem);
+      Bind.sendChange(this, "type", compType);
       refreshChildren();
 
       // Now we're ready to validate the bindings on the instance
       Bind.sendValidate(this, "instList", inst);
+   }
+
+   // Use this version for search results - when the value is not a property
+   @sc.obj.ManualGetSet
+   void updateListEditor(Object compType, List<Object> instList) {
+      setTypeNoChange(null, compType);
+      componentType = compType;
+      componentTypeChanged();
+      this.instList = instList;
+      Bind.sendInvalidate(this, "instList", instList);
+      // This both invalidates and validates for type
+      Bind.sendChange(this, "type", compType);
+      refreshChildren();
+
+      // Now we're ready to validate the bindings on the instance
+      Bind.sendValidate(this, "instList", instList);
+   }
+
+   @sc.obj.ManualGetSet
+   void updateListInstance(List<Object> newList) {
+      if (newList == this.instList)
+         return;
+      if (newList != null && instList != null) {
+         if (newList.size() == instList.size()) {
+            boolean sameList = true;
+            for (int i = 0; i < newList.size(); i++) {
+               if (newList.get(i) != instList.get(i)) {
+                  sameList = false;
+                  break;
+               }
+            }
+            if (sameList)
+               return;
+         }
+      }
+      this.instList = newList;
+      Bind.sendInvalidate(this, "instList", instList);
+      refreshChildren();
+      Bind.sendValidate(this, "instList", instList);
    }
 
    void componentTypeChanged() {

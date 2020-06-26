@@ -13,6 +13,7 @@
    abstract String getFieldId();
 
    void onFocusEvent() {
+      formEditor.childSelected(this);
       parentView.editorModel.currentProperty = propC;
    }
 
