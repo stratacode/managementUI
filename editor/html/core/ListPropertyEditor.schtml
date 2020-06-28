@@ -1,0 +1,14 @@
+<div extends="ListGridEditor">
+   <div id="listTitle">
+      <img class="elementIcon" visible=":= icon != null && type != null"
+           src='= icon == null ? "" : icon.path' alt='= icon == null ? "" : icon.desc' clickEvent="=: gridView = !gridView"/>
+      <img visible=":= clientType != null && !clientType.existsInJSRuntime" src="/images/serverIcon.png" style="position: relative; left: -2px;"/>
+      <%= operatorName %>
+      <a class="textLink" clickEvent="=: changeFocus(true)"><%= displayName %></a>
+      <span visible=":= componentTypeName != null">
+         type
+         <a class="textLink" clickEvent="=: gotoComponentType()" ><%= componentTypeName %></a>
+      </span>
+      [ <%= instList.size() %> ]
+   </div>
+</div>

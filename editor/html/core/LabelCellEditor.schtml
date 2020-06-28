@@ -1,0 +1,13 @@
+<span id="LabelCellEditor">
+<%!
+   String getFieldId() {
+      return null;
+   }
+
+   String getElementStringValue() {
+      return currentStringValue;
+   }
+%>
+   <!-- Not setting disabled here using 'editable' because we have no other way to select these cells -->
+   <span id="labelField" class="labelCell" focusEvent="=: onFocusEvent()"><%= currentStringValue %></span>
+</span>

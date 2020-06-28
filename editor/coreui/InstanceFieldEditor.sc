@@ -3,8 +3,8 @@
  * Base class for FormEditor and RowEditor - contains the functionality to manage a list of fields in the instance
  */
 abstract class InstanceFieldEditor extends InstanceEditor {
-   InstanceFieldEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
+   InstanceFieldEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper, instanceEditor);
    }
 
    /* moved to InstanceEditor

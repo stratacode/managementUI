@@ -23,8 +23,8 @@ abstract class InstanceEditor extends TypeEditor {
       return instance == null || ModelUtil.isObjectType(type) || !(type instanceof java.util.Collection);
    }
 
-   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper);
+   InstanceEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper, instanceEditor);
       instance = inst;
       this.wrapper = wrapper;
    }
@@ -208,7 +208,7 @@ abstract class InstanceEditor extends TypeEditor {
 
       propInst = convertEditorInst(propInst);
 
-      String editorType = getEditorType(prop, propType, propInst, instanceMode);
+      String editorType = getEditorType(prop, propType, propInst, instanceMode || instanceEditor);
       Object editorClass = getEditorClass(editorType, displayMode);
 
       Object oldClass = oldTag != null ? DynUtil.getType(oldTag) : null;
@@ -219,7 +219,7 @@ abstract class InstanceEditor extends TypeEditor {
          return oldTag;
       }
       else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceEditor.this, prop, propType, propInst, ix, null);
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, InstanceEditor.this, prop, propType, propInst, ix, null, instanceEditor);
          newEditor.setElemToEdit(elem);
          //newEditor.setRepeatIndex(ix);
          return newEditor;

@@ -2,7 +2,7 @@ import sc.lang.java.ModelUtil;
 import sc.lang.java.VariableDefinition;
 
 @Component
-@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int,sc.lang.InstanceWrapper")
+@CompilerSettings(propagateConstructor="sc.editor.FormView,sc.editor.InstanceEditor,Object,Object,Object,int,sc.lang.InstanceWrapper,boolean")
 abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppable {
    InstanceEditor formEditor; // TODO: rename to parentEditor since it can be a ListEditor or RowEditor too
    Object propC;
@@ -58,8 +58,8 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
    @Bindable
    boolean cellChild = false;
 
-   ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx, InstanceWrapper wrapper) {
-      instanceMode = formEditor.instanceMode;
+   ElementEditor(FormView parentView, InstanceEditor formEditor, Object prop, Object propType, Object propInst, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      instanceMode = instanceEditor || formEditor.instanceMode || formEditor.instanceEditor;
       this.formEditor = formEditor;
       editorModel = parentView.editorModel;
       this.propC = prop;

@@ -1368,9 +1368,18 @@ EditorModel {
          if (searchOrderByProps.size() == 0)
             searchOrderByProps.add("-lastModified");
          searchResults = new ArrayList<Object>(dbType.searchQuery(null, text, searchOrderByProps, searchStartIx, searchMaxResults));
+         if (searchResults.size() == searchMaxResults) {
+            numSearchResults = dbType.searchCountQuery(text);
+         }
+         else
+            numSearchResults = searchResults.size();
       }
       searchText = text;
       searchTypeName = currentTypeName;
+   }
+
+   void refreshSearch() {
+      findEditorSearch(searchText);
    }
 
    String getImportedPropertyType(Object propType) {

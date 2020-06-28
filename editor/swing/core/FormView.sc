@@ -90,7 +90,7 @@ FormView {
                                                                       getDefaultCurrentObj(currentType);
 
              */
-            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj, ix, wrapper);
+            FormEditor editor = new FormEditor(FormView.this, null, null, currentType, currentObj, ix, wrapper, false);
             updateCell(editor, ix);
 
             return editor;

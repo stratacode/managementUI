@@ -9,6 +9,7 @@ class ListEditor extends InstanceEditor {
    Object componentType;
    String componentTypeName;
    int startIx;
+   int countStartIx = 0;
    int maxNum = 10;
    boolean componentIsValue = false;
 
@@ -22,16 +23,16 @@ class ListEditor extends InstanceEditor {
 
    ArrayList<SortProp> sortProps = null;
 
-   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper);
+   ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, inst, listIx, wrapper, instanceEditor);
       instList = convertInstToList(inst);
       componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayOrListComponentType(type));
       componentTypeChanged();
       refreshVisibleList();
    }
 
-   ListEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList) {
-      super(view, parentEditor, null, compType, instList, -1, null);
+   ListEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList, boolean instanceEditor) {
+      super(view, parentEditor, null, compType, instList, -1, null, instanceEditor);
       this.instList = convertInstToList(instList);
       componentType = compType;;
       componentTypeChanged();
@@ -364,7 +365,7 @@ class ListEditor extends InstanceEditor {
 
       listVal = convertEditorInst(listVal);
 
-      String editorType = getEditorType(parentProperty, compType, listVal, true);
+      String editorType = getEditorType(parentProperty, compType, listVal, instanceMode || instanceEditor);
       Object editorClass = getEditorClass(editorType, displayMode);
 
       int listIx = ix + startIx;
@@ -376,7 +377,7 @@ class ListEditor extends InstanceEditor {
          return oldTag;
       }
       else {
-         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx, null);
+         IElementEditor newEditor = (IElementEditor) DynUtil.newInnerInstance(editorClass, null, null, parentView, ListEditor.this, null, compType, listVal, listIx, null, instanceEditor);
          newEditor.setElemToEdit(compType);
          newEditor.setRepeatIndex(ix);
          return newEditor;

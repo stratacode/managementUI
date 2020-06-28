@@ -1,0 +1,11 @@
+<div extends="ListGridEditor">
+   <%! object intConverter extends IntConverter {} %>
+   <div id="listTitle">
+      Found <%= editorModel.numSearchResults %>
+      <span id="searchResultsHeader" class="searchResultsHeader" visible=":= editorModel.searchMaxResults < editorModel.numSearchResults">
+        showing <input type="number" value=":=: intConverter.intToString(editorModel.searchMaxResults)" changeEvent="=: editorModel.refreshSearch() "/>
+        from <input type="number" value=":=: intConverter.intToString(editorModel.searchStartIx)"
+                    step=":= editorModel.searchMaxResults" changeEvent="=: editorModel.refreshSearch()"/>
+      </span>
+   </div>
+</div>

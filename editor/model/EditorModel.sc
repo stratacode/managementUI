@@ -142,8 +142,10 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
    int searchStartIx = 0;
    int searchMaxResults = 2;
 
+   int numSearchResults;
    List<Object> searchResults = null;
    String searchText;
+   // type name of the last search
    String searchTypeName;
 
    @sc.obj.Constant
@@ -575,5 +577,15 @@ class EditorModel implements sc.bind.IChangeable, sc.dyn.IDynListener {
          system.fetchRemoteTypeDeclaration(typeName, listener);
       }
       return null;
+   }
+
+   void clearSearch() {
+      searchText = null;
+      searchResults = null;
+      searchTypeName = null;
+   }
+
+   String getCurrentTypeClassName() {
+      return currentTypeName == null ? null : CTypeUtil.getClassName(currentTypeName);
    }
 }

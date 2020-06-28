@@ -13,8 +13,9 @@ class FormEditor extends InstanceFieldEditor {
    
    instance =: operatorChanged();
 
-   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
+   FormEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx,
+              InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper, instanceEditor);
    }
 
    void gotoExtendsType() {

@@ -1,17 +1,18 @@
-class ListGridEditor extends ListEditor {
+// Base class for ListPropertyEditor and SearchResultsEditor
+abstract class ListGridEditor extends ListEditor {
    boolean showIndex = true;
    boolean showId = true;
 
    boolean selectRowInstance = false;
 
-   ListGridEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
+   ListGridEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper, instanceEditor);
    }
 
-   ListGridEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList) {
-      super(view, parentEditor, compType, instList);
-      selectRowInstance = true;
-      showId = false;
+   ListGridEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList, boolean instanceEditor) {
+      super(view, parentEditor, compType, instList, instanceEditor);
+      selectRowInstance = instanceEditor;
+      showId = !instanceEditor;
    }
 
    void updateProperties() {
@@ -82,7 +83,7 @@ class ListGridEditor extends ListEditor {
 
    void addComputedComponentProperties(List<Object> props) {
       if (showIndex) {
-         props.add(new ComputedProperty("#", Integer.class, "text", null, 35, null));
+         props.add(new ComputedProperty("#", Integer.class, "label", null, 30, null));
       }
       if (showId && !componentIsValue) {
          props.add(new ComputedProperty("Id", null, "ref", null, 200, null));

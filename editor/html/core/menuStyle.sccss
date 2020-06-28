@@ -648,7 +648,7 @@ a.tooltip:hover span {
    padding-bottom: 2px;
 }
 
-.textCell {
+.textCell, .labelCell {
    padding-left: 0;
    width: 96.5%;
 }
@@ -732,3 +732,16 @@ a.tooltip:hover span {
 .iconLink {
    text-decoration: none;
 }
+
+.findEditor {
+   padding: 5px;
+}
+
+.clearSearchButton, .doSearchButton {
+   vertical-align: bottom;
+}
+
+.searchResultsHeader input {
+   width: 3em;
+}
+

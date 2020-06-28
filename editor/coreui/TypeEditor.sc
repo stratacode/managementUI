@@ -54,10 +54,12 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    @Bindable
    int listIndex; // If we are in a list component, the original absolute index of our element
 
-   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper) {
+   TypeEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
       parentView = view;
       this.editorModel = parentView.editorModel;
       this.parentEditor = parentEditor;
+      if (instanceEditor || (parentEditor != null && parentEditor.instanceEditor))
+         this.instanceEditor = true;
       if (parentEditor instanceof ListEditor)
          this.parentList = (ListEditor) parentEditor;
       if (parentEditor instanceof InstanceEditor)
@@ -282,6 +284,10 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
 
       // For object instances that are defined directly by source, edit the type, not the instance
       objectType = ModelUtil.isObjectType(newType);
+      updateForTypeChange();
+   }
+
+   void updateForTypeChange() {
    }
 
    void updateClassViewLayer() {
@@ -330,7 +336,10 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       return editorModel.getPropertyName(parentProperty);
    }
 
+   // The instanceMode flag indicates whether we have a selectedInstance in the editorMode
    boolean instanceMode := parentView.instanceMode;
+   // For search results, we are displaying instances all the time - even without a current instance
+   boolean instanceEditor;
    boolean editInstances := instanceMode && !objectType;
    boolean objectType;
 
@@ -399,6 +408,10 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
    Object getEditorClass(String editorType, String displayMode) {
       if (editorType.equals("text"))
          return TextFieldEditor.class;
+      else if (editorType.equals("label")) {
+         System.out.println("*** Do we need LabelFieldEditor?");
+         return TextFieldEditor.class;
+      }
       else if (editorType.equals("textArea"))
          return MultiLineTextEditor.class;
       else if (editorType.equals("ref"))
@@ -410,7 +423,7 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
       else if (editorType.equals("form"))
          return FormEditor.class;
       else if (editorType.equals("list"))
-         return ListGridEditor.class;
+         return ListPropertyEditor.class;
       System.err.println("*** Unrecognized editorType: " + editorType);
       return TextFieldEditor.class;
    }

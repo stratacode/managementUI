@@ -33,7 +33,7 @@
              res.setTypeAndInstance(null, type, currentObj, wrapper);
           }
           else {
-             res = new FormEditor(FormView.this, null, null, type, currentObj, ix, wrapper);
+             res = new FormEditor(FormView.this, null, null, type, currentObj, ix, wrapper, false);
           }
           res.setRepeatVar(value);
           res.setRepeatIndex(ix);

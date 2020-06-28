@@ -1,9 +1,11 @@
 <div> 
-   <div id="findEditor" visible=":= editorModel.showFindEditor">
-      Find <%= editorModel.currentTypeName %> <input type="text" value=":= editorModel.searchText"
-               changeEvent="=: editorModel.findEditorSearch(value)"/>
-      <div id="searchResultsView">
-         <div id="searchResultsList" replaceWith=":= listGridEditor"/>
+   <div id="findEditor" class="findEditor" visible=":= editorModel.showFindEditor">
+      Find type: <%= editorModel.currentTypeClassName %>
+      <input type="text" id="searchTextField" value=":= editorModel.searchText" changeEvent="=: editorModel.findEditorSearch(value)"/>
+      <input type="image" class="doSearchButton" src="/images/search.svg" clickEvent="=: editorModel.findEditorSearch(searchTextField.value)"/>
+      <input type="image" class="clearSearchButton" src="/images/x-square.svg" clickEvent="=: editorModel.clearSearch()"/>
+      <div id="searchResultsView" visible=":= resultsVisible">
+         <div id="searchResultsList" replaceWith=":= searchResultsEditor"/>
       </div>
    </div>
 </div>

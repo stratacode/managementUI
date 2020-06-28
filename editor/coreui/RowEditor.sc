@@ -8,14 +8,16 @@ class RowEditor extends InstanceFieldEditor {
 
    ListGridEditor listEditor;
 
-   RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper);
+   RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, instance, listIx, wrapper, instanceEditor);
       listEditor = (ListGridEditor) parentEditor;
    }
 
    Object getEditorClass(String editorType, String displayMode) {
       if (editorType.equals("text"))
          return TextCellEditor.class;
+      else if (editorType.equals("label"))
+         return LabelCellEditor.class;
       else if (editorType.equals("textArea"))
          return TextCellEditor.class;
       else if (editorType.equals("ref"))
@@ -64,12 +66,13 @@ class RowEditor extends InstanceFieldEditor {
          Object[] rowProps = null;
          if (type != parentList.componentType)
             rowProps = editorModel.getPropertiesForType(type, getPropListener());
+         int startIx = listEditor == null ? 0 : listEditor.countStartIx;
          for (int i = 0; i < properties.length; i++) {
             if (properties[i] instanceof ComputedProperty) {
                ComputedProperty prop = (ComputedProperty) properties[i];
                properties[i] = prop = prop.clone();
                if (prop.name.equals("#"))
-                  prop.value = listIndex;
+                  prop.value = listIndex + startIx;
                else if (prop.name.equals("Id")) {
                   prop.propertyType = editorModel.fetchInstanceType(instance);
                   prop.value = instance;
@@ -94,5 +97,4 @@ class RowEditor extends InstanceFieldEditor {
          }
       }
    }
-
 }

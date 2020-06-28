@@ -2,13 +2,15 @@
 class ListCellEditor extends ListEditor {
    cellMode = true;
 
-   ListCellEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper) {
-      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper);
+   ListCellEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
+      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper, instanceEditor);
    }
 
    Object getEditorClass(String editorType, String displayMode) {
       if (editorType.equals("text"))
          return TextCellEditor.class;
+      else if (editorType.equals("label"))
+         return LabelCellEditor.class;
       else if (editorType.equals("textArea"))
          return TextCellEditor.class;
       else if (editorType.equals("ref"))

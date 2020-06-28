@@ -5,31 +5,35 @@ class DataView extends FormView {
 
    List<Object> results := editorModel.searchResults;
    results =: refreshResults();
-   ListGridEditor listGridEditor;
+   SearchResultsEditor searchResultsEditor;
+
+   boolean resultsVisible = false;
 
    void refreshResults() {
       List<Object> res = results;
       if (res == null)
-         visible = false;
+         resultsVisible = false;
       else {
-         if (listGridEditor != null) {
-            if (listGridEditor.type != editorModel.currentType) {
-               listGridEditor.updateListEditor(editorModel.currentType, res);
+         if (searchResultsEditor != null) {
+            searchResultsEditor.countStartIx = editorModel.searchStartIx;
+            if (searchResultsEditor.type != editorModel.currentType) {
+               searchResultsEditor.updateListEditor(editorModel.currentType, res);
             }
             else {
-               listGridEditor.updateListInstance(res);
+               searchResultsEditor.updateListInstance(res);
             }
          }
          else {
-            listGridEditor = new ListGridEditor(DataView.this, null, editorModel.currentType, res);
+            searchResultsEditor = new SearchResultsEditor(DataView.this, null, editorModel.currentType, res, true);
+            searchResultsEditor.countStartIx = editorModel.searchStartIx;
          }
-         visible = true;
+         resultsVisible = true;
       }
    }
 
    void updateFormProperties() {
       super.updateFormProperties();
-      if (listGridEditor != null)
-         listGridEditor.updateProperties();
+      if (searchResultsEditor != null)
+         searchResultsEditor.updateProperties();
    }
 }
