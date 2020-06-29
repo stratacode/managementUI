@@ -4,8 +4,8 @@
       <input type="text" id="searchTextField" value=":= editorModel.searchText" changeEvent="=: editorModel.findEditorSearch(value)"/>
       <input type="image" class="doSearchButton" src="/images/search.svg" clickEvent="=: editorModel.findEditorSearch(searchTextField.value)"/>
       <input type="image" class="clearSearchButton" src="/images/x-square.svg" clickEvent="=: editorModel.clearSearch()"/>
-      <div id="searchResultsView" visible=":= resultsVisible">
-         <div id="searchResultsList" replaceWith=":= searchResultsEditor"/>
-      </div>
+   </div>
+   <div id="searchResultsView" visible=":= resultsVisible">
+      <div id="searchResultsList" replaceWith=":= searchResultsEditor"/>
    </div>
 </div>

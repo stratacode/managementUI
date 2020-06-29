@@ -2,7 +2,12 @@
     import sc.lang.java.BodyTypeDeclaration;
     import sc.lang.InstanceWrapper; %>
 <div>
-   <div id="findEditor"/>
+   <%! Double searchResultsHeight = null;  %>
+   <div id="findEditor" visible="false"/>
+   <div id="searchResultsView" visible="false" style=':= searchResultsHeight == null ? "" : "height: " + searchResultsHeight + "px"'/>
+   <div id="findSplit" class="horizSplitBar" extends="HorizSplitBar"
+        visible=":= searchResultsView.visible" splitHeight="=: searchResultsHeight = splitHeight"
+        parentHeight=":= FormView.this.offsetHeight" prevWindowHeight=":= searchResultsView.offsetHeight"/>
    <%!
        List<IElementEditor> getChildViews() {
           // formList_Repeat is the id of the parent or wrapper class of the repeated elements

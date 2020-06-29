@@ -292,8 +292,6 @@ TypeTree {
 
       // Then build our TreeEnt structure from the Set of src type names we get back
       for (String srcTypeName:srcTypeNames) {
-         if (srcTypeName.equals("java.math.BigDecimal"))
-            System.out.println("***");
          if (!treeModel.isFilteredType(srcTypeName)) {
             addModel(srcTypeName, true);
             if (++treeModel.typesCreated >= treeModel.MAX_TYPES) {
