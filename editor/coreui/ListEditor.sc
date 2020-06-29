@@ -10,21 +10,18 @@ class ListEditor extends InstanceEditor {
    String componentTypeName;
    int startIx;
    int countStartIx = 0;
-   int maxNum = 10;
+   int maxNum;
    boolean componentIsValue = false;
-
-   static class SortProp {
-      String propName;
-      boolean reverseDir;
-   }
+   boolean externalSort = false;
 
    // Add filter criteria: Bool, enum, number string types: include/exclude flag, list of values, property-name
    // do we need a 'visible' rule or should they just add a new property initialized with that rule, then use the property filter on that column to filter
 
-   ArrayList<SortProp> sortProps = null;
+   ArrayList<String> sortProps = null;
 
    ListEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object inst, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
       super(view, parentEditor, parentProperty, type, inst, listIx, wrapper, instanceEditor);
+      maxNum = EditorContext.MaxInstancesOfType;
       instList = convertInstToList(inst);
       componentType = resolveSrcTypeDeclaration(ModelUtil.getArrayOrListComponentType(type));
       componentTypeChanged();
@@ -33,6 +30,7 @@ class ListEditor extends InstanceEditor {
 
    ListEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList, boolean instanceEditor) {
       super(view, parentEditor, null, compType, instList, -1, null, instanceEditor);
+      maxNum = EditorContext.MaxInstancesOfType;
       this.instList = convertInstToList(instList);
       componentType = compType;;
       componentTypeChanged();
@@ -205,9 +203,12 @@ class ListEditor extends InstanceEditor {
    int getSortDir(String propName) {
       if (sortProps == null)
          return 0;
-      for (SortProp sp:sortProps) {
-         if (sp.propName.equals(propName))
-            return sp.reverseDir ? -1 : 1;
+      for (String sp:sortProps) {
+         boolean reverse = sp.startsWith("-");
+         if (reverse)
+            sp = sp.substring(1);
+         if (sp.equals(propName))
+            return reverse ? -1 : 1;
       }
       return 0;
    }
@@ -218,13 +219,16 @@ class ListEditor extends InstanceEditor {
       if (sortProps == null) {
          if (val == 0)
             return;
-         sortProps = new ArrayList<SortProp>();
+         sortProps = new ArrayList<String>();
          add = true;
       }
       else if (val == 0) {
          for (int i = 0; i < sortProps.size(); i++) {
-            SortProp sp = sortProps.get(i);
-            if (sp.propName.equals(propName)) {
+            String sp = sortProps.get(i);
+            boolean reverse = sp.startsWith("-");
+            if (reverse)
+               sp = sp.substring(1);
+            if (sp.equals(propName)) {
                sortProps.remove(i);
                if (sortProps.size() == 0)
                   sortProps = null;
@@ -236,43 +240,56 @@ class ListEditor extends InstanceEditor {
          add = true;
       }
       if (add) {
-         SortProp sp;
+         String sp;
          int i;
          for (i = 0; i < sortProps.size(); i++) {
             sp = sortProps.get(i);
-            if (sp.propName.equals(propName)) {
-               sp.reverseDir = val == -1;
+            boolean reverse = sp.startsWith("-");
+            if (reverse)
+               sp = sp.substring(1);
+            if (sp.equals(propName)) {
+               String newSp = val == -1 ? "-" + propName : propName;
+               sortProps.set(i, newSp);
                break;
             }
          }
          if (i == sortProps.size()) {
             if (!append && sortProps.size() > 0) {
-               ArrayList<SortProp> oldSortProps = new ArrayList<SortProp>(sortProps);
+               ArrayList<String> oldSortProps = new ArrayList<String>(sortProps);
                sortProps.clear();
-               for (SortProp oldSortProp:oldSortProps) {
-                  refreshSortDir(oldSortProp.propName);
+               for (String oldSortProp:oldSortProps) {
+                  if (oldSortProp.startsWith("-"))
+                     oldSortProp = oldSortProp.substring(1);
+                  refreshSortDir(oldSortProp);
                }
             }
 
-            sp = new SortProp();
-            sp.propName = propName;
-            sp.reverseDir = val == -1;
-            sortProps.add(sp);
+            sortProps.add(val == -1 ? "-" + propName : propName);
          }
       }
       refreshVisibleList();
+      sortChanged();
    }
 
+   void sortChanged() {}
+
    List<Object> filterAndSort() {
-      if (sortProps == null)
+      if (sortProps == null || externalSort)
          return instList;
       ArrayList<Object> res = new ArrayList<Object>(instList);
       java.util.Collections.sort(res, new java.util.Comparator() {
          int compare(Object o1, Object o2) {
             int res = 0;
-            for (SortProp sp:sortProps) {
-               String propName = sp.propName;
-               int revMult = sp.reverseDir ? -1 : 1;
+            for (String sp:sortProps) {
+               String propName = sp;
+               int revMult;
+               if (sp.startsWith("-")) {
+                  propName = propName.substring(1);
+                  revMult = -1;
+               }
+               else
+                  revMult = 1;
+
                Object prop = getPropertyByName(propName);
                if (prop instanceof ComputedProperty) {
                   res = ((ComputedProperty) prop).compare(o1, o2) * revMult;
@@ -394,4 +411,14 @@ class ListEditor extends InstanceEditor {
    }
 
    void refreshSortDir(String propName) {}
+
+   void refreshListIndex() {
+      if (childViews != null) {
+         for (IElementEditor view:childViews) {
+            if (view instanceof RowEditor) {
+               ((RowEditor) view).validateListIndex();
+            }
+         }
+      }
+   }
 }

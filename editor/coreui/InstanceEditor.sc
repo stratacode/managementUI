@@ -242,7 +242,7 @@ abstract class InstanceEditor extends TypeEditor {
    }
 
    List<InstanceWrapper> getInstancesOfType(Object type, boolean addNull, String nullLabelName, boolean selectToCreate) {
-      return editorModel.ctx.getInstancesOfType(type, 10, addNull, nullLabelName, selectToCreate);
+      return editorModel.ctx.getInstancesOfType(type, EditorContext.MaxInstancesOfType, addNull, nullLabelName, selectToCreate);
    }
 
    int getInstSelectedIndex(Object inst, List<InstanceWrapper> instsOfType) {

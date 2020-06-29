@@ -39,4 +39,6 @@ interface IElementEditor {
    public void setCellChild(boolean b);
 
    void updateComputedValues();
+
+   void refreshValue();
 }

@@ -24,9 +24,11 @@ class DataView extends FormView {
             }
          }
          else {
-            searchResultsEditor = new SearchResultsEditor(DataView.this, null, editorModel.currentType, res, true);
+            searchResultsEditor = new SearchResultsEditor(editorModel, DataView.this, null, editorModel.currentType, res, true);
             searchResultsEditor.countStartIx = editorModel.searchStartIx;
+            searchResultsEditor.externalSort = true;
          }
+         searchResultsEditor.refreshListIndex();
          resultsVisible = true;
       }
    }

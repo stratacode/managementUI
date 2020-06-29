@@ -324,5 +324,10 @@ abstract class ElementEditor extends PrimitiveEditor implements sc.obj.IStoppabl
       if (propName.equals(propertyName))
          Bind.sendChangedEvent(this, "cellWidth");
    }
+
+   void refreshValue() {
+      changeCt++;
+   }
+
 }
 

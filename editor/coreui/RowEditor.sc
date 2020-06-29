@@ -6,6 +6,8 @@ class RowEditor extends InstanceFieldEditor {
 
    boolean showHeader := listIndex == 0;
 
+   listIndex =: validateListIndex();
+
    ListGridEditor listEditor;
 
    RowEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, Object instance, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
@@ -97,4 +99,24 @@ class RowEditor extends InstanceFieldEditor {
          }
       }
    }
+
+   void validateListIndex() {
+      int startIx = listEditor == null ? 0 : listEditor.countStartIx;
+      for (int i = 0; i < properties.length; i++) {
+         if (properties[i] instanceof ComputedProperty) {
+            ComputedProperty prop = (ComputedProperty) properties[i];
+            if (prop.name.equals("#")) {
+               prop.value = listIndex + startIx;
+
+               if (childViews != null) {
+                  IElementEditor elemEditor = i < childViews.size() ? childViews.get(i) : null;
+                  if (elemEditor != null) {
+                     elemEditor.refreshValue();
+                  }
+               }
+            }
+         }
+      }
+   }
+
 }

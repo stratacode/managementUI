@@ -3,8 +3,8 @@
    <div id="listTitle">
       Found <%= editorModel.numSearchResults %>
       <span id="searchResultsHeader" class="searchResultsHeader" visible=":= editorModel.searchMaxResults < editorModel.numSearchResults">
-        showing <input type="number" value=":=: intConverter.intToString(editorModel.searchMaxResults)" changeEvent="=: editorModel.refreshSearch() "/>
-        from <input type="number" value=":=: intConverter.intToString(editorModel.searchStartIx)"
+        showing <input type="number" value=":=: intConverter.intToString(editorModel.searchMaxResults)" changeEvent="=: editorModel.refreshSearch()" min="1" max="100"/>
+        from <input type="number" value=":=: intConverter.intToString(editorModel.searchStartIx)" min="0" max="10000"
                     step=":= editorModel.searchMaxResults" changeEvent="=: editorModel.refreshSearch()"/>
       </span>
    </div>

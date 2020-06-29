@@ -718,7 +718,7 @@ class TypeTree {
             needsType = true;
          }
          if (cachedTypeDeclaration != null) {
-            insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, 10, false, null, false);
+            insts = editorModel.ctx.getInstancesOfType(cachedTypeDeclaration, EditorContext.MaxInstancesOfType, false, null, false);
          }
          return updateInstances(insts);
       }

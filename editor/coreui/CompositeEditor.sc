@@ -12,4 +12,7 @@ abstract class CompositeEditor implements IElementEditor {
    int getCurrentListSize() {
       return -1;
    }
+
+   void refreshValue() {
+   }
 }

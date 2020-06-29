@@ -148,7 +148,7 @@ TypeTree {
               ents.needsType = true;
           }
           if (ents.cachedTypeDeclaration != null) {
-             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, 10, false, null, false);
+             insts = editorModel.ctx.getInstancesOfType(ents.cachedTypeDeclaration, EditorContext.MaxInstancesOfType, false, null, false);
           }
        }
        ents.updateInstances(insts);

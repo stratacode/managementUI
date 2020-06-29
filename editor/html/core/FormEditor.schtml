@@ -9,11 +9,12 @@
       <%= extendsTypeLabel %>
       <a class="textLink" clickEvent="=: gotoExtendsType()" ><%= extendsTypeName %></a>
 
+      <!--
       <select id="selectInstance" class="selectInstance"
                optionDataSource=":= instancesOfType"
                selectedIndex="=: updateWrapper((InstanceWrapper) selectedValue)"
                selectedIndex=":= getInstSelectedIndex(instance, instancesOfType)"
-               visible=":= showInstanceSelect"/>
+               visible=":= showInstanceSelect"/> -->
    </div>
 
    <div id="propList" repeat=":= properties" repeatVarName="propObj" repeatWrapper="ElementRepeatWrapper"/>

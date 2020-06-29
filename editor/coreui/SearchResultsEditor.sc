@@ -1,10 +1,15 @@
 class SearchResultsEditor extends ListGridEditor {
+   EditorModel editorModel;
 
-   SearchResultsEditor(FormView view, TypeEditor parentEditor, Object parentProperty, Object type, List<Object> insts, int listIx, InstanceWrapper wrapper, boolean instanceEditor) {
-      super(view, parentEditor, parentProperty, type, insts, listIx, wrapper, instanceEditor);
-   }
-
-   SearchResultsEditor(FormView view, TypeEditor parentEditor, Object compType, Object instList, boolean instanceEditor) {
+   SearchResultsEditor(EditorModel model, FormView view, TypeEditor parentEditor, Object compType, Object instList, boolean instanceEditor) {
       super(view, parentEditor, compType, instList, instanceEditor);
+      editorModel = model;
    }
+
+   void sortChanged() {
+      if (editorModel != null) {
+         editorModel.searchOrderByProps = sortProps == null ? new ArrayList<String>() : new ArrayList<String>(sortProps);
+      }
+   }
+
 }

@@ -105,7 +105,7 @@ TypeTreeModel {
    }
 
    Set<String> getSrcTypeNames() {
-      Set<String> srcTypeNames = system.getSrcTypeNames(true, loadInnerTypesAtStartup, false, true, true);
+      Set<String> srcTypeNames = system.getSrcTypeNames(true, loadInnerTypesAtStartup, false, false, true);
       if (specifiedLayerNames != null) {
          specifiedLayers = new ArrayList<Layer>(specifiedLayerNames.length);
          for (int i = 0; i < specifiedLayerNames.length; i++) {

@@ -39,6 +39,8 @@ EditorModel {
 
    importedPropertyType := getImportedPropertyType(currentProperty);
 
+   searchOrderByProps =: refreshSearch();
+
    boolean modelsValid = true; // start out true so the first invalidate kicks in.... when nothing is selected, we are valid
    boolean modelValidating = false;
 
@@ -1365,9 +1367,10 @@ EditorModel {
             searchResults = new ArrayList(java.util.Arrays.asList(insts));
       }
       else {
-         if (searchOrderByProps.size() == 0)
-            searchOrderByProps.add("-lastModified");
-         searchResults = new ArrayList<Object>(dbType.searchQuery(null, text, searchOrderByProps, searchStartIx, searchMaxResults));
+         List<String> useOrderByProps = new ArrayList<String>(searchOrderByProps);
+         if (useOrderByProps.size() == 0 && ModelUtil.isAssignableFrom(sc.db.IDBObject.class, currentType))
+            useOrderByProps.add("-lastModified");
+         searchResults = new ArrayList<Object>(dbType.searchQuery(null, text, useOrderByProps, searchStartIx, searchMaxResults));
          if (searchResults.size() == searchMaxResults) {
             numSearchResults = dbType.searchCountQuery(text);
          }
