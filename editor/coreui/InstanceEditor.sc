@@ -56,7 +56,7 @@ abstract class InstanceEditor extends TypeEditor {
       if (instance == null)
          return "<unset>";
       else
-         return CTypeUtil.getClassName(DynUtil.getInstanceName(instance));
+         return DynUtil.getDisplayName(instance);
    }
 
    void init() {

@@ -15,7 +15,7 @@
          <img src='= tree.ent.icon == null ? "" : tree.ent.icon.path'
               visible=":= tree.ent.icon != null"
               style="vertical-align:-3px">
-         <%= tree.ent.nodeId %>
+         <%= tree.ent.nodeDisplayName %>
       </a>
    </span>
    <ol visible=":= tree.hasChildren" class=':= tree.ent.open ? "sctOpen" : "sctClosed"'>

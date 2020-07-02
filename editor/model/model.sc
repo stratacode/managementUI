@@ -17,8 +17,6 @@ import sc.type.CTypeUtil;
 import sc.util.LinkedHashMap;
 import sc.util.StringUtil;
 
-import sc.dyn.DynUtil;
-
 import sc.bind.Bind;
 import sc.bind.IListener;
 import sc.bind.AbstractListener;
@@ -49,7 +47,6 @@ import sc.lang.java.Parameter;
 import sc.lang.java.IVariableInitializer;
 
 import sc.type.IResponseListener;
-import sc.type.PTypeUtil;
 
 @Sync(syncMode=sc.obj.SyncMode.Automatic)
 public editor.model extends util, gui.util.core, sys.layeredSystem {

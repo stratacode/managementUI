@@ -326,7 +326,7 @@ class TypeTree {
       }
 
       int compareTo(TreeEnt c) {
-         return value.compareTo(c.value);
+         return nodeId.compareTo(c.nodeId);
       }
 
       public boolean isVisible(boolean byLayer) {
@@ -547,7 +547,7 @@ class TypeTree {
       boolean hasChild(String value) {
          if (childEnts != null) {
             for (TreeEnt childEnt:childEnts.values()) {
-               if (childEnt.value.equals(value))
+               if (childEnt.nodeId.equals(value))
                   return true;
             }
          }
@@ -787,7 +787,7 @@ class TypeTree {
                       }
                    }
                    if (childEnt == null) {
-                      String nodeDisplayName = getNodeIdFromInstance(inst.theInstance);
+                      String nodeDisplayName = getNodeDisplayNameFromInstance(inst.theInstance);
                       childEnt = new TreeEnt(EntType.Instance, nodeDisplayName, typeTree, inst.typeName, null);
                       childEnt.instance = inst;
                       childEnt.prependPackage = true;
@@ -860,6 +860,15 @@ class TypeTree {
          }
       }
 
+      public String getNodeDisplayName() {
+         switch (type) {
+            case Instance:
+               return getNodeDisplayNameFromInstance(instance.theInstance);
+            default:
+               return value;
+         }
+      }
+
       void sendChangedEvent() {
         sc.bind.Bind.sendEvent(sc.bind.IListener.VALUE_CHANGED, this, null);
       }
@@ -869,7 +878,7 @@ class TypeTree {
             System.err.println("*** Weird case in type tree index key");
             return typeName;
          }
-         return type == EntType.Instance ? typeName + ":" + instance.toString() : typeName;
+         return type == EntType.Instance ? typeName + ":" + nodeId : typeName;
       }
    }
 
@@ -940,7 +949,11 @@ class TypeTree {
    }
 
    static String getNodeIdFromInstance(Object inst) {
-      return inst == null ? "<null>" : CTypeUtil.getClassName(DynUtil.getInstanceName(inst));
+      return inst == null ? "<null>" : DynUtil.getInstanceId(inst);
+   }
+
+   static String getNodeDisplayNameFromInstance(Object inst) {
+      return inst == null ? "<null>" : DynUtil.getDisplayName(inst);
    }
 
    boolean isImplProcess() {
