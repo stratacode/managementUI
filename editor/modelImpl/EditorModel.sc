@@ -199,8 +199,12 @@ EditorModel {
                if (newTypeLayers.contains(currentLayer))
                   resetCurrentLayer = false;
             }
-            if (resetCurrentLayer && newTypeLayers.size() > lastTypeLayerIx)
+            if (resetCurrentLayer && newTypeLayers.size() > lastTypeLayerIx) {
                currentLayer = newTypeLayers.get(lastTypeLayerIx);
+               // There is a binding to set this but it might be queued and we need this updated for processVisibleTypes below
+               if (ctx.currentLayer != currentLayer)
+                  ctx.currentLayer = currentLayer;
+            }
          }
 
          /** --- */
@@ -598,7 +602,11 @@ EditorModel {
       Object elemValue = expr;
       if (pendingCreate || !updateType) {
          if (prop != null) {
-            Object propertyType = ModelUtil.getPropertyType(prop);
+            Object propertyType;
+            if (prop instanceof CustomProperty)
+               propertyType = ((CustomProperty) prop).propertyType;
+            else
+               propertyType = ModelUtil.getPropertyType(prop);
             if (propertyType instanceof Class) {
                try {
                   elemValue = Type.propertyStringToValue(propertyType, expr);
