@@ -1378,9 +1378,9 @@ EditorModel {
          List<String> useOrderByProps = new ArrayList<String>(searchOrderByProps);
          if (useOrderByProps.size() == 0 && ModelUtil.isAssignableFrom(sc.db.IDBObject.class, currentType))
             useOrderByProps.add("-lastModified");
-         searchResults = new ArrayList<Object>(dbType.searchQuery(null, text, useOrderByProps, searchStartIx, searchMaxResults));
+         searchResults = new ArrayList<Object>(dbType.searchQuery(text, null, null, null, useOrderByProps, searchStartIx, searchMaxResults));
          if (searchResults.size() == searchMaxResults) {
-            numSearchResults = dbType.searchCountQuery(text);
+            numSearchResults = dbType.searchCountQuery(text, null, null);
          }
          else
             numSearchResults = searchResults.size();

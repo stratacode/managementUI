@@ -10,12 +10,12 @@
    int clearedErrorCount = 0;
    SyncDestination syncDest = SyncManager.defaultSyncManager.syncDestination;
 %>
-   <div id="horizSplitBar" class="horizSplitBar" extends="HorizSplitBar"
+   <div id="frameHorizSplitBar" class="horizSplitBar" extends="HorizSplitBar"
         splitPercent="=: menuStyle.appFrameHeight = splitPercent"
         parentHeight=":= Window.window.innerHeight" prevWindowHeight=":= parentHeight / 2"
         visible=":= windowState == 2"/>
 
-   <div id="vertSplitBar" class="frameVertSplitBar" extends="VertSplitBar"
+   <div id="frameVertSplitBar" class="frameVertSplitBar" extends="VertSplitBar"
         splitPercent="=: menuStyle.appFrameWidth = splitPercent"
         parentWidth=":= Window.window.innerWidth" prevWindowWidth=":= parentWidth / 2"
         visible=":= windowState == 1" splitWindowPadding="= 0" />
