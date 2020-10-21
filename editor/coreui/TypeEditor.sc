@@ -204,6 +204,8 @@ abstract class TypeEditor extends CompositeEditor implements IResponseListener {
          includeStatic = false;
       if (newProps != null) {
          for (Object prop:newProps) {
+            if (prop instanceof Class)
+               continue;
          // TODO: this method is defined in modelImpl which is not accessible to coreui.  Maybe add default implementations to the model class?
             if (editorModel.filteredProperty(propType, prop, false, instanceMode))
                continue;
